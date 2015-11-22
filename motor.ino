@@ -1,42 +1,14 @@
-#define ENC_A1 3
-#define ENC_A2 5
-#define ENC_B1 2
-#define ENC_B2 4
-
-#define MOT_A1 8
-#define MOT_A2 9
-#define MOT_APWM 10
-#define MOT_B1 13
-#define MOT_B2 12
-#define MOT_BPWM 11
+#include "conf.h"
+#include <Encoder.h>
 
 #define SPEED_STEPS 255
 
 #define BAUD 9600
 
-// describes an encoder
-struct encoder {
-	int count;
-	int pin1, pin2;
-};
-
 // describes a motor
 struct motor {
 	int pin1, pin2, pinpwm;
 };
-
-// Initialize an encoder struct.
-void encoder_init(volatile struct encoder *encoder, int pin1, int pin2);
-
-// If there is a signal rise, update the encoder count.
-void encoder_count(volatile struct encoder *encoder);
-
-// interrupt handlers
-void handler_a();
-void handler_b();
-
-// Print state information for testing.
-void print_state();
 
 // Initialize a motor struct.
 void motor_init(struct motor *motor, int pin1, int pin2, int pinpwm);
@@ -50,118 +22,99 @@ void motor_brake(struct motor *motor, float strength);
 // Cause a motor to coast.
 void motor_coast(struct motor *motor);
 
-
-volatile struct encoder encoder_a, encoder_b;
 struct motor motor_a, motor_b;
-int handler_a_isset = 0;
 
+Encoder knobLeft(ENCODER_A1, ENCODER_A2);
+Encoder knobRight(ENCODER_B1, ENCODER_B2);
 
 void setup()
 {
-	encoder_init(&encoder_a, ENC_A1, ENC_A2);
-	encoder_init(&encoder_b, ENC_B1, ENC_B2);
+	motor_init(&motor_a, MOTOR_A1, MOTOR_A2, MOTOR_AP);
+	motor_init(&motor_b, MOTOR_B1, MOTOR_B2, MOTOR_BP);
 
-	motor_init(&motor_a, MOT_A1, MOT_A2, MOT_APWM);
-	motor_init(&motor_b, MOT_B1, MOT_B2, MOT_BPWM);
-
-	Serial.begin(BAUD);
+	Serial2.begin(BAUD);
 }
+
+long positionLeft  = -999;
+long positionRight = -999;
+
+float kP = 0.01;
 
 void loop()
 {
-	// Example code: Run each motor back and forth by about one shaft turn.
+  if (abs(knobLeft.read() - 1000) <= 10) {
+    motor_brake(&motor_a, 1.0);
+  } else {
+    motor_run(&motor_a, constrain(-kP * knobLeft.read(), -1, 1));
+  }
+  if (abs(knobRight.read() - 1000) <= 10) {
+    motor_brake(&motor_b, 1.0);
+  } else {
+    motor_run(&motor_b, constrain(-kP * knobRight.read(), -1, 1));
+  }
+  Serial2.print("Left: ");
+  Serial2.print(knobLeft.read());
+  Serial2.print("\tRight: ");
+  Serial2.println(knobRight.read());
+	// Example code: Run both motors back and forth
 
-	motor_run(&motor_a, 0.10);
-
-	while (encoder_a.count < 22) {
-		delay(10);
-	}
-
-	motor_brake(&motor_a, 1.0);
-
-	delay(1000);
-
-	motor_run(&motor_a, -0.10);
-
-	while (encoder_a.count > 0) {
-		delay(10);
-	}
-
-	motor_brake(&motor_a, 1.0);
-
-	delay(1000);
-
-
-	motor_run(&motor_b, 0.10);
-
-	while (encoder_b.count < 22)
-		delay(10);
-
-	motor_brake(&motor_b, 1.0);
-
-	delay(1000);
-
-	motor_run(&motor_b, -0.10);
-
-	while (encoder_b.count > 0)
-		delay(10);
-
-	motor_brake(&motor_b, 1.0);
-
-	delay(1000);
-}
-
-void encoder_init(volatile struct encoder *encoder, int pin1, int pin2)
-{
-	int NOT_AN_INTERRUPT = 6969; // Wouldn't compile without this line for
-	                             // some reason. Need to look into this.
-
-	encoder->count = 0;
-	encoder->pin1 = pin1;
-	encoder->pin2 = pin2;
-
-	pinMode(pin1, INPUT);
-	pinMode(pin2, INPUT);
-
-	if (!handler_a_isset) {
-		attachInterrupt(digitalPinToInterrupt(pin1), handler_a, RISING);
-		handler_a_isset = 1;
-	}
-	else {
-		attachInterrupt(digitalPinToInterrupt(pin1), handler_b, RISING);
-	}
-}
-
-void encoder_count(volatile struct encoder *encoder)
-{
-	int pin2_state;
-
-	pin2_state = digitalRead(encoder->pin2);
-
-	if (pin2_state == LOW)
-		encoder->count++;
-	else
-		encoder->count--;
-}
-
-void handler_a()
-{
-	encoder_count(&encoder_a);
-}
-
-void handler_b()
-{
-	encoder_count(&encoder_b);
-}
-
-void print_state()
-{
-	Serial.print("Encoder A: ");
-	Serial.print(encoder_a.count);
-	Serial.print("   ");
-	Serial.print("Encoder B: ");
-	Serial.print(encoder_b.count);
-	Serial.println();
+//	motor_run(&motor_a, 0.15);
+//  motor_run(&motor_b, 0.15);
+//
+//	while (knobLeft.read() < 50 && knobRight.read() < 50) {
+//    Serial2.print("Left: ");
+//    Serial2.print(knobLeft.read());
+//    Serial2.print("\tRight: ");
+//    Serial2.println(knobRight.read());
+//		delay(10);
+//	}
+//  if (knobLeft.read() >= 50) {
+//    motor_brake(&motor_a, 1.0);
+//  }
+//  if (knobRight.read() >= 50) {
+//    motor_brake(&motor_b, 1.0);
+//  }
+//  while (knobLeft.read() < 50 || knobRight.read() < 50) {
+//    Serial2.print("Left: ");
+//    Serial2.print(knobLeft.read());
+//    Serial2.print("\tRight: ");
+//    Serial2.println(knobRight.read());
+//    delay(10);
+//  }
+//
+//	motor_brake(&motor_a, 1.0);
+//  motor_brake(&motor_b, 1.0);
+//
+//	delay(1000);
+//
+//  motor_run(&motor_a, -0.15);
+//	motor_run(&motor_b, -0.15);
+//
+//	while (knobLeft.read() > 0 && knobRight.read() > 0) {
+//    Serial2.print("Left: ");
+//    Serial2.print(knobLeft.read());
+//    Serial2.print("\tRight: ");
+//    Serial2.println(knobRight.read());
+//    delay(10);
+//  }
+//  if (knobLeft.read() <= 0) {
+//    motor_brake(&motor_a, 1.0);
+//  }
+//  if (knobRight.read() <= 0) {
+//    motor_brake(&motor_b, 1.0);
+//  }
+//  while (knobLeft.read() > 0 || knobRight.read() > 0) {
+//    Serial2.print("Left: ");
+//    Serial2.print(knobLeft.read());
+//    Serial2.print("\tRight: ");
+//    Serial2.println(knobRight.read());
+//    delay(10);
+//  }
+//
+//  motor_brake(&motor_a, 1.0);
+//	motor_brake(&motor_b, 1.0);
+//
+//	delay(1000);
 }
 
 void motor_init(struct motor *motor, int pin1, int pin2, int pinpwm)
