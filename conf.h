@@ -7,10 +7,10 @@
 #define MOTOR_A2 2
 #define MOTOR_AP 3
 
-#define ENCODER_B1 11
-#define ENCODER_B2 12
-#define MOTOR_B1 6
-#define MOTOR_B2 7
+#define ENCODER_B1 12
+#define ENCODER_B2 11
+#define MOTOR_B1 7
+#define MOTOR_B2 6
 #define MOTOR_BP 5
 
 #define BUTTON1 23
