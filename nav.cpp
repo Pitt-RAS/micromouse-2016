@@ -1,10 +1,5 @@
 #include "nav.h"
 
-struct pos {
-	int x;
-	int y;
-};
-
 void nav_search()
 {
 }
