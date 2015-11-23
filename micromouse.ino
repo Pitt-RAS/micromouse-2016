@@ -7,11 +7,14 @@
 void setup()
 {
 	Serial2.begin(BAUD);
-    motors_init();
+
+	motors_init();
+	motion_forward(2.0, 0.0);
 }
 
 void loop()
 {
+	/*
     if (abs(knobLeft.read() - 1000) <= 10) {
         motor_brake(&motor_a, 1.0);
     } else {
@@ -26,6 +29,7 @@ void loop()
     Serial2.print(knobLeft.read());
     Serial2.print("\tRight: ");
     Serial2.println(knobRight.read());
+    */
 	// Example code: Run both motors back and forth
 
 //	motor_run(&motor_a, 0.15);

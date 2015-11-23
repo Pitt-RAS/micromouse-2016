@@ -1,3 +1,5 @@
+#include <Arduino.h>
+
 float range_read(struct range_sensor sensor);
 
 struct range_sensor {

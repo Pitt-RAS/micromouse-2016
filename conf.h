@@ -32,4 +32,7 @@
 #define RANGE4 A2
 #define RANGE5 A3
 
+#define MM_PER_BLOCK 180
+#define MM_PER_STEP 0.7928
+
 #endif
