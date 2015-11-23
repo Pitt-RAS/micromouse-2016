@@ -1,7 +1,7 @@
 struct pos {
 	int x;
 	int y;
-}
+};
 
 void nav_search();
 void nav_solve(struct pos target);

@@ -1,7 +1,12 @@
+#ifndef MOTORS_H
+#define MOTORS_H
+
 // describes a motor
 struct motor {
     int pin1, pin2, pinpwm;
-} motor_a, motor_b;
+};
+
+extern struct motor motor_a, motor_b;
 
 // Initialize motors
 void motors_init();
@@ -14,3 +19,5 @@ void motor_brake(struct motor *motor, float strength);
 
 // Cause a motor to coast.
 void motor_coast(struct motor *motor);
+
+#endif

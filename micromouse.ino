@@ -1,6 +1,9 @@
-#include "conf.h"
+#include <Encoder.h>
 
+#include "conf.h"
 #include "motors.h"
+#include "motion.h"
+#include "sensors_encoders.h"
 
 #define BAUD 9600
 
@@ -8,12 +11,21 @@ void setup()
 {
 	Serial2.begin(BAUD);
 
+  pinMode(BUTTON1, INPUT);
+  while (digitalRead(BUTTON1) == LOW);
+  delay(1000);
+  
 	motors_init();
 	motion_forward(2.0, 0.0);
 }
 
 void loop()
 {
+  Serial2.print("Left: ");
+  Serial2.print(enc_left_read());
+  Serial2.print("\tRight: ");
+  Serial2.println(enc_right_read());
+  delay(100);
 	/*
     if (abs(knobLeft.read() - 1000) <= 10) {
         motor_brake(&motor_a, 1.0);

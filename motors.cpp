@@ -1,6 +1,12 @@
+#include <Arduino.h>
+#include "conf.h"
 #include "motors.h"
 
 #define SPEED_STEPS 255
+
+struct motor motor_a, motor_b;
+
+static void motor_init(struct motor *motor, int pin1, int pin2, int pinpwm);
 
 void motors_init() {
     motor_init(&motor_a, MOTOR_A1, MOTOR_A2, MOTOR_AP);

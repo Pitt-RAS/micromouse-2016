@@ -17,8 +17,8 @@
 #define BUTTON2 22
 #define BUTTON3 21
 
-#define SCL 18
-#define SDA 19
+#define SCL_ 18
+#define SDA_ 19
 
 #define EMITTER1 29
 #define EMITTER2 30
