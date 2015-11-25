@@ -5,10 +5,19 @@
 Encoder left_encoder(ENCODER_A1, ENCODER_A2);
 Encoder right_encoder(ENCODER_B1, ENCODER_B2);
 
-int32_t enc_left_read() {
-    return left_encoder.read();
+float enc_left_read() {
+    return (left_encoder.read() * MM_PER_STEP);
 }
 
-int32_t enc_right_read() {
-    return right_encoder.read();
+float enc_right_read() {
+    return (right_encoder.read() * MM_PER_STEP);
 }
+
+void enc_left_write(float NEW_DISTANCE) {
+    left_encoder.write( rint(NEW_DISTANCE / MM_PER_STEP) );
+}
+
+void enc_right_write(float NEW_DISTANCE) {
+    right_encoder.write( rint(NEW_DISTANCE / MM_PER_STEP) );
+}
+

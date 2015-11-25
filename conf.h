@@ -1,6 +1,7 @@
 #ifndef CONF_H
 #define CONF_H
 
+// Define pin assignments for teensy3.2 on Rev1 PCB
 #define ENCODER_A1 1
 #define ENCODER_A2 0
 #define MOTOR_A1 4
@@ -32,7 +33,17 @@
 #define RANGE4 A2
 #define RANGE5 A3
 
+// Motion control paremeters
 #define MM_PER_BLOCK 180
 #define MM_PER_STEP 0.7928
+
+// Robot characteristics
+#define ROBOT_MASS .15 // grams
+#define NUMBER_OF_MOTORS 2 
+#define FRICTION_COEFFICIENT 1 // Coefficient of friciton between wheels and ground
+#define RATED_STALL_TORQUE 0.02824620733332 // Newton-meters
+#define RATED_FREERUN_SPEED 314.159265 // radians/second
+#define RATED_VOLTAGE 6 // Volts
+
 
 #endif

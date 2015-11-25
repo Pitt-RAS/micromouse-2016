@@ -1,4 +1,6 @@
 #include <Arduino.h>
 
-int32_t enc_left_read();
-int32_t enc_right_read();
+float enc_left_read();
+float enc_right_read();
+void enc_left_write(float NEW_DISTANCE);
+void enc_right_write(float NEW_DISTANCE);
