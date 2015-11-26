@@ -1,0 +1,9 @@
+-add move functionality
+	-never apply a torque that the wheels are incapable of
+	-be able to calculate idealized acceleration profiles
+	-tune PID control loops
+-add 90 degree turn functionality using predetermined wheel distance offsets
+-add distance between wheels variable to conf.h
+-read sharp rangefinder data and output a distance
+	-fit equation to calibrated data using excel
+-

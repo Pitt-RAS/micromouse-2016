@@ -14,10 +14,10 @@ float enc_right_read() {
 }
 
 void enc_left_write(float NEW_DISTANCE) {
-    left_encoder.write( rint(NEW_DISTANCE / MM_PER_STEP) );
+    left_encoder.write( (int32_t)rint(NEW_DISTANCE / MM_PER_STEP) );
 }
 
 void enc_right_write(float NEW_DISTANCE) {
-    right_encoder.write( rint(NEW_DISTANCE / MM_PER_STEP) );
+    right_encoder.write( (int32_t)rint(NEW_DISTANCE / MM_PER_STEP) );
 }
 

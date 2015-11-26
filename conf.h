@@ -39,8 +39,11 @@
 
 // Robot characteristics
 #define ROBOT_MASS .15 // grams
-#define NUMBER_OF_MOTORS 2 
+#define MM_BETWEEN_WHEELS 75
+#define NUMBER_OF_MOTORS 2
 #define FRICTION_COEFFICIENT 1 // Coefficient of friciton between wheels and ground
+
+// Motor spec sheet parameters
 #define RATED_STALL_TORQUE 0.02824620733332 // Newton-meters
 #define RATED_FREERUN_SPEED 314.159265 // radians/second
 #define RATED_VOLTAGE 6 // Volts
