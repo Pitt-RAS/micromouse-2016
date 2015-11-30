@@ -38,12 +38,21 @@
 #define MM_PER_STEP 0.7928
 
 // Robot characteristics
-#define ROBOT_MASS .15 // grams
-#define MM_BETWEEN_WHEELS 75
+#define ROBOT_MASS .15 // kilograms
+#define WHEEL_RADIUS .015 // meters
+#define MM_BETWEEN_WHEELS 75 // milimeters
 #define NUMBER_OF_MOTORS 2
 #define FRICTION_COEFFICIENT 1 // Coefficient of friciton between wheels and ground
+#define MAX_ACCEL 4 // m/s/s  
+#define MAX_DECEL -4 // m/s/s
+#define MAX_VELOCITY_STRAIGHT 1 // m/s   limited by the maximum velocity at which motors can deliver max accel
+
+//  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
+//    if this max velocity is higher than max straight velocity then use max straight velocity
+#define MAX_VELOCITY_ROTATE .05 // m/s
 
 // Motor spec sheet parameters
+//  TODO precompile, calculate max force per wheel from stall torque with wheel radius, then rated free run speed based on 
 #define RATED_STALL_TORQUE 0.02824620733332 // Newton-meters
 #define RATED_FREERUN_SPEED 314.159265 // radians/second
 #define RATED_VOLTAGE 6 // Volts

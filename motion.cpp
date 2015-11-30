@@ -33,80 +33,105 @@ static void initialize();
 
 
 
-// Current limitation of the class is that all movement is assumed to be in the positive direction
-//   Also assumes that Vstart is always below or very close to Vmax, 
-//   both of these are due to the assumption that the start of the move must be positive or 0 acceleration
-class forwardDistance { 
+
+class motionCalc { 
   private:  
-    double Vexit, Vmax, Vstart;
-    double Dtot, Dspeed, Dslow;
-    double aSpeed, aSlow;
+    float vStart, vEnd, vMax;
+    float dStart, dEnd, dTot;
+    float aStart, aEnd;
     int tSpeed, tConst, tSlow;
     
   public:
-    forwardDistance (double,double);
-    double idealDistance (int elapsedTime) {
+    motionCalc (float,float,float);
+    float idealDistance (int elapsedTime) {
       if (elapsedTime < tSpeed) {
-        return ( elapsedTime / 1000000 * (Vstart + .5 * aSpeed * elapsedTime / 1000000));  
+        return ( elapsedTime / 1000000 * (vStart + .5 * aStart * elapsedTime / 1000000));  
       }
       else if (elapsedTime < (tSpeed + tConst)) {
-        return (Dspeed + Vmax * (elapsedTime - tSpeed) / 1000000);
+        return (dStart + vMax * (elapsedTime - tSpeed) / 1000000);
       }
       else if (elapsedTime < (tSpeed + tConst + tSlow)) {
-        return ((Dtot - Dslow) + (elapsedTime - tSpeed - tConst) / 1000000 * (Vmax + .5 * aSlow * (elapsedTime - tSpeed - tConst) / 1000000));
+        return ((dTot - dEnd) + (elapsedTime - tSpeed - tConst) / 1000000 * (vMax + .5 * aEnd * (elapsedTime - tSpeed - tConst) / 1000000));
       }
       else {
-        return (Dtot);
+        return (dTot);
       }
     }
-    double idealVelocity (int elapsedTime) {
+    float idealVelocity (int elapsedTime) {
       if (elapsedTime <= tSpeed) {
-        return (Vstart + aSpeed * elapsedTime / 1000000);  
+        return (vStart + aStart * elapsedTime / 1000000);  
       }
       else if (elapsedTime < (tSpeed + tConst)) {
-        return (Vmax);
+        return (vMax);
       }
       else if (elapsedTime < (tSpeed + tConst + tSlow)) {
-        return (Vmax + aSlow * (elapsedTime - tSpeed - tConst) / 1000000);
+        return (vMax + aEnd * (elapsedTime - tSpeed - tConst) / 1000000);
       }
       else {
-        return (Vexit);
+        return (vEnd);
+      }
+    }
+    float idealAccel (int elapsedTime) {
+      if (elapsedTime <= tSpeed) {
+        return (aStart);  
+      }
+      else if (elapsedTime < (tSpeed + tConst)) {
+        return (0);
+      }
+      else if (elapsedTime < (tSpeed + tConst + tSlow)) {
+        return (aEnd);
+      }
+      else {
+        return (0);
       }
     }
 };
 
-forwardDistance::forwardDistance (double d, double v) {
-  Dtot = d;
-  Vexit = v;
+motionCalc::motionCalc (float a, float b, float c) {
 
+  dTot = a;
+  vMax = b;
+  vEnd = c;
+
+  // get current speed by averaging current instantaneous speed of left and right wheels
+  vStart = (enc_left_velocity() + enc_right_velocity()) / 2;
+  
   // set constants from global.  Do this a different way later to reference conf.h
-  Vmax = 1;   // m/s
-  aSpeed = 4; // m/s/s
-  aSlow = -4; // m/s/s
+  if (vStart <= vMax) {
+    aStart = MAX_ACCEL;
+  }
+  else {
+    aStart = MAX_DECEL;
+  }
+
+  if (vEnd <= vMax) {
+    aEnd = MAX_DECEL;
+  }
+  else {
+    aEnd = MAX_ACCEL;
+  }
+  if (((dTot < 0) && (vMax > 0)) || ((dTot > 0) && (vMax < 0))) {
+    vMax = -vMax;
+  }
+
   
   // do initial calculations
-  Vstart = (enc_left_velocity() + enc_right_velocity()) / 2;
-  enc_left_write(0);
-  enc_left_write(0);
-  if (Vstart > Vmax) {
-    Vstart = Vmax;
-  }
   
   // set distances assuming there is room to reach max speed
-  Dspeed = (Vmax * Vmax - Vstart * Vstart) / (2 * aSpeed);
-  Dslow = (Vexit * Vexit - Vmax * Vmax) / (2 * aSpeed);
-  tConst = 1000000 * (Dtot - Dspeed - Dslow) / Vmax;
+  dStart = (vMax * vMax - vStart * vStart) / (2 * aStart);
+  dEnd = (vEnd * vEnd - vMax * vMax) / (2 * aStart);
+  tConst = 1000000 * (dTot - dStart - dEnd) / vMax;
   
   // set distances if there is not space to reach max speed
   if (tConst < 0) {
-    Dspeed = Vexit * Vexit - Vstart * Vstart - 2 * Dtot * aSlow;
-    Dslow = Dtot - Dspeed;
+    dStart = vEnd * vEnd - vStart * vStart - 2 * dTot * aEnd;
+    dEnd = dTot - dStart;
     tConst = 0;
   }
 
-  // calculate tSpeed and tSlow based on Dspeed and Dslow
-  tSpeed = (1000000 * (-Vstart + sqrt(Vstart*Vstart + 2 * aSpeed * Dspeed)) / aSpeed);
-  tSlow =  (1000000 * (-Vexit + sqrt(Vexit*Vexit + 2 * -aSlow * Dslow)) / -aSlow);
+  // calculate tSpeed and tSlow based on dStart and dEnd
+  tSpeed = (1000000 * (-vStart + sqrt(vStart*vStart + 2 * aStart * dStart)) / aStart);
+  tSlow =  (1000000 * (-vEnd + sqrt(vEnd*vEnd + 2 * -aEnd * dEnd)) / -aEnd);
 }
 
 
@@ -233,15 +258,23 @@ void motion_forward(float distance, float exit_speed) {
 	
 	if (!initialized) initialize(); // ?? I don't know what this means
 
-  forwardDistance Movement (distance,exit_speed);
-
+  motionCalc straightMove (distance, MAX_VELOCITY_STRAIGHT, exit_speed);
+  
+  // zero encoders and clock before move
+  enc_left_write(0);
+  enc_right_write(0);
   moveTime = 0;
 
+  // execute motion
   while (idealDistance != distance) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
-    idealDistance = Movement.idealDistance(moveTime);
+    idealDistance = straightMove.idealDistance(moveTime);
     errorLeft = idealDistance - enc_left_read();
     errorRight = idealDistance - enc_right_read();
+
+    // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
+    idealAccel = strightMove.idealAccel(moveTime); // this is acceleration motors should have at a current time
+    
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
   }
@@ -249,8 +282,34 @@ void motion_forward(float distance, float exit_speed) {
  
 }
 
+// clockwise angle is positive, angle is in degrees
 void motion_rotate(float angle) {
+  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+  float idealLinearDistance, errorLeft, errorRight;
+  linearDistance = distancePerDegree * angle;
+  motionCalc rotate (linearDistance, MAX_VELOCITY_ROTATE, 0);
+  elapsedMicros moveTime;
 
+  // zero encoders and clock before move
+  enc_left_write(0);
+  enc_right_write(0);
+  moveTime = 0;
+
+  // the right will always be the negative of the left in order to rotate on a point.
+  while (idealLinearDistance != linearDistance) {
+    //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
+    idealLinearDistance = rotate.idealDistance(moveTime);
+    errorLeft = idealLinearDistance - enc_left_read();
+    errorRigth = -idealLinearDistance - enc_right_read();
+    
+    // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
+    idealAccel = rotate.idealAccel(moveTime); // this is acceleration motors should have at a current time
+    
+
+    //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
+  }
+  
+  
 }
 
 void motion_corner(float angle) {
