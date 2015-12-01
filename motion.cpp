@@ -273,7 +273,7 @@ void motion_forward(float distance, float exit_speed) {
     errorRight = idealDistance - enc_right_read();
 
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
-    idealAccel = strightMove.idealAccel(moveTime); // this is acceleration motors should have at a current time
+    //idealAccel = straightMove.idealAccel(moveTime); // this is acceleration motors should have at a current time
     
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
@@ -286,7 +286,7 @@ void motion_forward(float distance, float exit_speed) {
 void motion_rotate(float angle) {
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealLinearDistance, errorLeft, errorRight;
-  linearDistance = distancePerDegree * angle;
+  float linearDistance = distancePerDegree * angle;
   motionCalc rotate (linearDistance, MAX_VELOCITY_ROTATE, 0);
   elapsedMicros moveTime;
 
@@ -300,10 +300,10 @@ void motion_rotate(float angle) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealLinearDistance = rotate.idealDistance(moveTime);
     errorLeft = idealLinearDistance - enc_left_read();
-    errorRigth = -idealLinearDistance - enc_right_read();
+    errorRight = -idealLinearDistance - enc_right_read();
     
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
-    idealAccel = rotate.idealAccel(moveTime); // this is acceleration motors should have at a current time
+    //idealAccel = rotate.idealAccel(moveTime); // this is acceleration motors should have at a current time
     
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed

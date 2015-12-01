@@ -21,3 +21,11 @@ void enc_right_write(float NEW_DISTANCE) {
     right_encoder.write( (int32_t)rint(NEW_DISTANCE / MM_PER_STEP) );
 }
 
+float enc_left_velocity() {
+    return (1000000 * left_encoder.stepRate() * MM_PER_STEP);
+}
+
+float enc_right_velocity() {
+    return (1000000 * right_encoder.stepRate() * MM_PER_STEP);
+}
+
