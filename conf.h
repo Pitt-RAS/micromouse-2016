@@ -57,5 +57,4 @@
 #define RATED_FREERUN_SPEED 314.159265 // radians/second
 #define RATED_VOLTAGE 6 // Volts
 
-
 #endif

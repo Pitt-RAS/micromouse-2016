@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include <Encoder.h>
+#include <EncoderMod.h>
 #include "conf.h"
 
 Encoder left_encoder(ENCODER_A1, ENCODER_A2);
