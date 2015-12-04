@@ -57,11 +57,7 @@ class motionCalc {
     }
 };
 
-motionCalc::motionCalc (float a, float b, float c) {
-
-  dTot = a;
-  vMax = b;
-  vEnd = c;
+motionCalc::motionCalc (float dTot, float vMax, float vEnd) {
 
   // get current speed by averaging current instantaneous speed of left and right wheels
   vStart = (enc_left_velocity() + enc_right_velocity()) / 2;
@@ -84,7 +80,6 @@ motionCalc::motionCalc (float a, float b, float c) {
     vMax = -vMax;
   }
 
-  
   // do initial calculations
   
   // set distances assuming there is room to reach max speed
@@ -103,6 +98,33 @@ motionCalc::motionCalc (float a, float b, float c) {
   tSpeed = (1000000 * (-vStart + sqrt(vStart*vStart + 2 * aStart * dStart)) / aStart);
   tSlow =  (1000000 * (-vEnd + sqrt(vEnd*vEnd + 2 * -aEnd * dEnd)) / -aEnd);
 }
+
+
+// input current speed and 
+class idealMotorOutputCalculator {
+  private: 
+    float currentSpeed, desiredForce;
+    float motorOutput;
+    float aTerm, bTerm;
+
+  public:
+    idealMotorOutputCalculator();
+      float Calculate (float desiredForce, float currentSpeed) {
+        return (((currentSpeed + desiredForce * aTerm) * bTerm) / BATTERY_VOLTAGE);
+      }
+} left_motor_output_calculator, right_motor_output_calculator;
+
+idealMotorOutputCalculator::idealMotorOutputCalculator() {
+  // calcluate these terms initially in case float math isn't done precompile
+  aTerm = RATED_FREERUN_VELOCITY / RATED_STALL_FORCE;
+  bTerm = RATED_VOLTAGE / RATED_FREERUN_VELOCITY;
+}
+
+
+
+
+
+
 
 class PIDCorrectionCalculator {
 private:
@@ -126,23 +148,19 @@ float PIDCorrectionCalculator::Calculate(float error) {
   return output;
 }
 
-void motion_set_max_speed(float new_max_speed) {
 
-}
-
-void motion_set_max_accel(float new_max_accel) {
-
-}
 
 void motion_forward(float distance, float exit_speed) {
 	float errorRight, errorLeft;
+  float rightOutput, leftOutput;
   float idealDistance;
+  float forcePerMotor;
   elapsedMicros moveTime;
 
   motionCalc straightMove (distance, MAX_VELOCITY_STRAIGHT, exit_speed);
 
-  PIDCorrectionCalculator* left_calculator = new PIDCorrectionCalculator();
-  PIDCorrectionCalculator* right_calculator = new PIDCorrectionCalculator();
+  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
+  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
   
   // zero encoders and clock before move
   enc_left_write(0);
@@ -157,11 +175,15 @@ void motion_forward(float distance, float exit_speed) {
     errorRight = idealDistance - enc_right_read();
 
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
-    //idealAccel = straightMove.idealAccel(moveTime); // this is acceleration motors should have at a current time
+    forcePerMotor = (ROBOT_MASS * straightMove.idealAccel(moveTime) + FRICTION_FORCE) / 2; // this is acceleration motors should have at a current time
     
+    leftOutput = left_motor_output_calculator.Calculate(forcePerMotor, enc_left_velocity());
+    rightOutput = right_motor_output_calculator.Calculate(forcePerMotor, enc_right_velocity());
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
-    left_calculator->Calculate(errorLeft); // this needs to be added to the current output
+    // add PID error correction to ideal value
+    leftOutput += left_PID_calculator->Calculate(errorLeft);
+    rightOutput += right_PID_calculator->Calculate(errorRight);
   }
 
  
@@ -192,6 +214,7 @@ void motion_rotate(float angle) {
     
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
+    
   }
   
   

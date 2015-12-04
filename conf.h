@@ -37,28 +37,41 @@
 #define MM_PER_BLOCK 180
 #define MM_PER_STEP 0.7928
 
+// PID tuning parameters
+#define KP .01
+#define KD 0
+#define KI 0
+
 // Robot characteristics
 #define ROBOT_MASS .15 // kilograms
-#define WHEEL_RADIUS .015 // meters
-#define MM_BETWEEN_WHEELS 75 // milimeters
+#define MM_BETWEEN_WHEELS 75 // millimeters
+#define FRICTION_FORCE 0.075// Newtons.  amount of force opposing motion in robot including rolling resistance, sliding, gearing
 #define NUMBER_OF_MOTORS 2
-#define FRICTION_COEFFICIENT 1 // Coefficient of friciton between wheels and ground
+#define STEPS_PER_WHEEL_REV 12// the number of encoder steps we get per wheel revolution
+#define BATTERY_VOLTAGE 8.3 // Volts
 #define MAX_ACCEL 4 // m/s/s  
 #define MAX_DECEL -4 // m/s/s
+#define GEAR_RATIO 9.96 // gear ratio between motor and wheels
 #define MAX_VELOCITY_STRAIGHT 1 // m/s   limited by the maximum velocity at which motors can deliver max accel
+
+// Motor spec sheet parameters
+//  TODO precompile, calculate max force per wheel from stall torque with wheel radius, then rated free run speed based on 
+#define RATED_STALL_TORQUE 0.00282462073 // Newton-meters before motor enters gearbox
+#define RATED_FREERUN_RPM 30000 // RPM at motor shaft
+#define RATED_VOLTAGE 6 // Volts
+
+// calculate parameters based on above values
+#define WHEEL_RADIUS MM_PER_STEP * STEPS_PER_WHEEL_REV / (2 * 3.14159265359)// in millimeters
+#define RATED_FREERUN_VELOCITY RATED_FREERUN_RPM * MM_PER_STEP * STEPS_PER_WHEEL_REV / (60 * GEAR_RATIO * 1000) // 1000 is for mm in m, 60 is for s in min
+#define RATED_STALL_FORCE RATED_STALL_TORQUE * GEAR_RATIO * NUMBER_OF_MOTORS * 1000 / WHEEL_RADIUS // in Newtons
+
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
 #define MAX_VELOCITY_ROTATE .05 // m/s
 
-// Motor spec sheet parameters
-//  TODO precompile, calculate max force per wheel from stall torque with wheel radius, then rated free run speed based on 
-#define RATED_STALL_TORQUE 0.02824620733332 // Newton-meters
-#define RATED_FREERUN_SPEED 314.159265 // radians/second
-#define RATED_VOLTAGE 6 // Volts
 
-#define KP .01
-#define KD 0
-#define KI 0
+
+
 
 #endif
