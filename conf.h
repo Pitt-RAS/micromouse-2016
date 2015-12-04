@@ -57,4 +57,8 @@
 #define RATED_FREERUN_SPEED 314.159265 // radians/second
 #define RATED_VOLTAGE 6 // Volts
 
+#define KP .01
+#define KD 0
+#define KI 0
+
 #endif

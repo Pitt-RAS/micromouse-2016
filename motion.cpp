@@ -3,8 +3,6 @@
 #include <Arduino.h>
 #include "sensors_encoders.h"
 
-static float max_speed;
-static float max_accel;
 
 class motionCalc { 
   private:  
@@ -114,7 +112,7 @@ private:
 
 public:
   float Calculate(float error);
-}
+} ;
 
 float PIDCorrectionCalculator::Calculate(float error) {
   i_term += KI * error * elapsed_time;
@@ -140,8 +138,6 @@ void motion_forward(float distance, float exit_speed) {
 	float errorRight, errorLeft;
   float idealDistance;
   elapsedMicros moveTime;
-	
-	if (!initialized) initialize(); // ?? I don't know what this means
 
   motionCalc straightMove (distance, MAX_VELOCITY_STRAIGHT, exit_speed);
 
