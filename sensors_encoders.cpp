@@ -29,3 +29,10 @@ float enc_right_velocity() {
     return (1000000 * right_encoder.stepRate() * MM_PER_STEP);
 }
 
+float enc_left_extrapolate() {
+    return (left_encoder.extrapolate() * MM_PER_STEP);
+}
+float enc_right_extrapolate() {
+    return (right_encoder.extrapolate() * MM_PER_STEP);
+}
+

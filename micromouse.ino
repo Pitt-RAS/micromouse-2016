@@ -19,16 +19,19 @@ void setup()
 }
 
 void loop() {
-  Serial2.print("Left Position: ");
+
   Serial2.print(enc_left_read());
-  Serial2.print("Right Position: ");
-  Serial2.println(enc_right_read());
-  Serial2.print("Left Velocity: ");
-  Serial2.print(enc_left_velocity());
-  Serial2.print("Right Velocity: ");
-  Serial2.println(enc_right_velocity());
-  Serial2.println(" ");
-  delay(100);
+  Serial2.print(" ");
+  Serial2.print(enc_left_extrapolate());
+  Serial2.print(" ");
+  Serial2.println(enc_left_velocity());
+//  Serial2.print(" ");
+//  Serial2.print(enc_right_read());
+//  Serial2.print(" ");
+//  Serial2.println(enc_right_extrapolate());
+
+delay(1);
+
 
 
 

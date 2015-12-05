@@ -6,3 +6,5 @@ void enc_left_write(float NEW_DISTANCE);
 void enc_right_write(float NEW_DISTANCE);
 float enc_left_velocity();
 float enc_right_velocity();
+float enc_left_extrapolate();
+float enc_right_extrapolate();
