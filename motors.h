@@ -12,12 +12,6 @@ extern struct motor motor_a, motor_b;
 void motors_init();
 
 // Run a motor at speed, where -1.0 <= speed <= 1.0.
-void motor_run(struct motor *motor, float speed);
-
-// Brake a motor with strength, where -1.0 <= strength <= 1.0.
-void motor_brake(struct motor *motor, float strength);
-
-// Cause a motor to coast.
-void motor_coast(struct motor *motor);
+void motor_set(struct motor *motor, float speed);
 
 #endif

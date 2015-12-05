@@ -53,6 +53,7 @@
 #define MAX_DECEL -4 // m/s/s
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
 #define MAX_VELOCITY_STRAIGHT 1 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define PWM_SPEED_STEPS 255 // maximum PWM value for the system
 
 // Motor spec sheet parameters
 //  TODO precompile, calculate max force per wheel from stall torque with wheel radius, then rated free run speed based on 

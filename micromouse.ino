@@ -16,16 +16,34 @@ void setup()
   delay(1000);
   
 	motors_init();
-	motion_forward(2.0, 0.0);
 }
 
-void loop()
-{
-  Serial2.print("Left: ");
+void loop() {
+  Serial2.print("Left Position: ");
   Serial2.print(enc_left_read());
-  Serial2.print("\tRight: ");
+  Serial2.print("Right Position: ");
   Serial2.println(enc_right_read());
+  Serial2.print("Left Velocity: ");
+  Serial2.print(enc_left_velocity());
+  Serial2.print("Right Velocity: ");
+  Serial2.println(enc_right_velocity());
+  Serial2.println(" ");
   delay(100);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	/*
     if (abs(knobLeft.read() - 1000) <= 10) {
         motor_brake(&motor_a, 1.0);

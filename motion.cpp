@@ -184,6 +184,10 @@ void motion_forward(float distance, float exit_speed) {
     // add PID error correction to ideal value
     leftOutput += left_PID_calculator->Calculate(errorLeft);
     rightOutput += right_PID_calculator->Calculate(errorRight);
+
+    // set motors to run at specified rate
+    //motor_set(&motor_a, leftOutput);
+    //motor_set(&motor_b, rightOutput);
   }
 
  
