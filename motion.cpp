@@ -77,7 +77,11 @@ class motionCalc {
     }
 };
 
-motionCalc::motionCalc (float dTot, float vMax, float vEnd) {
+motionCalc::motionCalc (float a, float b, float c) {
+
+  dTot = a;
+  vMax = b;
+  vEnd = c;
 
   // turn dTot into meters
   dTot /= 1000;
