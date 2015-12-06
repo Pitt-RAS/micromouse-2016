@@ -16,21 +16,23 @@ void setup()
   delay(1000);
   
 	motors_init();
+	motion_forward(10000,0);
 }
 
 void loop() {
+  
 
-  Serial2.print(enc_left_read());
-  Serial2.print(" ");
-  Serial2.print(enc_left_extrapolate());
-  Serial2.print(" ");
-  Serial2.println(enc_left_velocity());
+//  Serial2.print(enc_left_read());
+//  Serial2.print(" ");
+//  Serial2.print(enc_left_extrapolate());
+//  Serial2.print(" ");
+//  Serial2.println(enc_left_velocity());
 //  Serial2.print(" ");
 //  Serial2.print(enc_right_read());
 //  Serial2.print(" ");
 //  Serial2.println(enc_right_extrapolate());
+//  delay(10);
 
-delay(1);
 
 
 

@@ -22,11 +22,11 @@ void enc_right_write(float NEW_DISTANCE) {
 }
 
 float enc_left_velocity() {
-    return (1000000 * left_encoder.stepRate() * MM_PER_STEP);
+    return (1000 * left_encoder.stepRate() * MM_PER_STEP);
 }
 
 float enc_right_velocity() {
-    return (1000000 * right_encoder.stepRate() * MM_PER_STEP);
+    return (1000 * right_encoder.stepRate() * MM_PER_STEP);
 }
 
 float enc_left_extrapolate() {
