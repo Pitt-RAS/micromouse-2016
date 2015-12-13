@@ -3,53 +3,33 @@
 #include <Arduino.h>
 #include "sensors_encoders.h"
 
-
-class motionCalc { 
-  private:  
+class motionCalc {
+  private:
     float vStart, vEnd, vMax;
     float dStart, dEnd, dTot;
     float aStart, aEnd;
     int tStart, tConst, tEnd;
-    
+
   public:
-    motionCalc (float,float,float);
+    motionCalc (float, float, float);
     float idealDistance (int elapsedTime) {
       if (elapsedTime < tStart) {
-        Serial2.println(" ");
-        Serial2.println("dStart");
-        Serial2.println(" ");
-        return (elapsedTime / 1000 * (vStart + .5 * aStart * elapsedTime / 1000000));  
+        return (elapsedTime / 1000 * (vStart + .5 * aStart * elapsedTime / 1000000));
       }
       else if (elapsedTime < (tStart + tConst)) {
-        Serial2.println("tConst");
-        Serial2.print("dStart");
-        Serial2.print(dStart);
-        Serial2.print("   vMax");
-        Serial2.print(vMax);
-        Serial2.print("   tStart");
-        Serial2.print(tStart);
-        Serial2.print("   elapsedTime");
-        Serial2.println(elapsedTime);
         return (dStart * 1000 + vMax * (elapsedTime - tStart) / 1000);
       }
       else if (elapsedTime < (tStart + tConst + tEnd)) {
-        Serial2.println(" ");
-        Serial2.println("dTot");
-        Serial2.println(dTot);
-        Serial2.println(" ");
-        return ((dTot - dEnd) * 1000 + (elapsedTime - tStart - tConst) / 1000000 * (vMax + .5 * aEnd * (elapsedTime - tStart - tConst) / 1000));
+        float t = ((float)elapsedTime - tStart - tConst) / 1000000;
+        return (((dTot - dEnd) + (vMax * t + .5 * aEnd * t * t)) * 1000);
       }
       else {
-        Serial2.println(" ");
-        Serial2.println("dAfter");
-        Serial2.println(dTot);
-        Serial2.println(" ");
         return (dTot * 1000);
       }
     }
     float idealVelocity (int elapsedTime) {
       if (elapsedTime <= tStart) {
-        return (vStart + aStart * elapsedTime / 1000000);  
+        return (vStart + aStart * elapsedTime / 1000000);
       }
       else if (elapsedTime < (tStart + tConst)) {
         return (vMax);
@@ -63,7 +43,7 @@ class motionCalc {
     }
     float idealAccel (int elapsedTime) {
       if (elapsedTime <= tStart) {
-        return (aStart);  
+        return (aStart);
       }
       else if (elapsedTime < (tStart + tConst)) {
         return (0);
@@ -88,7 +68,7 @@ motionCalc::motionCalc (float a, float b, float c) {
 
   // get current speed by averaging current instantaneous speed of left and right wheels
   vStart = (enc_left_velocity() + enc_right_velocity()) / 2;
-  
+
   // set constants from global.  Do this a different way later to reference conf.h
   if (((dTot < 0) && (vMax > 0)) || ((dTot > 0) && (vMax < 0))) {
     vMax = -vMax;
@@ -108,68 +88,46 @@ motionCalc::motionCalc (float a, float b, float c) {
   }
 
   // do initial calculations
-  
   // set distances assuming there is room to reach max speed
   dStart = (vMax * vMax - vStart * vStart) / (2 * aStart);
   dEnd = (vEnd * vEnd - vMax * vMax) / (2 * aEnd);
   tConst = 1000000 * (dTot - dStart - dEnd) / vMax;
-  
-  Serial2.print("aStart=");
-  Serial2.print(aStart);
-  Serial2.print("    aEnd=");
-  Serial2.print(aEnd);
-  Serial2.print("    vStart=");
-  Serial2.print(vStart);
-  Serial2.print("    vMax=");
-  Serial2.print(vMax);
 
-  
   // set distances if there is not space to reach max speed
   if (tConst < 0) {
-    dStart = vEnd * vEnd - vStart * vStart - 2 * dTot * aEnd;
+    dStart = (vStart * vStart - vEnd * vEnd + 2 * aEnd * dTot) / (2 * aEnd - 2 * aStart);
     dEnd = dTot - dStart;
+    vMax = sqrt(vStart * vStart + 2 * aStart * dStart);
     tConst = 0;
   }
 
-  Serial2.print("    dStart=");
-  Serial2.print(dStart);
-  Serial2.print("    dEnd=");
-  Serial2.print(dEnd);
-  Serial2.print("    dTot=");
-  Serial2.print(dTot);
-  
   // calculate tStart and tEnd based on dStart and dEnd
   tStart = (1000000 * (-vStart + sqrt(vStart * vStart + 2 * aStart * dStart)) / aStart);
   tEnd =  (1000000 * (-vEnd + sqrt(vEnd * vEnd + 2 * -aEnd * dEnd)) / -aEnd);
-  Serial2.print("    tStart=");
-  Serial2.print(tStart);
-  Serial2.print("    tEnd=");
-  Serial2.print(tEnd);
-  Serial2.print("    tConst=");
-  Serial2.println(tConst);
 }
 
 
-// input current speed and 
+// input current speed and desired force
 class idealMotorOutputCalculator {
-  private: 
-    float currentStart, desiredForce;
+  private:
     float motorOutput;
-    float aTerm, bTerm;
+    float requiredCurrent, currentBEMF;
+    float velocityPerVBEMF, forcePerAmp;
 
   public:
     idealMotorOutputCalculator();
-      float Calculate (float desiredForce, float currentStart) {
-        return (((currentStart + desiredForce * aTerm) * bTerm) / BATTERY_VOLTAGE);
-      }
+    float Calculate (float desiredForce, float currentVelocity) {
+      requiredCurrent = desiredForce / forcePerAmp;
+      currentBEMF = currentVelocity / velocityPerVBEMF;
+      return ((requiredCurrent * RATED_INTERNAL_RESISTANCE + currentBEMF) / BATTERY_VOLTAGE);
+    }
 } left_motor_output_calculator, right_motor_output_calculator;
 
 idealMotorOutputCalculator::idealMotorOutputCalculator() {
   // calcluate these terms initially in case float math isn't done precompile
-  aTerm = RATED_FREERUN_VELOCITY / RATED_STALL_FORCE;
-  bTerm = RATED_VOLTAGE / RATED_FREERUN_VELOCITY;
+  velocityPerVBEMF = VELOCITY_PER_VBEMF;
+  forcePerAmp = FORCE_PER_AMP;
 }
-
 
 
 
@@ -177,13 +135,13 @@ idealMotorOutputCalculator::idealMotorOutputCalculator() {
 
 
 class PIDCorrectionCalculator {
-private:
-  float i_term = 0;
-  elapsedMicros elapsed_time;
-  float last_error = 0;
+  private:
+    float i_term = 0;
+    elapsedMicros elapsed_time;
+    float last_error = 0;
 
-public:
-  float Calculate(float error);
+  public:
+    float Calculate(float error);
 } ;
 
 float PIDCorrectionCalculator::Calculate(float error) {
@@ -198,12 +156,10 @@ float PIDCorrectionCalculator::Calculate(float error) {
   return output;
 }
 
-
-
 void motion_forward(float distance, float exit_speed) {
-	float errorRight, errorLeft;
+  float errorRight, errorLeft;
   float rightOutput, leftOutput;
-  float idealDistance;
+  float idealDistance, idealVelocity;
   float forcePerMotor;
   elapsedMicros moveTime;
 
@@ -211,47 +167,45 @@ void motion_forward(float distance, float exit_speed) {
 
   PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
   PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
-  
+
   // zero encoders and clock before move
   enc_left_write(0);
   enc_right_write(0);
   moveTime = 0;
 
   // execute motion
-  while (idealDistance != distance) {
+  while (idealDistance != -100) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = straightMove.idealDistance(moveTime);
-    errorLeft = idealDistance - enc_left_extrapolate();
-    errorRight = idealDistance - enc_right_extrapolate();
+    idealVelocity = straightMove.idealVelocity(moveTime);
+
+    errorLeft = enc_left_extrapolate() - idealDistance;
+    errorRight = enc_right_extrapolate() - idealDistance;
 
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
-    forcePerMotor = (ROBOT_MASS * straightMove.idealAccel(moveTime) + FRICTION_FORCE) / 2; // this is acceleration motors should have at a current time
-    
-    leftOutput = left_motor_output_calculator.Calculate(forcePerMotor, enc_left_velocity());
-    rightOutput = right_motor_output_calculator.Calculate(forcePerMotor, enc_right_velocity());
+    if (idealVelocity > 0) {
+      forcePerMotor = (ROBOT_MASS * straightMove.idealAccel(moveTime) + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+    }
+    else {
+      forcePerMotor = (ROBOT_MASS * straightMove.idealAccel(moveTime) - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+    }
+
+    leftOutput = left_motor_output_calculator.Calculate(forcePerMotor, idealVelocity);
+    rightOutput = right_motor_output_calculator.Calculate(forcePerMotor, idealVelocity);
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
     // add PID error correction to ideal value
     leftOutput += left_PID_calculator->Calculate(errorLeft);
     rightOutput += right_PID_calculator->Calculate(errorRight);
 
-    Serial2.print(moveTime);
-    Serial2.print("    ideal distance=");
-    Serial2.print(idealDistance);
-    Serial2.print("    ideal velocity=");
-    Serial2.print(straightMove.idealVelocity(moveTime));
-    Serial2.print("    ideal accel=");
-    Serial2.print(straightMove.idealAccel(moveTime));
-    Serial2.print("    left output=");
-    Serial2.print(leftOutput);
-    Serial2.print("    left velocity=");
-    Serial2.println(enc_left_velocity());
-    // set motors to run at specified rate
-    //motor_set(&motor_a, leftOutput);
-    //motor_set(&motor_b, rightOutput);
-  }
+    Serial2.println(errorLeft);
 
- 
+    // set motors to run at specified rate
+    motor_set(&motor_a, leftOutput);
+    motor_set(&motor_b, rightOutput);
+  }
+  motor_set(&motor_a, 0);
+  motor_set(&motor_b, 0);
 }
 
 // clockwise angle is positive, angle is in degrees
@@ -273,18 +227,21 @@ void motion_rotate(float angle) {
     idealLinearDistance = rotate.idealDistance(moveTime);
     errorLeft = idealLinearDistance - enc_left_read();
     errorRight = -idealLinearDistance - enc_right_read();
-    
+
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
     //idealAccel = rotate.idealAccel(moveTime); // this is acceleration motors should have at a current time
-    
+
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
-    
+
   }
-  
-  
+
+
 }
 
 void motion_corner(float angle) {
 
 }
+
+
+

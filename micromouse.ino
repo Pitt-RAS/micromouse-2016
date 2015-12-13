@@ -7,122 +7,82 @@
 
 #define BAUD 9600
 
+
+int incomingByte = 0;
 void setup()
 {
-	Serial2.begin(BAUD);
+  analogWriteFrequency(MOTOR_AP, 46875);  // Set higher pwm frequency for smoother motor control
+  analogWriteFrequency(MOTOR_BP, 46875);  // Set higher pwm frequency for smoother motor control
+  analogWriteResolution(10);  // PWM resolution is 0-1023
 
+  Serial2.begin(BAUD);
+  
   pinMode(BUTTON1, INPUT);
   while (digitalRead(BUTTON1) == LOW);
-  delay(1000);
-  
-	motors_init();
-	motion_forward(10000,0);
+  delay(500);
+
+  motors_init();
+	motion_forward(1000,1);
+
+
 }
 
 void loop() {
-  
-
-//  Serial2.print(enc_left_read());
-//  Serial2.print(" ");
-//  Serial2.print(enc_left_extrapolate());
-//  Serial2.print(" ");
-//  Serial2.println(enc_left_velocity());
-//  Serial2.print(" ");
-//  Serial2.print(enc_right_read());
-//  Serial2.print(" ");
-//  Serial2.println(enc_right_extrapolate());
-//  delay(10);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/*
-    if (abs(knobLeft.read() - 1000) <= 10) {
-        motor_brake(&motor_a, 1.0);
-    } else {
-        motor_run(&motor_a, constrain(-kP * knobLeft.read(), -1, 1));
-    }
-    if (abs(knobRight.read() - 1000) <= 10) {
-        motor_brake(&motor_b, 1.0);
-    } else {
-        motor_run(&motor_b, constrain(-kP * knobRight.read(), -1, 1));
-    }
-    Serial2.print("Left: ");
-    Serial2.print(knobLeft.read());
-    Serial2.print("\tRight: ");
-    Serial2.println(knobRight.read());
-    */
-	// Example code: Run both motors back and forth
-
-//	motor_run(&motor_a, 0.15);
-//  motor_run(&motor_b, 0.15);
+//  //Serial2.println(enc_left_velocity());
+//  if (Serial2.available() > 0) {
+//    // read the incoming byte:
+//    incomingByte = Serial2.parseInt();
 //
-//	while (knobLeft.read() < 50 && knobRight.read() < 50) {
-//    Serial2.print("Left: ");
-//    Serial2.print(knobLeft.read());
-//    Serial2.print("\tRight: ");
-//    Serial2.println(knobRight.read());
-//		delay(10);
-//	}
-//  if (knobLeft.read() >= 50) {
-//    motor_brake(&motor_a, 1.0);
-//  }
-//  if (knobRight.read() >= 50) {
-//    motor_brake(&motor_b, 1.0);
-//  }
-//  while (knobLeft.read() < 50 || knobRight.read() < 50) {
-//    Serial2.print("Left: ");
-//    Serial2.print(knobLeft.read());
-//    Serial2.print("\tRight: ");
-//    Serial2.println(knobRight.read());
-//    delay(10);
-//  }
 //
-//	motor_brake(&motor_a, 1.0);
-//  motor_brake(&motor_b, 1.0);
-//
-//	delay(1000);
-//
-//  motor_run(&motor_a, -0.15);
-//	motor_run(&motor_b, -0.15);
-//
-//	while (knobLeft.read() > 0 && knobRight.read() > 0) {
-//    Serial2.print("Left: ");
-//    Serial2.print(knobLeft.read());
-//    Serial2.print("\tRight: ");
-//    Serial2.println(knobRight.read());
-//    delay(10);
+//    if (incomingByte != 0) {
+//      // say what you got:
+//      Serial2.print("Current Speed =");
+//      Serial2.println(incomingByte, DEC);
+//      float motorSpeed = (float)incomingByte / 1023;
+//      motor_set(&motor_a, motorSpeed);
+//    }
 //  }
-//  if (knobLeft.read() <= 0) {
-//    motor_brake(&motor_a, 1.0);
-//  }
-//  if (knobRight.read() <= 0) {
-//    motor_brake(&motor_b, 1.0);
-//  }
-//  while (knobLeft.read() > 0 || knobRight.read() > 0) {
-//    Serial2.print("Left: ");
-//    Serial2.print(knobLeft.read());
-//    Serial2.print("\tRight: ");
-//    Serial2.println(knobRight.read());
-//    delay(10);
-//  }
-//
-//  motor_brake(&motor_a, 1.0);
-//	motor_brake(&motor_b, 1.0);
-//
-//	delay(1000);
+
+
+
+
+//    if ((elapsedTimeNow > 1000) && (elapsedTimeNow < 1100)){
+//      velocityTimer = 0;
+//      enc_left_write(0);
+//    }
+//    else if ((elapsedTimeNow > 10000) && (elapsedTimeNow < 10100)) {
+//      if (distance == 0) {
+//      int elapsedVelocityTime = velocityTimer;
+//      distance = enc_left_read();
+//      Serial2.println(distance / 1000 / (velocityTimer / 1000000), 5);
+//      }
+//    }
+//    else if (elapsedTimeNow > 10100) {
+//      motor_set(&motor_a, 0);
+//    }
+
+
+
+    
+  //  Serial2.print(enc_left_read());
+  //  Serial2.print(" ");
+  //  Serial2.print(enc_left_extrapolate());
+  //  Serial2.print(" ");
+  //  Serial2.println(enc_left_velocity());
+  //  Serial2.print(" ");
+  //  Serial2.print(enc_right_read());
+  //  Serial2.print(" ");
+  //  Serial2.println(enc_right_extrapolate());
+  //  delay(10);
+
+
+
+
+
+
+
+
+
+
 }
 

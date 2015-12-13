@@ -13,12 +13,12 @@ float enc_right_read() {
     return (right_encoder.read() * MM_PER_STEP);
 }
 
-void enc_left_write(float NEW_DISTANCE) {
-    left_encoder.write( (int32_t)rint(NEW_DISTANCE / MM_PER_STEP) );
+void enc_left_write(float new_distance) {
+    left_encoder.write( (int32_t)rint(new_distance / MM_PER_STEP) );
 }
 
-void enc_right_write(float NEW_DISTANCE) {
-    right_encoder.write( (int32_t)rint(NEW_DISTANCE / MM_PER_STEP) );
+void enc_right_write(float new_distance) {
+    right_encoder.write( (int32_t)rint(new_distance / MM_PER_STEP) );
 }
 
 float enc_left_velocity() {
