@@ -174,7 +174,7 @@ void motion_forward(float distance, float exit_speed) {
   moveTime = 0;
 
   // execute motion
-  while (idealDistance != -100) {
+  while (idealDistance != distance) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = straightMove.idealDistance(moveTime);
     idealVelocity = straightMove.idealVelocity(moveTime);
