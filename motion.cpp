@@ -2,6 +2,9 @@
 #include "motors.h"
 #include <Arduino.h>
 #include "sensors_encoders.h"
+#include <string>
+#include <stdio.h>
+
 
 class motionCalc {
   private:
@@ -156,6 +159,7 @@ float PIDCorrectionCalculator::Calculate(float error) {
   return output;
 }
 
+
 void motion_forward(float distance, float exit_speed) {
   float errorRight, errorLeft;
   float rightOutput, leftOutput;
@@ -173,6 +177,11 @@ void motion_forward(float distance, float exit_speed) {
   enc_right_write(0);
   moveTime = 0;
 
+
+    //String stuff
+    //String outputString("");    
+    
+
   // execute motion
   while (idealDistance != distance) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
@@ -181,6 +190,19 @@ void motion_forward(float distance, float exit_speed) {
 
     errorLeft = enc_left_extrapolate() - idealDistance;
     errorRight = enc_right_extrapolate() - idealDistance;
+    
+    
+    //String stuff
+    //outputString += "Error Left: ";
+    //outputString += errorLeft;
+    //outputString += "\tError Right: ";
+    //outputString += errorRight;
+    //outputString += "\n";
+
+
+    
+
+    
 
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
     if (idealVelocity > 0) {
@@ -198,7 +220,7 @@ void motion_forward(float distance, float exit_speed) {
     leftOutput += left_PID_calculator->Calculate(errorLeft);
     rightOutput += right_PID_calculator->Calculate(errorRight);
 
-    Serial2.println(errorLeft);
+    //Serial2.println(errorLeft);
 
     // set motors to run at specified rate
     motor_set(&motor_a, leftOutput);
@@ -206,6 +228,12 @@ void motion_forward(float distance, float exit_speed) {
   }
   motor_set(&motor_a, 0);
   motor_set(&motor_b, 0);
+
+
+    //String stuff
+    //Serial2.printf("%s", outputString.c_str());
+  
+  
 }
 
 // clockwise angle is positive, angle is in degrees

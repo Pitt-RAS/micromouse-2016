@@ -38,7 +38,7 @@
 #define MM_PER_STEP 0.7928
 
 // PID tuning parameters
-#define KP 0.02
+#define KP 0.4
 #define KD 0
 #define KI 0
 
@@ -51,7 +51,7 @@
 #define MAX_ACCEL 4 // m/s/s  
 #define MAX_DECEL -4 // m/s/s
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VELOCITY_STRAIGHT 1 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VELOCITY_STRAIGHT 2 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters

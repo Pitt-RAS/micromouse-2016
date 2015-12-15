@@ -22,7 +22,7 @@ void setup()
   delay(500);
 
   motors_init();
-	motion_forward(1000,1);
+	motion_forward(1300,0);
 
 
 }
