@@ -1,14 +1,14 @@
 #include "sensors_nav.h"
 
-int nav_front_wall()
+bool nav_front_wall()
 {
 }
 
-int nav_left_wall()
+bool nav_left_wall()
 {
 }
 
-int nav_right_wall()
+bool nav_right_wall()
 {
 }
 
