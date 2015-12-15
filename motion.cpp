@@ -110,6 +110,9 @@ motionCalc::motionCalc (float a, float b, float c) {
 }
 
 
+
+
+
 // input current speed and desired force
 class idealMotorOutputCalculator {
   private:
@@ -167,7 +170,7 @@ void motion_forward(float distance, float exit_speed) {
   float forcePerMotor;
   elapsedMicros moveTime;
 
-  motionCalc straightMove (distance, MAX_VELOCITY_STRAIGHT, exit_speed);
+  motionCalc motionCalc (distance, MAX_VELOCITY_STRAIGHT, exit_speed);
 
   PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
   PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
@@ -175,41 +178,24 @@ void motion_forward(float distance, float exit_speed) {
   // zero encoders and clock before move
   enc_left_write(0);
   enc_right_write(0);
-  moveTime = 0;
-
-
-    //String stuff
-    //String outputString("");    
-    
+  moveTime = 0;   
 
   // execute motion
   while (idealDistance != distance) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
-    idealDistance = straightMove.idealDistance(moveTime);
-    idealVelocity = straightMove.idealVelocity(moveTime);
+    idealDistance = motionCalc.idealDistance(moveTime);
+    idealVelocity = motionCalc.idealVelocity(moveTime);
 
     errorLeft = enc_left_extrapolate() - idealDistance;
     errorRight = enc_right_extrapolate() - idealDistance;
     
     
-    //String stuff
-    //outputString += "Error Left: ";
-    //outputString += errorLeft;
-    //outputString += "\tError Right: ";
-    //outputString += errorRight;
-    //outputString += "\n";
-
-
-    
-
-    
-
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
     if (idealVelocity > 0) {
-      forcePerMotor = (ROBOT_MASS * straightMove.idealAccel(moveTime) + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
     }
     else {
-      forcePerMotor = (ROBOT_MASS * straightMove.idealAccel(moveTime) - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
     }
 
     leftOutput = left_motor_output_calculator.Calculate(forcePerMotor, idealVelocity);
