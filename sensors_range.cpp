@@ -21,5 +21,5 @@ RangeSensor::read(int pin) {
     }
 
     int raw = analogRead(pin);
-    return offset + 43.079*exp(-raw*0.78287) + 4.12374;
+    return offset + 699.02405*exp(-raw*0.0165939) + 50.35049;
 }
