@@ -33,6 +33,20 @@
 #define RANGE4 A2
 #define RANGE5 A3
 
+// Range sensor directions
+#define RANGE_FRONT_LEFT RANGE1
+#define RANGE_FRONT_RIGHT RANGE2
+#define RANGE_LEFT RANGE3
+#define RANGE_RIGHT RANGE4
+#define RANGE_FRONT RANGE5
+
+// Range sensor distance offsets
+#define RANGE_FRONT_LEFT_OFFSET 0
+#define RANGE_FRONT_RIGHT_OFFSET 0
+#define RANGE_LEFT_OFFSET 0
+#define RANGE_RIGHT_OFFSET 0
+#define RANGE_FRONT_OFFSET 0
+
 // Motion control paremeters
 #define MM_PER_BLOCK 180
 #define MM_PER_STEP 0.7928
