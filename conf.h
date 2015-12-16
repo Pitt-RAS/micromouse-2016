@@ -52,20 +52,20 @@
 #define MM_PER_STEP 0.7928
 
 // PID tuning parameters
-#define KP 0.4
+#define KP .4
 #define KD 0
 #define KI 0
 
 // Robot characteristics
 #define ROBOT_MASS .226 // kilograms
-#define MM_BETWEEN_WHEELS 75 // millimeters
+#define MM_BETWEEN_WHEELS 76.75 // millimeters
 #define NUMBER_OF_MOTORS 2
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
-#define MAX_ACCEL 4 // m/s/s  
-#define MAX_DECEL -4 // m/s/s
+#define MAX_ACCEL 3 // m/s/s  
+#define MAX_DECEL -3 // m/s/s
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VELOCITY_STRAIGHT 2 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VELOCITY_STRAIGHT 1 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
@@ -83,7 +83,8 @@
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
-#define MAX_VELOCITY_ROTATE .05 // m/s
+#define MAX_VELOCITY_ROTATE 0.2 // m/s
+#define MAX_VELOCITY_CORNER 1 // m/s
 
 
 

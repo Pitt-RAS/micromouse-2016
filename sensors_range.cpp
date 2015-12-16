@@ -1,6 +1,7 @@
+#include "conf.h"
 #include "sensors_range.h"
 
-RangeSensor::read(int pin) {
+float RangeSensor::read(int pin) {
     float offset;
     switch (pin) {
         case RANGE_FRONT_LEFT:
@@ -21,5 +22,7 @@ RangeSensor::read(int pin) {
     }
 
     int raw = analogRead(pin);
-    return offset + 43.079*exp(-raw*0.78287) + 4.12374;
+    Serial2.print(raw);
+    Serial2.print("\t");
+    return offset + log((raw - 4.12374)/43.079)*-0.851567;
 }

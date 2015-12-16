@@ -212,8 +212,8 @@ void motion_forward(float distance, float exit_speed) {
     motor_set(&motor_a, leftOutput);
     motor_set(&motor_b, rightOutput);
   }
-  motor_set(&motor_a, 0);
-  motor_set(&motor_b, 0);
+  enc_left_write(0);
+  enc_right_write(0);
 
 
     //String stuff
@@ -225,36 +225,110 @@ void motion_forward(float distance, float exit_speed) {
 // clockwise angle is positive, angle is in degrees
 void motion_rotate(float angle) {
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
-  float idealLinearDistance, errorLeft, errorRight;
+  float idealLinearDistance, idealLinearVelocity;
+  float errorLeft, errorRight;
   float linearDistance = distancePerDegree * angle;
-  motionCalc rotate (linearDistance, MAX_VELOCITY_ROTATE, 0);
+  float forcePerMotor;
+  float rightOutput, leftOutput;
   elapsedMicros moveTime;
+  
+  motionCalc motionCalc (linearDistance, MAX_VELOCITY_ROTATE, 0);
+
+  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
+  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
 
   // zero encoders and clock before move
-  enc_left_write(0);
-  enc_right_write(0);
   moveTime = 0;
 
   // the right will always be the negative of the left in order to rotate on a point.
   while (idealLinearDistance != linearDistance) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
-    idealLinearDistance = rotate.idealDistance(moveTime);
-    errorLeft = idealLinearDistance - enc_left_read();
-    errorRight = -idealLinearDistance - enc_right_read();
+    idealLinearDistance = motionCalc.idealDistance(moveTime);
+    idealLinearVelocity = motionCalc.idealVelocity(moveTime);
+    
+    errorLeft = enc_left_extrapolate() - idealLinearDistance;
+    errorRight = enc_right_extrapolate() + idealLinearDistance;
 
-    // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
-    //idealAccel = rotate.idealAccel(moveTime); // this is acceleration motors should have at a current time
+    if (idealLinearVelocity > 0) {
+      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+    }
+    else {
+      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+    }
 
+    leftOutput = left_motor_output_calculator.Calculate(forcePerMotor, idealLinearVelocity);
+    rightOutput = right_motor_output_calculator.Calculate(-forcePerMotor, idealLinearVelocity);
 
+    leftOutput += left_PID_calculator->Calculate(errorLeft);
+    rightOutput += right_PID_calculator->Calculate(errorRight);
+
+    // set motors to run at specified rate
+    motor_set(&motor_a, leftOutput);
+    motor_set(&motor_b, rightOutput);
+    
+    
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
 
   }
-
+  motor_set(&motor_a, 0);
+  motor_set(&motor_b, 0);
+  enc_left_write(0);
+  enc_right_write(0);
 
 }
 
-void motion_corner(float angle) {
+void motion_corner(float exitSpeed) {
+  float errorRight, errorLeft;
+  float rightOutput, leftOutput;
+  float idealDistance, idealVelocity;
+  float forcePerMotor;
+  float distance = 3.14159265359 * MM_PER_BLOCK / 4;
+  elapsedMicros moveTime;
 
+  motionCalc motionCalc (distance, MAX_VELOCITY_STRAIGHT, exitSpeed);
+
+  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
+  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
+
+  // zero encoders and clock before move
+  enc_left_write(0);
+  enc_right_write(0);
+  moveTime = 0;   
+
+  // execute motion
+  while (idealDistance != distance) {
+    //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
+    idealDistance = motionCalc.idealDistance(moveTime);
+    idealVelocity = motionCalc.idealVelocity(moveTime);
+
+    errorLeft = enc_left_extrapolate() - idealDistance;
+    errorRight = enc_right_extrapolate() - idealDistance;
+    
+    
+    // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
+    if (idealVelocity > 0) {
+      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+    }
+    else {
+      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+    }
+
+    leftOutput = left_motor_output_calculator.Calculate(forcePerMotor, idealVelocity);
+    rightOutput = right_motor_output_calculator.Calculate(forcePerMotor, idealVelocity);
+
+    //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
+    // add PID error correction to ideal value
+    leftOutput += left_PID_calculator->Calculate(errorLeft);
+    rightOutput += right_PID_calculator->Calculate(errorRight);
+
+    //Serial2.println(errorLeft);
+
+    // set motors to run at specified rate
+    motor_set(&motor_a, leftOutput);
+    motor_set(&motor_b, rightOutput);
+  }
+  enc_left_write(0);
+  enc_right_write(0);
 }
 
 

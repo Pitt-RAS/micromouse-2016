@@ -4,6 +4,7 @@
 #include "motors.h"
 #include "motion.h"
 #include "sensors_encoders.h"
+#include "sensors_range.h"
 
 #define BAUD 9600
 
@@ -15,19 +16,42 @@ void setup()
   analogWriteFrequency(MOTOR_BP, 46875);  // Set higher pwm frequency for smoother motor control
   analogWriteResolution(10);  // PWM resolution is 0-1023
 
+
+  
   Serial2.begin(BAUD);
   
   pinMode(BUTTON1, INPUT);
   while (digitalRead(BUTTON1) == LOW);
   delay(500);
+  enc_left_write(0);
+  enc_right_write(0);
 
   motors_init();
-	motion_forward(1300,0);
-
+	//motion_forward(1300,0);
+  //motion_rotate(3600);
 
 }
 
 void loop() {
+  Serial2.print(RangeSensor::read(RANGE_FRONT));
+  Serial2.print("\t");
+  Serial2.print(RangeSensor::read(RANGE_FRONT_LEFT));
+  Serial2.print("\t");
+  Serial2.print(RangeSensor::read(RANGE_FRONT_RIGHT));
+  Serial2.print("\t");
+  Serial2.print(RangeSensor::read(RANGE_LEFT));
+  Serial2.print("\t");
+  Serial2.print(RangeSensor::read(RANGE_RIGHT));
+  Serial2.println();
+  
+//  motion_forward(700,0);
+//  motion_rotate(90);
+
+
+
+
+
+
 //  //Serial2.println(enc_left_velocity());
 //  if (Serial2.available() > 0) {
 //    // read the incoming byte:
