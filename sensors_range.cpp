@@ -22,7 +22,5 @@ float RangeSensor::read(int pin) {
     }
 
     int raw = analogRead(pin);
-<<<<<<< HEAD
     return offset + 699.02405*exp(-raw*0.0165939) + 50.35049;
 }
->>>>>>> origin/master
