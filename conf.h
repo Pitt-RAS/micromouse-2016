@@ -84,7 +84,7 @@
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
 #define MAX_VELOCITY_ROTATE 0.2 // m/s
-#define MAX_VELOCITY_CORNER 1 // m/s
+#define MAX_VELOCITY_CORNER .5 // m/s
 
 
 

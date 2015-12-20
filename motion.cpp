@@ -175,9 +175,7 @@ void motion_forward(float distance, float exit_speed) {
   PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
   PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
 
-  // zero encoders and clock before move
-  enc_left_write(0);
-  enc_right_write(0);
+  // zero clock before move
   moveTime = 0;   
 
   // execute motion
@@ -277,22 +275,49 @@ void motion_rotate(float angle) {
 
 }
 
-void motion_corner(float exitSpeed) {
+void motion_corner(float angle, float radius, float exit_speed) {
   float errorRight, errorLeft;
   float rightOutput, leftOutput;
+  float leftFraction, rightFraction;
   float idealDistance, idealVelocity;
-  float forcePerMotor;
-  float distance = 3.14159265359 * MM_PER_BLOCK / 4;
+  float forceLeftMotor, forceRightMotor;
+  float distance;
+  if (radius < 0) {
+    radius *= -1;
+  }
+
+  
+  if (exit_speed < 0) {
+    exit_speed *= -1;
+  }
+  
+  distance = angle * 3.14159265359 * radius / 180;
+  
+  if (distance < 0) {
+    distance *= -1;
+  }
+
   elapsedMicros moveTime;
 
-  motionCalc motionCalc (distance, MAX_VELOCITY_STRAIGHT, exitSpeed);
+  if (angle <= 0) {
+    leftFraction = (radius + MM_BETWEEN_WHEELS / 2) / radius;
+    rightFraction = (radius - MM_BETWEEN_WHEELS / 2) / radius;
+  }
+  else {
+    leftFraction = (radius - MM_BETWEEN_WHEELS / 2) / radius;
+    rightFraction = (radius + MM_BETWEEN_WHEELS / 2) / radius;
+  }
+
+  Serial2.print("leftFraction=");
+  Serial2.print(leftFraction,5);
+  Serial2.print("   rightFraction=");
+  Serial2.println(rightFraction);
+  motionCalc motionCalc (distance, MAX_VELOCITY_CORNER, exit_speed);
 
   PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
   PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
 
-  // zero encoders and clock before move
-  enc_left_write(0);
-  enc_right_write(0);
+  // zero clock before move
   moveTime = 0;   
 
   // execute motion
@@ -301,20 +326,25 @@ void motion_corner(float exitSpeed) {
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
-    errorLeft = enc_left_extrapolate() - idealDistance;
-    errorRight = enc_right_extrapolate() - idealDistance;
-    
+    errorLeft = enc_left_extrapolate() - idealDistance * rightFraction;
+    errorRight = enc_right_extrapolate() - idealDistance * leftFraction;
     
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
-    if (idealVelocity > 0) {
-      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+    if (idealVelocity * leftFraction > 0) {
+      forceLeftMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) * leftFraction + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
     }
     else {
-      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+      forceLeftMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) * leftFraction - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+    }
+    if (idealVelocity * rightFraction > 0) {
+      forceRightMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) * rightFraction + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
+    }
+    else {
+      forceRightMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) * rightFraction - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
     }
 
-    leftOutput = left_motor_output_calculator.Calculate(forcePerMotor, idealVelocity);
-    rightOutput = right_motor_output_calculator.Calculate(forcePerMotor, idealVelocity);
+    leftOutput = left_motor_output_calculator.Calculate(forceLeftMotor, idealVelocity * leftFraction);
+    rightOutput = right_motor_output_calculator.Calculate(forceRightMotor, idealVelocity * rightFraction);
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
     // add PID error correction to ideal value
@@ -329,6 +359,10 @@ void motion_corner(float exitSpeed) {
   }
   enc_left_write(0);
   enc_right_write(0);
+  
+  motor_set(&motor_a, 0);
+  motor_set(&motor_b, 0);
+  
 }
 
 

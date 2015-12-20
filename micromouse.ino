@@ -22,27 +22,36 @@ void setup()
   
   pinMode(BUTTON1, INPUT);
   while (digitalRead(BUTTON1) == LOW);
-  delay(500);
+  delay(1000);
   enc_left_write(0);
   enc_right_write(0);
 
   motors_init();
 	//motion_forward(1300,0);
   //motion_rotate(3600);
+  //motion_corner(360, 180, .5);
 
+  
+  motion_corner(360, 180, 0.5);
+  motion_corner(-360, 180, 0);
+  motion_rotate(180);
+  motion_corner(360, 180, .5);
+  motion_corner(-360, 180, 0);
 }
 
 void loop() {
-  Serial2.print(RangeSensor::read(RANGE_FRONT));
-  Serial2.print("\t");
-  Serial2.print(RangeSensor::read(RANGE_FRONT_LEFT));
-  Serial2.print("\t");
-  Serial2.print(RangeSensor::read(RANGE_FRONT_RIGHT));
-  Serial2.print("\t");
-  Serial2.print(RangeSensor::read(RANGE_LEFT));
-  Serial2.print("\t");
-  Serial2.print(RangeSensor::read(RANGE_RIGHT));
-  Serial2.println();
+
+
+//  Serial2.print(RangeSensor::read(RANGE_FRONT));
+//  Serial2.print("\t");
+//  Serial2.print(RangeSensor::read(RANGE_FRONT_LEFT));
+//  Serial2.print("\t");
+//  Serial2.print(RangeSensor::read(RANGE_FRONT_RIGHT));
+//  Serial2.print("\t");
+//  Serial2.print(RangeSensor::read(RANGE_LEFT));
+//  Serial2.print("\t");
+//  Serial2.print(RangeSensor::read(RANGE_RIGHT));
+//  Serial2.println();
   
 //  motion_forward(700,0);
 //  motion_rotate(90);
