@@ -22,7 +22,9 @@ float RangeSensor::read(int pin) {
     }
 
     int raw = analogRead(pin);
+
     Serial2.print(raw);
     Serial2.print("\t");
     return Offset + log((raw - 4.12374)/43.079)*-0.851567;
+
 }
