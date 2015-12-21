@@ -369,7 +369,6 @@ void motion_hold(int time)
 {
   float errorRight, errorLeft;
   float rightOutput, leftOutput;
-  float idealDistance, idealVelocity;
   float forcePerMotor;
   elapsedMicros currentTime;
 
@@ -379,11 +378,9 @@ void motion_hold(int time)
   currentTime = 0;   
 
   while (currentTime / 1000 < time) {
-    idealDistance = 0;
-    idealVelocity = 0;
-
-    errorLeft = enc_left_extrapolate() - idealDistance;
-    errorRight = enc_right_extrapolate() - idealDistance;
+    
+    errorLeft = enc_left_extrapolate();
+    errorRight = enc_right_extrapolate();
 
     leftOutput = left_PID_calculator->Calculate(errorLeft);
     rightOutput = right_PID_calculator->Calculate(errorRight);
@@ -391,10 +388,6 @@ void motion_hold(int time)
     motor_set(&motor_a, leftOutput);
     motor_set(&motor_b, rightOutput);
   }
-
-  enc_left_write(0);
-  enc_right_write(0);
-
-  motor_set(&motor_a, 0.0);
-  motor_set(&motor_b, 0.0);
+  motor_set(&motor_a, 0);
+  motor_set(&motor_b, 0);
 }
