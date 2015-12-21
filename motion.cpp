@@ -286,13 +286,11 @@ void motion_corner(float angle, float radius, float exit_speed) {
     radius *= -1;
   }
 
-  
   if (exit_speed < 0) {
     exit_speed *= -1;
   }
   
   distance = angle * 3.14159265359 * radius / 180;
-  
   if (distance < 0) {
     distance *= -1;
   }
@@ -307,11 +305,7 @@ void motion_corner(float angle, float radius, float exit_speed) {
     leftFraction = (radius - MM_BETWEEN_WHEELS / 2) / radius;
     rightFraction = (radius + MM_BETWEEN_WHEELS / 2) / radius;
   }
-
-  Serial2.print("leftFraction=");
-  Serial2.print(leftFraction,5);
-  Serial2.print("   rightFraction=");
-  Serial2.println(rightFraction);
+  
   motionCalc motionCalc (distance, MAX_VELOCITY_CORNER, exit_speed);
 
   PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
@@ -350,8 +344,6 @@ void motion_corner(float angle, float radius, float exit_speed) {
     // add PID error correction to ideal value
     leftOutput += left_PID_calculator->Calculate(errorLeft);
     rightOutput += right_PID_calculator->Calculate(errorRight);
-
-    //Serial2.println(errorLeft);
 
     // set motors to run at specified rate
     motor_set(&motor_a, leftOutput);

@@ -15,7 +15,8 @@ void setup()
   analogWriteFrequency(MOTOR_AP, 46875);  // Set higher pwm frequency for smoother motor control
   analogWriteFrequency(MOTOR_BP, 46875);  // Set higher pwm frequency for smoother motor control
   analogWriteResolution(10);  // PWM resolution is 0-1023
-
+  
+  motors_init();
 
   
   Serial2.begin(BAUD);
@@ -26,23 +27,14 @@ void setup()
   enc_left_write(0);
   enc_right_write(0);
 
-  motors_init();
-	//motion_forward(1300,0);
-  //motion_rotate(3600);
-  //motion_corner(360, 180, .5);
-
-  
-  motion_corner(360, 180, 0.5);
-  motion_corner(-360, 180, 0);
-  motion_rotate(180);
-  motion_corner(360, 180, .5);
-  motion_corner(-360, 180, 0);
 }
 
 void loop() {
 
 
-//  Serial2.print(RangeSensor::read(RANGE_FRONT));
+  Serial2.println(RangeSensor::read(RANGE_FRONT));
+  delay(100);
+  
 //  Serial2.print("\t");
 //  Serial2.print(RangeSensor::read(RANGE_FRONT_LEFT));
 //  Serial2.print("\t");
