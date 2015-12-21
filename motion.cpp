@@ -285,6 +285,10 @@ void motion_corner(float angle, float radius, float exit_speed) {
   if (radius < 0) {
     radius *= -1;
   }
+  else if (radius == 0) {
+    motion_rotate(angle);
+    return;
+  }
 
   if (exit_speed < 0) {
     exit_speed *= -1;
