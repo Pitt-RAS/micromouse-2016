@@ -32,7 +32,7 @@ void setup()
 void loop() {
 
 
-  Serial2.println(RangeSensor::read(RANGE_FRONT));
+  RangeSensor::read(RANGE_FRONT);
   delay(100);
   
 //  Serial2.print("\t");

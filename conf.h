@@ -41,11 +41,11 @@
 #define RANGE_FRONT RANGE5
 
 // Range sensor distance offsets
-#define RANGE_FRONT_LEFT_OFFSET 0
-#define RANGE_FRONT_RIGHT_OFFSET 0
-#define RANGE_LEFT_OFFSET 0
-#define RANGE_RIGHT_OFFSET 0
-#define RANGE_FRONT_OFFSET 0
+#define RANGE_FRONT_LEFT_OFFSET -35
+#define RANGE_FRONT_RIGHT_OFFSET -35
+#define RANGE_LEFT_OFFSET 15
+#define RANGE_RIGHT_OFFSET 15
+#define RANGE_FRONT_OFFSET 30
 
 // Motion control paremeters
 #define MM_PER_BLOCK 180

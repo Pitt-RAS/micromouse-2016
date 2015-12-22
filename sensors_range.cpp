@@ -22,7 +22,10 @@ float RangeSensor::read(int pin) {
     }
 
     int raw = analogRead(pin);
+    //Serial2.println(raw);
+    //return offset + 699.02405*exp(-raw*0.0165939) + 50.35049;
 
-    return offset + 699.02405*exp(-raw*0.0165939) + 50.35049;
+    // equation calculated using measured values on our setup and an excel generated fit line.  2nd order polynomial.  Minimum accurate measurement is 25-30mm
+    return (offset + .0637 * raw * raw - 13.628 * raw + 989.05)
 
 }
