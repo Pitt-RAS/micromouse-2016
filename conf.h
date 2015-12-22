@@ -62,10 +62,16 @@
 #define NUMBER_OF_MOTORS 2
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
-#define MAX_ACCEL 1.5 // m/s/s  
-#define MAX_DECEL -1.5 // m/s/s
+#define MAX_ACCEL_STRAIGHT 1.5 // m/s/s  
+#define MAX_DECEL_STRAIGHT -1.5 // m/s/s
+#define MAX_ACCEL_ROTATE 1.5 // m/s/s  
+#define MAX_DECEL_ROTATE -1.5 // m/s/s
+#define MAX_ACCEL_CORNER 1.5 // m/s/s  
+#define MAX_DECEL_CORNER -1.5 // m/s/s
+
+
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VELOCITY_STRAIGHT .5 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT .5 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
@@ -83,7 +89,7 @@
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
-#define MAX_VELOCITY_ROTATE 0.1 // m/s
-#define MAX_VELOCITY_CORNER .5 // m/s
+#define MAX_VEL_ROTATE 0.1 // m/s
+#define MAX_VEL_CORNER .5 // m/s
 
 #endif

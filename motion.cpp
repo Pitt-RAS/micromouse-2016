@@ -5,16 +5,33 @@
 #include <string>
 #include <stdio.h>
 
+float max_accel_straight = MAX_ACCEL_STRAIGHT;
+float max_decel_straight = MAX_DECEL_STRAIGHT;
+
+// This can probably match the straight accels until they become very high.  testing required
+float max_accel_rotate = MAX_ACCEL_ROTATE;
+float max_decel_rotate = MAX_DECEL_ROTATE;
+
+// should be calculated based on turn radius and max velocity so that the friction force required is not more than the force available
+float max_accel_corner = MAX_ACCEL_CORNER;
+float max_decel_corner = MAX_DECEL_CORNER;
+
+float max_vel_straight = MAX_VEL_STRAIGHT;
+float max_vel_rotate = MAX_VEL_ROTATE;
+float max_vel_corner = MAX_VEL_CORNER;
+
+
 
 class motionCalc {
   private:
+    float max_accel, max_decel;
     float vStart, vEnd, vMax;
     float dStart, dEnd, dTot;
     float aStart, aEnd;
     int tStart, tConst, tEnd;
 
   public:
-    motionCalc (float, float, float);
+    motionCalc (float, float, float, float, float);
     float idealDistance (int elapsedTime) {
       if (elapsedTime < tStart) {
         return (elapsedTime / 1000 * (vStart + .5 * aStart * elapsedTime / 1000000));
@@ -60,11 +77,21 @@ class motionCalc {
     }
 };
 
-motionCalc::motionCalc (float a, float b, float c) {
+motionCalc::motionCalc (float a, float b, float c, float d, float e) {
 
   dTot = a;
   vMax = b;
   vEnd = c;
+  max_accel = d;
+  max_decel = e;
+
+  // make sure that accel and decel have the correct sign
+  if (max_accel < 0) {
+    max_accel *= -1;
+  }
+  if (max_decel > 0) {
+    max_decel *= -1;
+  }
 
   // turn dTot into meters
   dTot /= 1000;
@@ -77,17 +104,17 @@ motionCalc::motionCalc (float a, float b, float c) {
     vMax = -vMax;
   }
   if (vStart <= vMax) {
-    aStart = MAX_ACCEL;
+    aStart = max_accel;
   }
   else {
-    aStart = MAX_DECEL;
+    aStart = max_decel;
   }
 
   if (vEnd <= vMax) {
-    aEnd = MAX_DECEL;
+    aEnd = max_decel;
   }
   else {
-    aEnd = MAX_ACCEL;
+    aEnd = max_accel;
   }
 
   // do initial calculations
@@ -170,7 +197,7 @@ void motion_forward(float distance, float exit_speed) {
   float forcePerMotor;
   elapsedMicros moveTime;
 
-  motionCalc motionCalc (distance, MAX_VELOCITY_STRAIGHT, exit_speed);
+  motionCalc motionCalc (distance, max_vel_straight, exit_speed, max_accel_straight, max_decel_straight);
 
   PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
   PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
@@ -230,7 +257,7 @@ void motion_rotate(float angle) {
   float rightOutput, leftOutput;
   elapsedMicros moveTime;
   
-  motionCalc motionCalc (linearDistance, MAX_VELOCITY_ROTATE, 0);
+  motionCalc motionCalc (linearDistance, max_vel_rotate, 0, max_accel_rotate, max_decel_rotate);
 
   PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
   PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
@@ -310,7 +337,7 @@ void motion_corner(float angle, float radius, float exit_speed) {
     rightFraction = (radius + MM_BETWEEN_WHEELS / 2) / radius;
   }
   
-  motionCalc motionCalc (distance, MAX_VELOCITY_CORNER, exit_speed);
+  motionCalc motionCalc (distance, max_vel_corner, exit_speed, max_accel_corner, max_accel_corner);
 
   PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
   PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
@@ -355,17 +382,12 @@ void motion_corner(float angle, float radius, float exit_speed) {
   }
   enc_left_write(0);
   enc_right_write(0);
-  
-  motor_set(&motor_a, 0);
-  motor_set(&motor_b, 0);
-  
 }
 
 void motion_hold(int time)
 {
   float errorRight, errorLeft;
   float rightOutput, leftOutput;
-  float forcePerMotor;
   elapsedMicros currentTime;
 
   PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
@@ -387,3 +409,36 @@ void motion_hold(int time)
   motor_set(&motor_a, 0);
   motor_set(&motor_b, 0);
 }
+
+// functions to set max velocity variables
+void motion_set_maxAccel_straight(float a) {
+  a = max_accel_straight;
+}
+void motion_set_maxDecel_straight(float a) {
+  a = max_decel_straight;
+}
+
+void motion_set_maxAccel_rotate(float a) {
+  a = max_accel_rotate;
+}
+void motion_set_maxDecel_rotate(float a) {
+  a = max_decel_rotate;
+}
+
+void motion_set_maxAccel_corner(float a) {
+  a = max_accel_corner;
+}
+void motion_set_maxDecel_corner(float a) {
+  a = max_decel_corner;
+}
+
+void motion_set_maxVel_straight(float a) {
+  a = max_vel_straight;
+}
+void motion_set_maxVel_rotate(float a) {
+  a = max_vel_rotate;
+}
+void motion_set_maxVel_corner(float a) {
+  a = max_vel_corner;
+}
+
