@@ -172,16 +172,24 @@ class PIDCorrectionCalculator {
     float i_term = 0;
     elapsedMicros elapsed_time;
     float last_error = 0;
-
+	float kp, ki, kd;
   public:
+    PIDCorrectionCalculator(float, float, float);
     float Calculate(float error);
 } ;
 
+PIDCorrectionCalculator::PIDCorrectionCalculator(float tempKP, float tempKI, float tempKD) {
+	kp = tempKP;
+	ki = tempKI;
+	kd = tempKD;
+}
+
+
 float PIDCorrectionCalculator::Calculate(float error) {
-  i_term += KI * error * elapsed_time;
+  i_term += ki * error * elapsed_time;
   i_term = constrain(i_term, -1, 1);
 
-  float output = -KP * error - i_term + KD * (error - last_error) / elapsed_time;
+  float output = -kp * error - i_term + kd * (error - last_error) / elapsed_time;
   last_error = error;
 
   elapsed_time = 0;
@@ -199,8 +207,8 @@ void motion_forward(float distance, float exit_speed) {
 
   motionCalc motionCalc (distance, max_vel_straight, exit_speed, max_accel_straight, max_decel_straight);
 
-  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
-  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
+  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator(KP,KI,KD);
+  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator(KP,KI,KD);
 
   // zero clock before move
   moveTime = 0;   
@@ -259,8 +267,8 @@ void motion_rotate(float angle) {
   
   motionCalc motionCalc (linearDistance, max_vel_rotate, 0, max_accel_rotate, max_decel_rotate);
 
-  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
-  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
+  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator(KP,KI,KD);
+  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator(KP,KI,KD);
 
   // zero encoders and clock before move
   moveTime = 0;
@@ -339,8 +347,8 @@ void motion_corner(float angle, float radius, float exit_speed) {
   
   motionCalc motionCalc (distance, max_vel_corner, exit_speed, max_accel_corner, max_accel_corner);
 
-  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
-  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
+  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator(KP,KI,KD);
+  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator(KP,KI,KD);
 
   // zero clock before move
   moveTime = 0;   
@@ -390,8 +398,8 @@ void motion_hold(int time)
   float rightOutput, leftOutput;
   elapsedMicros currentTime;
 
-  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator();
-  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator();
+  PIDCorrectionCalculator* left_PID_calculator = new PIDCorrectionCalculator(KP,KI,KD);
+  PIDCorrectionCalculator* right_PID_calculator = new PIDCorrectionCalculator(KP,KI,KD);
 
   currentTime = 0;   
 
