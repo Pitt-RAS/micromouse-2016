@@ -1,9 +1,9 @@
 #include "conf.h"
 #include "motors.h"
-#include <Arduino.h>
+#include "Arduino.h"
 #include "sensors_encoders.h"
-#include <string>
-#include <stdio.h>
+#include "string"
+#include "stdio.h"
 
 float max_accel_straight = MAX_ACCEL_STRAIGHT;
 float max_decel_straight = MAX_DECEL_STRAIGHT;
@@ -77,13 +77,13 @@ class motionCalc {
     }
 };
 
-motionCalc::motionCalc (float a, float b, float c, float d, float e) {
+motionCalc::motionCalc (float temp_dTot, float temp_vMax, float temp_vEnd, float temp_max_accel, float temp_max_decel) {
 
-  dTot = a;
-  vMax = b;
-  vEnd = c;
-  max_accel = d;
-  max_decel = e;
+  dTot = temp_dTot;
+  vMax = temp_vMax;
+  vEnd = temp_vEnd;
+  max_accel = temp_max_accel;
+  max_decel = temp_max_decel;
 
   // make sure that accel and decel have the correct sign
   if (max_accel < 0) {
