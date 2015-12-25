@@ -1,6 +1,8 @@
 #include "conf.h"
 #include "sensors_range.h"
 
+RangeSensor RangeSensor;
+
 RangeSensor::RangeSensor() {
   UpdateRange();
 }

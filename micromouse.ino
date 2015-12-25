@@ -7,7 +7,7 @@
 
 #define BAUD 9600
 
-RangeSensor RangeSensor;
+extern RangeSensor RangeSensor;
 
 int incomingByte = 0;
 void setup()
@@ -25,6 +25,7 @@ void setup()
   pinMode(BUTTON1, INPUT);
   while (digitalRead(BUTTON1) == LOW);
   delay(1000);
+  
   enc_left_write(0);
   enc_right_write(0);
 
@@ -46,18 +47,6 @@ void loop() {
   delay(50);
   
 
-  //  Serial2.print("\t");
-  //  Serial2.print(RangeSensor::read(RANGE_FRONT_LEFT));
-  //  Serial2.print("\t");
-  //  Serial2.print(RangeSensor::read(RANGE_FRONT_RIGHT));
-  //  Serial2.print("\t");
-  //  Serial2.print(RangeSensor::read(RANGE_LEFT));
-  //  Serial2.print("\t");
-  //  Serial2.print(RangeSensor::read(RANGE_RIGHT));
-  //  Serial2.println();
-
-  //  motion_forward(700,0);
-  //  motion_rotate(90);
 
 
 
@@ -79,37 +68,6 @@ void loop() {
   //    }
   //  }
 
-
-
-
-  //    if ((elapsedTimeNow > 1000) && (elapsedTimeNow < 1100)){
-  //      velocityTimer = 0;
-  //      enc_left_write(0);
-  //    }
-  //    else if ((elapsedTimeNow > 10000) && (elapsedTimeNow < 10100)) {
-  //      if (distance == 0) {
-  //      int elapsedVelocityTime = velocityTimer;
-  //      distance = enc_left_read();
-  //      Serial2.println(distance / 1000 / (velocityTimer / 1000000), 5);
-  //      }
-  //    }
-  //    else if (elapsedTimeNow > 10100) {
-  //      motor_set(&motor_a, 0);
-  //    }
-
-
-
-
-  //  Serial2.print(enc_left_read());
-  //  Serial2.print(" ");
-  //  Serial2.print(enc_left_extrapolate());
-  //  Serial2.print(" ");
-  //  Serial2.println(enc_left_velocity());
-  //  Serial2.print(" ");
-  //  Serial2.print(enc_right_read());
-  //  Serial2.print(" ");
-  //  Serial2.println(enc_right_extrapolate());
-  //  delay(10);
 
 
 
