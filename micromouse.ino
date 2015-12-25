@@ -7,6 +7,8 @@
 
 #define BAUD 9600
 
+RangeSensor RangeSensor;
+
 int incomingByte = 0;
 void setup()
 {
@@ -14,7 +16,9 @@ void setup()
   analogWriteFrequency(MOTOR_BP, 46875);  // Set higher pwm frequency for smoother motor control
   analogWriteResolution(10);  // PWM resolution is 0-1023
 
+  // initialize all classes
   motors_init();
+
 
   Serial2.begin(BAUD);
 
@@ -29,9 +33,17 @@ void setup()
 void loop() {
 
 
-  
-  Serial2.println(RangeSensor::read(RANGE_FRONT));
-  delay(100);
+  Serial2.print("diag_left=");
+  Serial2.print(RangeSensor.GetRange(RANGE_DIAG_LEFT),3);
+  Serial2.print("  front=");
+  Serial2.print(RangeSensor.GetRange(RANGE_FRONT),3);
+  Serial2.print("  diag_right=");
+  Serial2.print(RangeSensor.GetRange(RANGE_DIAG_RIGHT),3);
+  Serial2.print("  right=");
+  Serial2.print(RangeSensor.GetRange(RANGE_RIGHT),3);
+  Serial2.print("  left=");
+  Serial2.println(RangeSensor.GetRange(RANGE_LEFT),3);
+  delay(50);
   
 
   //  Serial2.print("\t");

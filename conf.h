@@ -36,18 +36,25 @@
 #define RANGE5 A3
 
 // Range sensor directions
-#define RANGE_FRONT_LEFT RANGE1
-#define RANGE_FRONT_RIGHT RANGE2
+#define RANGE_DIAG_LEFT RANGE1
+#define RANGE_DIAG_RIGHT RANGE2
 #define RANGE_LEFT RANGE3
 #define RANGE_RIGHT RANGE4
 #define RANGE_FRONT RANGE5
 
 // Range sensor distance offsets
-#define RANGE_FRONT_LEFT_OFFSET -35
-#define RANGE_FRONT_RIGHT_OFFSET -35
+#define RANGE_DIAG_LEFT_OFFSET -35
+#define RANGE_DIAG_RIGHT_OFFSET -35
 #define RANGE_LEFT_OFFSET 15
 #define RANGE_RIGHT_OFFSET 15
 #define RANGE_FRONT_OFFSET 30
+
+// Range sensor wall thresholds
+#define DIAG_LEFT_WALL_THRESHOLD 140
+#define DIAG_RIGHT_WALL_THRESHOLD 140
+#define LEFT_WALL_THRESHOLD 140
+#define RIGHT_WALL_THRESHOLD 140
+#define FRONT_WALL_THRESHOLD 140
 
 // Motion control paremeters
 #define MM_PER_BLOCK 180
