@@ -33,17 +33,14 @@ void setup()
 
 void loop() {
 
-
+  RangeSensor.UpdateRange();
+  
   Serial2.print("diag_left=");
   Serial2.print(RangeSensor.GetRange(RANGE_DIAG_LEFT),3);
   Serial2.print("  front=");
   Serial2.print(RangeSensor.GetRange(RANGE_FRONT),3);
   Serial2.print("  diag_right=");
-  Serial2.print(RangeSensor.GetRange(RANGE_DIAG_RIGHT),3);
-  Serial2.print("  right=");
-  Serial2.print(RangeSensor.GetRange(RANGE_RIGHT),3);
-  Serial2.print("  left=");
-  Serial2.println(RangeSensor.GetRange(RANGE_LEFT),3);
+  Serial2.println(RangeSensor.GetRange(RANGE_DIAG_RIGHT),3);
   delay(50);
   
 

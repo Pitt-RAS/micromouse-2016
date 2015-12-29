@@ -3,9 +3,6 @@
 
 #include <Arduino.h>
 
-#ifndef SENSORS_RANGE_H_
-#define SENSORS_RANGE_H_
-
 // input current speed and desired force
 class RangeSensor {
   private:

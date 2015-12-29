@@ -201,7 +201,7 @@ float PID_Controller::Calculate(float error) {
 
 
 void motion_forward(float distance, float exit_speed) {
-  float errorRight, errorLeft;
+  float errorRight, errorLeft, errorCenter;
   float rightOutput, leftOutput;
   float idealDistance, idealVelocity;
   float forcePerMotor;
@@ -223,6 +223,30 @@ void motion_forward(float distance, float exit_speed) {
 
     errorLeft = enc_left_extrapolate() - idealDistance;
     errorRight = enc_right_extrapolate() - idealDistance;
+
+    // Add error from rangefinder data
+    RangeSensor.UpdateRange();
+    if (RangeSensor.IsWall(RANGE_DIAG_LEFT) && RangeSensor.IsWall(RANGE_DIAG_LEFT)) {
+      errorCenter = RangeSensor.GetRange(RANGE_DIAG_LEFT) - RangeSensor.GetRange(RANGE_DIAG_RIGHT);
+    }
+    else if (RangeSensor.IsWall(RANGE_DIAG_LEFT)) {
+      errorCenter = 0.5 * (RangeSensor.GetRange(RANGE_DIAG_LEFT) - RANGE_DIAG_LEFT_MIDDLE);
+    }
+    else if (RangeSensor.IsWall(RANGE_DIAG_RIGHT)) {
+      errorCenter = 0.5 * (RANGE_DIAG_RIGHT_MIDDLE - RangeSensor.GetRange(RANGE_DIAG_RIGHT));
+    }
+    else {
+      errorCenter = 0;
+    }
+
+    // convert errorCenter to an angle
+
+    // compare errorCenter to the gyro data and do something with it
+
+    // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
+    // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
+
+
     
     
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
@@ -250,9 +274,6 @@ void motion_forward(float distance, float exit_speed) {
   enc_left_write(0);
   enc_right_write(0);
 
-
-    //String stuff
-    //Serial2.printf("%s", outputString.c_str());
   
   
 }
