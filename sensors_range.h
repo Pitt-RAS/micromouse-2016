@@ -1,3 +1,6 @@
+#ifndef MICROMOUSE_SENSORS_RANGE_H_
+#define MICROMOUSE_SENSORS_RANGE_H_
+
 #include <Arduino.h>
 
 #ifndef SENSORS_RANGE_H_

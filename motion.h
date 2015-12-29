@@ -1,3 +1,6 @@
+#ifndef MICROMOUSE_MOTION_H_
+#define MICROMOUSE_MOTION_H_
+
 void motion_set_max_speed(float new_max_speed);
 void motion_set_max_accel(float new_max_accel);
 
@@ -17,3 +20,5 @@ void motion_set_maxDecel_corner(float temp_max_decel_corner);
 void motion_set_maxVel_straight(float temp_max_vel_straight);
 void motion_set_maxVel_rotate(float temp_max_vel_rotate);
 void motion_set_maxVel_corner(float temp_max_vel_corner);
+
+#endif

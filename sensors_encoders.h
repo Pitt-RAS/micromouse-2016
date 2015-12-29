@@ -1,3 +1,6 @@
+#ifndef MICROMOUSE_SENSORS_ENCODERS_H_
+#define MICROMOUSE_SENSORS_ENCODERS_H_
+
 #include <Arduino.h>
 
 float enc_left_read();
@@ -8,3 +11,5 @@ float enc_left_velocity();
 float enc_right_velocity();
 float enc_left_extrapolate();
 float enc_right_extrapolate();
+
+#endif

@@ -172,8 +172,10 @@ class PID_Controller {
     float i_term = 0;
     elapsedMicros elapsed_time;
     float last_error = 0;
-	float kp, ki, kd;
+	  float kp, ki, kd;
   public:
+    float i_upper_bound = 2;
+    float i_lower_bound = -2;
     PID_Controller(float, float, float);
     float Calculate(float error);
 } ;
@@ -187,7 +189,7 @@ PID_Controller::PID_Controller(float tempKP, float tempKI, float tempKD) {
 
 float PID_Controller::Calculate(float error) {
   i_term += ki * error * elapsed_time;
-  i_term = constrain(i_term, -1, 1);
+  i_term = constrain(i_term, i_lower_bound, i_upper_bound);
 
   float output = -kp * error - i_term + kd * (error - last_error) / elapsed_time;
   last_error = error;
@@ -207,8 +209,8 @@ void motion_forward(float distance, float exit_speed) {
 
   motionCalc motionCalc (distance, max_vel_straight, exit_speed, max_accel_straight, max_decel_straight);
 
-  PID_Controller* left_PID = new PID_Controller(KP,KI,KD);
-  PID_Controller* right_PID = new PID_Controller(KP,KI,KD);
+  PID_Controller* left_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
+  PID_Controller* right_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
 
   // zero clock before move
   moveTime = 0;   
@@ -267,8 +269,10 @@ void motion_rotate(float angle) {
   
   motionCalc motionCalc (linearDistance, max_vel_rotate, 0, max_accel_rotate, max_decel_rotate);
 
-  PID_Controller* left_PID = new PID_Controller(KP,KI,KD);
-  PID_Controller* right_PID = new PID_Controller(KP,KI,KD);
+
+  PID_Controller* left_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
+  PID_Controller* right_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
+
 
   // zero encoders and clock before move
   moveTime = 0;
@@ -347,8 +351,8 @@ void motion_corner(float angle, float radius, float exit_speed) {
   
   motionCalc motionCalc (distance, max_vel_corner, exit_speed, max_accel_corner, max_decel_corner);
 
-  PID_Controller* left_PID = new PID_Controller(KP,KI,KD);
-  PID_Controller* right_PID = new PID_Controller(KP,KI,KD);
+  PID_Controller* left_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
+  PID_Controller* right_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
 
   // zero clock before move
   moveTime = 0;   
@@ -398,8 +402,8 @@ void motion_hold(int time)
   float rightOutput, leftOutput;
   elapsedMicros currentTime;
 
-  PID_Controller* left_PID = new PID_Controller(KP,KI,KD);
-  PID_Controller* right_PID = new PID_Controller(KP,KI,KD);
+  PID_Controller* left_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
+  PID_Controller* right_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
 
   currentTime = 0;   
 
