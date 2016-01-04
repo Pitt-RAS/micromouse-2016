@@ -4,43 +4,43 @@
 #define CONF_H
 
 // Define pin assignments for teensy3.2 on Rev1 PCB
-#define ENCODER_A1 1
-#define ENCODER_A2 0
-#define MOTOR_A1 4
-#define MOTOR_A2 2
-#define MOTOR_AP 3
+#define ENCODER_A1_PIN 1
+#define ENCODER_A2_PIN 0
+#define MOTOR_A1_PIN 4
+#define MOTOR_A2_PIN 2
+#define MOTOR_AP_PIN 3
 
-#define ENCODER_B1 12
-#define ENCODER_B2 11
-#define MOTOR_B1 7
-#define MOTOR_B2 6
-#define MOTOR_BP 5
+#define ENCODER_B1_PIN 12
+#define ENCODER_B2_PIN 11
+#define MOTOR_B1_PIN 7
+#define MOTOR_B2_PIN 6
+#define MOTOR_BP_PIN 5
 
-#define BUTTON1 23
-#define BUTTON2 22
-#define BUTTON3 21
+#define BUTTON1_PIN 23
+#define BUTTON2_PIN 22
+#define BUTTON3_PIN 21
 
-#define SCL_ 18
-#define SDA_ 19
+#define SCL_PIN 18
+#define SDA_PIN 19
 
-#define EMITTER1 29
-#define EMITTER2 30
-#define EMITTER3 31
-#define EMITTER4 32
-#define EMITTER5 33
+#define EMITTER1_PIN 29
+#define EMITTER2_PIN 30
+#define EMITTER3_PIN 31
+#define EMITTER4_PIN 32
+#define EMITTER5_PIN 33
 
-#define RANGE1 A14
-#define RANGE2 A0
-#define RANGE3 A1
-#define RANGE4 A2
-#define RANGE5 A3
+#define RANGE1_PIN A14
+#define RANGE2_PIN A0
+#define RANGE3_PIN A1
+#define RANGE4_PIN A2
+#define RANGE5_PIN A3
 
 // Range sensor directions
-#define RANGE_DIAG_LEFT RANGE1
-#define RANGE_DIAG_RIGHT RANGE2
-#define RANGE_LEFT RANGE3
-#define RANGE_RIGHT RANGE4
-#define RANGE_FRONT RANGE5
+#define RANGE_DIAG_LEFT_PIN RANGE1_PIN
+#define RANGE_DIAG_RIGHT_PIN RANGE2_PIN
+#define RANGE_LEFT_PIN RANGE3_PIN
+#define RANGE_RIGHT_PIN RANGE4_PIN
+#define RANGE_FRONT_PIN RANGE5_PIN
 
 // Range sensor distance offsets
 #define RANGE_DIAG_LEFT_OFFSET -35
@@ -50,15 +50,15 @@
 #define RANGE_FRONT_OFFSET 30
 
 // Range sensor wall thresholds
-#define DIAG_LEFT_WALL_THRESHOLD 130
-#define DIAG_RIGHT_WALL_THRESHOLD 130
-#define LEFT_WALL_THRESHOLD 105
-#define RIGHT_WALL_THRESHOLD 105
-#define FRONT_WALL_THRESHOLD 140
+#define RANGE_DIAG_LEFT_WALL_THRESHOLD 75
+#define RANGE_DIAG_RIGHT_WALL_THRESHOLD 75
+#define RANGE_LEFT_WALL_THRESHOLD 70
+#define RANGE_RIGHT_WALL_THRESHOLD 70
+#define RANGE_FRONT_WALL_THRESHOLD 125
 
 // Range sensor middle readings
-#define RANGE_DIAG_LEFT_MIDDLE 100
-#define RANGE_DIAG_RIGHT_MIDDLE 100
+#define RANGE_DIAG_LEFT_MIDDLE 65
+#define RANGE_DIAG_RIGHT_MIDDLE 65
 #define RANGE_LEFT_MIDDLE 100
 #define RANGE_RIGHT_MIDDLE 100
 #define RANGE_FRONT_MIDDLE 100

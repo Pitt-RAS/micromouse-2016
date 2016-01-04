@@ -212,6 +212,8 @@ void motion_forward(float distance, float exit_speed) {
   PID_Controller* left_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
   PID_Controller* right_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
 
+  //PID_Controller* rotation_PID = new PID_Controller(KP_ROTATION,KI_ROTATION,KD_ROTATION);
+
   // zero clock before move
   moveTime = 0;   
 
@@ -226,18 +228,19 @@ void motion_forward(float distance, float exit_speed) {
 
     // Add error from rangefinder data
     RangeSensor.UpdateRange();
-    if (RangeSensor.IsWall(RANGE_DIAG_LEFT) && RangeSensor.IsWall(RANGE_DIAG_LEFT)) {
-      errorCenter = RangeSensor.GetRange(RANGE_DIAG_LEFT) - RangeSensor.GetRange(RANGE_DIAG_RIGHT);
+    if (RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN) && RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN)) {
+      errorCenter = RangeSensor.GetRange(RANGE_DIAG_LEFT_PIN) - RangeSensor.GetRange(RANGE_DIAG_RIGHT_PIN);
     }
-    else if (RangeSensor.IsWall(RANGE_DIAG_LEFT)) {
-      errorCenter = 0.5 * (RangeSensor.GetRange(RANGE_DIAG_LEFT) - RANGE_DIAG_LEFT_MIDDLE);
+    else if (RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN)) {
+      errorCenter = 0.5 * (RangeSensor.GetRange(RANGE_DIAG_LEFT_PIN) - RANGE_DIAG_LEFT_MIDDLE);
     }
-    else if (RangeSensor.IsWall(RANGE_DIAG_RIGHT)) {
-      errorCenter = 0.5 * (RANGE_DIAG_RIGHT_MIDDLE - RangeSensor.GetRange(RANGE_DIAG_RIGHT));
+    else if (RangeSensor.IsWall(RANGE_DIAG_RIGHT_PIN)) {
+      errorCenter = 0.5 * (RANGE_DIAG_RIGHT_MIDDLE - RangeSensor.GetRange(RANGE_DIAG_RIGHT_PIN));
     }
     else {
       errorCenter = 0;
     }
+    
 
     // convert errorCenter to an angle
 

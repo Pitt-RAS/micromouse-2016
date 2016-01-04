@@ -9,8 +9,8 @@ struct motor motor_a, motor_b;
 static void motor_init(struct motor *motor, int pin1, int pin2, int pinpwm);
 
 void motors_init() {
-    motor_init(&motor_a, MOTOR_A1, MOTOR_A2, MOTOR_AP);
-    motor_init(&motor_b, MOTOR_B1, MOTOR_B2, MOTOR_BP);
+    motor_init(&motor_a, MOTOR_A1_PIN, MOTOR_A2_PIN, MOTOR_AP_PIN);
+    motor_init(&motor_b, MOTOR_B1_PIN, MOTOR_B2_PIN, MOTOR_BP_PIN);
 }
 
 static void motor_init(struct motor *motor, int pin1, int pin2, int pinpwm)
