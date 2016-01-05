@@ -57,8 +57,8 @@
 #define RANGE_FRONT_WALL_THRESHOLD 125
 
 // Range sensor middle readings
-#define RANGE_DIAG_LEFT_MIDDLE 65
-#define RANGE_DIAG_RIGHT_MIDDLE 65
+#define RANGE_DIAG_LEFT_MIDDLE 80
+#define RANGE_DIAG_RIGHT_MIDDLE 80
 #define RANGE_LEFT_MIDDLE 100
 #define RANGE_RIGHT_MIDDLE 100
 #define RANGE_FRONT_MIDDLE 100
@@ -68,11 +68,11 @@
 #define MM_PER_STEP 0.7928
 
 // PID tuning parameters
-#define KP_POSITION .4
+#define KP_POSITION .01
 #define KI_POSITION 0
 #define KD_POSITION 0
 
-#define KP_ROTATION .1
+#define KP_ROTATION 1
 #define KI_ROTATION 0
 #define KD_ROTATION 0
 
@@ -82,16 +82,16 @@
 #define NUMBER_OF_MOTORS 2
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
-#define MAX_ACCEL_STRAIGHT 1.5 // m/s/s  
-#define MAX_DECEL_STRAIGHT -1.5 // m/s/s
-#define MAX_ACCEL_ROTATE 1.5 // m/s/s  
-#define MAX_DECEL_ROTATE -1.5 // m/s/s
-#define MAX_ACCEL_CORNER 1.5 // m/s/s  
-#define MAX_DECEL_CORNER -1.5 // m/s/s
+#define MAX_ACCEL_STRAIGHT 3 // m/s/s  
+#define MAX_DECEL_STRAIGHT -3 // m/s/s
+#define MAX_ACCEL_ROTATE 3 // m/s/s  
+#define MAX_DECEL_ROTATE -3 // m/s/s
+#define MAX_ACCEL_CORNER 3 // m/s/s  
+#define MAX_DECEL_CORNER -3 // m/s/s
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT .5 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT .2 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters

@@ -201,7 +201,7 @@ float PID_Controller::Calculate(float error) {
 
 
 void motion_forward(float distance, float exit_speed) {
-  float errorRight, errorLeft, errorCenter;
+  float errorRight, errorLeft, errorCenter, rotationOffset;
   float rightOutput, leftOutput;
   float idealDistance, idealVelocity;
   float forcePerMotor;
@@ -212,7 +212,7 @@ void motion_forward(float distance, float exit_speed) {
   PID_Controller* left_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
   PID_Controller* right_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
 
-  //PID_Controller* rotation_PID = new PID_Controller(KP_ROTATION,KI_ROTATION,KD_ROTATION);
+  PID_Controller* rotation_PID = new PID_Controller(KP_ROTATION,KI_ROTATION,KD_ROTATION);
 
   // zero clock before move
   moveTime = 0;   
@@ -223,28 +223,26 @@ void motion_forward(float distance, float exit_speed) {
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
-    errorLeft = enc_left_extrapolate() - idealDistance;
-    errorRight = enc_right_extrapolate() - idealDistance;
-
-    // Add error from rangefinder data
+    // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.  
     RangeSensor.UpdateRange();
-    if (RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN) && RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN)) {
-      errorCenter = RangeSensor.GetRange(RANGE_DIAG_LEFT_PIN) - RangeSensor.GetRange(RANGE_DIAG_RIGHT_PIN);
+    if (0) {  //(RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN) && RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN)) {
+      errorCenter = .5 * RangeSensor.GetRange(RANGE_DIAG_LEFT_PIN) - RangeSensor.GetRange(RANGE_DIAG_RIGHT_PIN);
     }
-    else if (RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN)) {
-      errorCenter = 0.5 * (RangeSensor.GetRange(RANGE_DIAG_LEFT_PIN) - RANGE_DIAG_LEFT_MIDDLE);
+    else if (1){  //(RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN)) {
+      errorCenter = (RangeSensor.GetRange(RANGE_DIAG_LEFT_PIN) - RANGE_DIAG_LEFT_MIDDLE);
     }
-    else if (RangeSensor.IsWall(RANGE_DIAG_RIGHT_PIN)) {
-      errorCenter = 0.5 * (RANGE_DIAG_RIGHT_MIDDLE - RangeSensor.GetRange(RANGE_DIAG_RIGHT_PIN));
+    else if (0){  //(RangeSensor.IsWall(RANGE_DIAG_RIGHT_PIN)) {
+      errorCenter = (RANGE_DIAG_RIGHT_MIDDLE - RangeSensor.GetRange(RANGE_DIAG_RIGHT_PIN));
     }
     else {
       errorCenter = 0;
     }
+
+    rotationOffset = rotation_PID->Calculate(errorCenter);
+
+    errorLeft = enc_left_extrapolate() - idealDistance - rotationOffset;
+    errorRight = enc_right_extrapolate() - idealDistance + rotationOffset;
     
-
-    // convert errorCenter to an angle
-
-    // compare errorCenter to the gyro data and do something with it
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets

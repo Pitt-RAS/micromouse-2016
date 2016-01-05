@@ -29,12 +29,14 @@ void setup()
   enc_left_write(0);
   enc_right_write(0);
 
+  motion_forward(600, 0);
+  motion_hold(100);
+
 }
 
 void loop() {
 
   RangeSensor.UpdateRange();
-  
   Serial2.print("diag_left=");
   Serial2.print(RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN),3);
   Serial2.print("  front=");
