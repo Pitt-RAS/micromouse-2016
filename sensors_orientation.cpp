@@ -4,7 +4,6 @@
 #include <Arduino.h>
 
 #include <I2Cdev.h>
-
 #include <MPU6050_6Axis_MotionApps20.h>
 #include <helper_3dmath.h>
 
@@ -15,7 +14,6 @@ Orientation::Orientation() {
   Wire.begin(I2C_MASTER, 0, I2C_PINS_18_19, I2C_PULLUP_INT, I2C_RATE_400);
 
   mpu_.initialize();
-  mpu_.testConnection();
   Serial2.println(mpu_.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
   uint8_t dev_status = mpu_.dmpInitialize();
 
@@ -136,8 +134,6 @@ void Orientation::update() {
     max_forward_accel_ = max(max_forward_accel_, curr_forward_accel);
     max_radial_accel_ = max(max_radial_accel_, curr_radial_accel);
   }
-    //Serial2.println(orientation->getHeading());
-    //Serial2.println(buf[i - 2]);
 }
 
 void Orientation::resetHeading() {
