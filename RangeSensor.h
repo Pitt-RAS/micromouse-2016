@@ -11,10 +11,10 @@ struct node{
 class RangeSensor {
 	private:
 		node root;
-		byte pin;
+		int pin;
 		//Last Update Time
 	public:
-		RangeSensor(byte tempPin);
+		RangeSensor(int tempPin);
 		int getRange();
 		int getLastRange() { return root.range; }
 		int getRangeAtIndex(int index);

@@ -4,6 +4,7 @@
 #include "motion.h"
 #include "sensors_encoders.h"
 #include "sensors_range.h"
+#include "RangeSensorContainer.h"
 
 #define BAUD 9600
 
