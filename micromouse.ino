@@ -3,12 +3,11 @@
 #include "motors.h"
 #include "motion.h"
 #include "sensors_encoders.h"
-#include "sensors_range.h"
 #include "RangeSensorContainer.h"
 
 #define BAUD 9600
 
-extern RangeSensor RangeSensor;
+RangeSensorContainer RangeSensors;
 
 int incomingByte = 0;
 void setup()
@@ -19,10 +18,10 @@ void setup()
 
   // initialize all classes
   motors_init();
-
-
+  RangeSensors = RangeSensorContainer();
+  
   Serial2.begin(BAUD);
-
+  
   pinMode(BUTTON1_PIN, INPUT);
   while (digitalRead(BUTTON1_PIN) == LOW);
   delay(1000);

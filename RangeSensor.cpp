@@ -1,44 +1,44 @@
-#include "RangeSensor.h" 
+#include "RangeSensor.h"
+#include "Arduino.h"
 
-RangeSensor::RangeSensor(byte tempPin){
-	pin = tempPin;	
+
+RangeSensor::RangeSensor(int tempPin){
+    pin = tempPin;
 }
 
 //Force to take new reading and adjust Queue
 int RangeSensor::getRange(){
-	
-	node newRoot;
-	newRoot.range = (int) 20760 / (analogRead(pin) - 11);
-	newRoot.next = root;
-	root = newRoot;
-
-	//Iterate through the nodes until last node is found
-	int i = 0;
-	node queueItorator = root;	
-	while(queueItorator.next.next != NULL) {
-		queueItorator = queueItorator.next;
-		i++;
-	}
-
-	//Remove last node if its depth is greater than queueLength
-	if (i+1 >= queueLength) {
-		free(queueItorator.next);
-	}
-
-	return getLastRange();
+    
+    node *newRoot = new node;
+    newRoot->range = (int) 20760 / (analogRead(pin) - 11);
+    newRoot->next = rawRoot;
+    rawRoot = newRoot;
+    
+    node *queueItorator = rawRoot;
+    for(int queueIndex = 1; queueItorator->next && queueIndex < maxQueueLength+1; queueIndex++) {
+        if (queueIndex == maxQueueLength) {
+            queueItorator->next = NULL;
+        }
+        else {
+            queueItorator = queueItorator->next;
+        }
+    }
+    
+    return getLastRange();
 }
 
 int RangeSensor::getRangeAtIndex(int index) {
-
-	int i = 0;
-	node queueItorator = root;	
-	while(queueItorator.next.next != NULL && i < index) {
-		queueItorator = queueItorator.next;
-		i++;
-	}
-
-	return queueItorator.range;
-
-
+    
+    node *queueItorator = rawRoot;
+    for(int queueIndex = 1; queueItorator->next && queueIndex < maxQueueLength+1; queueIndex++) {
+        if (queueIndex == index) {
+            break;
+        }
+        queueItorator = queueItorator->next;
+    }
+    
+    return queueItorator->range;
+    
 }
+
 

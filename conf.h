@@ -1,7 +1,10 @@
 #include "Arduino.h"
+#include "RangeSensorContainer.h"
 
 #ifndef CONF_H
 #define CONF_H
+
+extern RangeSensorContainer RangeSensors;
 
 // Define pin assignments for teensy3.2 on Rev1 PCB
 #define ENCODER_A1_PIN 1

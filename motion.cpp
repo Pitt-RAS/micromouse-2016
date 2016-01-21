@@ -4,10 +4,7 @@
 #include "sensors_encoders.h"
 #include "string"
 #include "stdio.h"
-#include "sensors_range.h"
-
-extern RangeSensor RangeSensor;
-
+#include "RangeSensorContainer.h"
 
 float max_accel_straight = MAX_ACCEL_STRAIGHT;
 float max_decel_straight = MAX_DECEL_STRAIGHT;
@@ -224,21 +221,8 @@ void motion_forward(float distance, float exit_speed) {
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
     // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.  
-    RangeSensor.UpdateRange();
-    if (0) {  //(RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN) && RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN)) {
-      errorCenter = .5 * RangeSensor.GetRange(RANGE_DIAG_LEFT_PIN) - RangeSensor.GetRange(RANGE_DIAG_RIGHT_PIN);
-    }
-    else if (1){  //(RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN)) {
-      errorCenter = (RangeSensor.GetRange(RANGE_DIAG_LEFT_PIN) - RANGE_DIAG_LEFT_MIDDLE);
-    }
-    else if (0){  //(RangeSensor.IsWall(RANGE_DIAG_RIGHT_PIN)) {
-      errorCenter = (RANGE_DIAG_RIGHT_MIDDLE - RangeSensor.GetRange(RANGE_DIAG_RIGHT_PIN));
-    }
-    else {
-      errorCenter = 0;
-    }
-
-    rotationOffset = rotation_PID->Calculate(errorCenter);
+    RangeSensors.updateReadings();
+    rotationOffset = rotation_PID->Calculate(RangeSensors.errorFromTarget(.5));
 
     errorLeft = enc_left_extrapolate() - idealDistance - rotationOffset;
     errorRight = enc_right_extrapolate() - idealDistance + rotationOffset;
