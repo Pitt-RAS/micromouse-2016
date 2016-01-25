@@ -18,7 +18,7 @@ private:
 public:
     RangeSensor(int tempPin);
     int getRange();
-    int getLastRange() { return rawRoot->range; }
+    int getLastRange() { return averageRoot->range; }
     int getRangeAtIndex(int index);
 };
 
