@@ -17,8 +17,8 @@ private:
     //Last Update Time
 public:
     RangeSensor(int tempPin);
-    int getRange();
-    int getLastRange() { return rawRoot->range; }
+    int getRange(int elapsedSteps);
+    int getRange() { return averageRoot->range; }
     int getRangeAtIndex(int index);
 };
 
