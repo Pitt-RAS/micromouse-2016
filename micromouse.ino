@@ -36,5 +36,46 @@ void setup()
 
 void loop() {
 
+  RangeSensor.UpdateRange();
+  Serial2.print("diag_left=");
+  Serial2.print(RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN),3);
+  Serial2.print("  front=");
+  Serial2.print(RangeSensor.IsWall(RANGE_FRONT_PIN),3);
+  Serial2.print("  diag_right=");
+  Serial2.println(RangeSensor.IsWall(RANGE_DIAG_RIGHT_PIN),3);
+  delay(50);
+  
+
+
+
+
+
+
+
+  //  //Serial2.println(enc_left_velocity());
+  //  if (Serial2.available() > 0) {
+  //    // read the incoming byte:
+  //    incomingByte = Serial2.parseInt();
+  //
+  //
+  //    if (incomingByte != 0) {
+  //      // say what you got:
+  //      Serial2.print("Current Speed =");
+  //      Serial2.println(incomingByte, DEC);
+  //      float motorSpeed = (float)incomingByte / 1023;
+  //      motor_set(&motor_a, motorSpeed);
+  //    }
+  //  }
+
+
+
+
+
+
+
+
+
+
+
 }
 
