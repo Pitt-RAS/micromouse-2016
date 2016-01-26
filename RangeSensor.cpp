@@ -9,44 +9,36 @@ RangeSensor::RangeSensor(int tempPin){
 //Force to take new reading and adjust Queue
 int RangeSensor::getRange(){
     
-    node *newRawRoot = new node;
-    newRawRoot->range = (int) 20760 / (analogRead(pin) - 11);
-    newRawRoot->next = rawRoot;
-    rawRoot = newRawRoot;
+    node *newRoot = new node;
+    newRoot->range = (int) 20760 / (analogRead(pin) - 11);
+    newRoot->next = rawRoot;
+    rawRoot = newRoot;
     
     node *queueItorator = rawRoot;
-	int sum = rawRoot->range;
-	int queueIndex = 1;
     for(int queueIndex = 1; queueItorator->next && queueIndex < maxQueueLength+1; queueIndex++) {
         if (queueIndex == maxQueueLength) {
             queueItorator->next = NULL;
         }
         else {
             queueItorator = queueItorator->next;
-			sum += queueItorator->range;
         }
     }
- 
-	node *newAvgRoot = new node;
-    newAvgRoot->range = sum / queueIndex;
-    newAvgRoot->next = averageRoot;
-    averageRoot = newAvgRoot;
-   
+    
     return getLastRange();
 }
 
 int RangeSensor::getRangeAtIndex(int index) {
     
-    node *queueItorator = averageRoot;
+    node *queueItorator = rawRoot;
     for(int queueIndex = 1; queueItorator->next && queueIndex < maxQueueLength+1; queueIndex++) {
         if (queueIndex == index) {
-    		return queueItorator->range;
+            break;
         }
         queueItorator = queueItorator->next;
     }
-	
-	return NULL;
-
+    
+    return queueItorator->range;
+    
 }
 
 
