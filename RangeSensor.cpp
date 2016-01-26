@@ -7,11 +7,14 @@ RangeSensor::RangeSensor(int tempPin){
 }
 
 //Force to take new reading and adjust Queue
-int RangeSensor::getRange(){
+int RangeSensor::getRange(int elapsedSteps){
     
     node *newRawRoot = new node;
     newRawRoot->range = (int) 20760 / (analogRead(pin) - 11);
     newRawRoot->next = rawRoot;
+	newRawRoot->distance = elapsedSteps
+	if(rawRoot) 
+		newRawRoot->distance += rawRoot->distance
     rawRoot = newRawRoot;
     
     node *queueItorator = rawRoot;
@@ -30,9 +33,11 @@ int RangeSensor::getRange(){
 	node *newAvgRoot = new node;
     newAvgRoot->range = sum / queueIndex;
     newAvgRoot->next = averageRoot;
+	if(averageRoot)
+		newAvgRoot->distance = averageRoot->distance
     averageRoot = newAvgRoot;
    
-    return getLastRange();
+    return getRange();
 }
 
 int RangeSensor::getRangeAtIndex(int index) {
