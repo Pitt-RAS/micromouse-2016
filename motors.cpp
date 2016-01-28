@@ -47,6 +47,10 @@ void motor_set(struct motor *motor, float speed)
         pin1_state = LOW;
         pin2_state = HIGH;
     }
+    else {
+        pin1_state = LOW;
+        pin2_state = LOW;
+    }
 
     digitalWrite(motor->pin1, pin1_state);
     digitalWrite(motor->pin2, pin2_state);
