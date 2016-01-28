@@ -5,6 +5,7 @@
 #include "motors.h"
 #include "sensors_encoders.h"
 #include "MotionCalc.h"
+#include "PIDController.h"
 #include "RangeSensorContainer.h"
 
 static float max_accel_straight = MAX_ACCEL_STRAIGHT;
@@ -42,37 +43,6 @@ idealMotorOutputCalculator::idealMotorOutputCalculator() {
   // calcluate these terms initially in case float math isn't done precompile
   velocityPerVBEMF = VELOCITY_PER_VBEMF;
   forcePerAmp = FORCE_PER_AMP;
-}
-
-class PIDController {
-  private:
-    float i_term = 0;
-    elapsedMicros elapsed_time;
-    float last_error = 0;
-    float kp, ki, kd;
-  public:
-    float i_upper_bound = 2;
-    float i_lower_bound = -2;
-    PIDController(float, float, float);
-    float Calculate(float error);
-};
-
-PIDController::PIDController(float tempKP, float tempKI, float tempKD) {
-  kp = tempKP;
-  ki = tempKI;
-  kd = tempKD;
-}
-
-float PIDController::Calculate(float error) {
-  i_term += ki * error * elapsed_time;
-  i_term = constrain(i_term, i_lower_bound, i_upper_bound);
-
-  float output = -kp * error - i_term + kd * (error - last_error) / elapsed_time;
-  last_error = error;
-
-  elapsed_time = 0;
-
-  return output;
 }
 
 void motion_forward(float distance, float exit_speed) {
