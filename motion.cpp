@@ -21,9 +21,7 @@ float max_vel_straight = MAX_VEL_STRAIGHT;
 float max_vel_rotate = MAX_VEL_ROTATE;
 float max_vel_corner = MAX_VEL_CORNER;
 
-
-
-class motionCalc {
+class MotionCalc {
   private:
     float max_accel, max_decel;
     float vStart, vEnd, vMax;
@@ -32,7 +30,8 @@ class motionCalc {
     int tStart, tConst, tEnd;
 
   public:
-    motionCalc (float, float, float, float, float);
+    MotionCalc (float, float, float, float, float);
+
     float idealDistance (int elapsedTime) {
       if (elapsedTime < tStart) {
         return (elapsedTime / 1000 * (vStart + .5 * aStart * elapsedTime / 1000000));
@@ -48,6 +47,7 @@ class motionCalc {
         return (dTot * 1000);
       }
     }
+
     float idealVelocity (int elapsedTime) {
       if (elapsedTime <= tStart) {
         return (vStart + aStart * elapsedTime / 1000000);
@@ -62,6 +62,7 @@ class motionCalc {
         return (vEnd);
       }
     }
+
     float idealAccel (int elapsedTime) {
       if (elapsedTime <= tStart) {
         return (aStart);
@@ -78,8 +79,7 @@ class motionCalc {
     }
 };
 
-motionCalc::motionCalc (float temp_dTot, float temp_vMax, float temp_vEnd, float temp_max_accel, float temp_max_decel) {
-
+MotionCalc::MotionCalc (float temp_dTot, float temp_vMax, float temp_vEnd, float temp_max_accel, float temp_max_decel) {
   dTot = temp_dTot;
   vMax = temp_vMax;
   vEnd = temp_vEnd;
@@ -104,6 +104,7 @@ motionCalc::motionCalc (float temp_dTot, float temp_vMax, float temp_vEnd, float
   if (((dTot < 0) && (vMax > 0)) || ((dTot > 0) && (vMax < 0))) {
     vMax = -vMax;
   }
+
   if (vStart <= vMax) {
     aStart = max_accel;
   }
@@ -137,10 +138,6 @@ motionCalc::motionCalc (float temp_dTot, float temp_vMax, float temp_vEnd, float
   tEnd =  (1000000 * (-vEnd + sqrt(vEnd * vEnd + 2 * -aEnd * dEnd)) / -aEnd);
 }
 
-
-
-
-
 // input current speed and desired force
 class idealMotorOutputCalculator {
   private:
@@ -163,8 +160,7 @@ idealMotorOutputCalculator::idealMotorOutputCalculator() {
   forcePerAmp = FORCE_PER_AMP;
 }
 
-
-class PID_Controller {
+class PIDController {
   private:
     float i_term = 0;
     elapsedMicros elapsed_time;
@@ -173,18 +169,18 @@ class PID_Controller {
   public:
     float i_upper_bound = 2;
     float i_lower_bound = -2;
-    PID_Controller(float, float, float);
+    PIDController(float, float, float);
     float Calculate(float error);
 } ;
 
-PID_Controller::PID_Controller(float tempKP, float tempKI, float tempKD) {
+PIDController::PIDController(float tempKP, float tempKI, float tempKD) {
 	kp = tempKP;
 	ki = tempKI;
 	kd = tempKD;
 }
 
 
-float PID_Controller::Calculate(float error) {
+float PIDController::Calculate(float error) {
   i_term += ki * error * elapsed_time;
   i_term = constrain(i_term, i_lower_bound, i_upper_bound);
 
@@ -196,7 +192,6 @@ float PID_Controller::Calculate(float error) {
   return output;
 }
 
-
 void motion_forward(float distance, float exit_speed) {
   float errorRight, errorLeft, errorCenter, rotationOffset;
   float rightOutput, leftOutput;
@@ -204,12 +199,12 @@ void motion_forward(float distance, float exit_speed) {
   float forcePerMotor;
   elapsedMicros moveTime;
 
-  motionCalc motionCalc (distance, max_vel_straight, exit_speed, max_accel_straight, max_decel_straight);
+  MotionCalc motionCalc (distance, max_vel_straight, exit_speed, max_accel_straight, max_decel_straight);
 
-  PID_Controller* left_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
-  PID_Controller* right_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
+  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
-  PID_Controller* rotation_PID = new PID_Controller(KP_ROTATION,KI_ROTATION,KD_ROTATION);
+  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
 
   // zero clock before move
   moveTime = 0;   
@@ -222,17 +217,13 @@ void motion_forward(float distance, float exit_speed) {
 
     // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.  
     RangeSensors.updateReadings();
-    rotationOffset = rotation_PID->Calculate(RangeSensors.errorFromTarget(.5));
+    rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromTarget(.5));
 
     errorLeft = enc_left_extrapolate() - idealDistance - rotationOffset;
     errorRight = enc_right_extrapolate() - idealDistance + rotationOffset;
-    
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
-
-
-    
     
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
     if (idealVelocity > 0) {
@@ -247,8 +238,8 @@ void motion_forward(float distance, float exit_speed) {
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
     // add PID error correction to ideal value
-    leftOutput += left_PID->Calculate(errorLeft);
-    rightOutput += right_PID->Calculate(errorRight);
+    leftOutput += left_PID.Calculate(errorLeft);
+    rightOutput += right_PID.Calculate(errorRight);
 
     //Serial2.println(errorLeft);
 
@@ -256,11 +247,9 @@ void motion_forward(float distance, float exit_speed) {
     motor_set(&motor_a, leftOutput);
     motor_set(&motor_b, rightOutput);
   }
+
   enc_left_write(0);
   enc_right_write(0);
-
-  
-  
 }
 
 // clockwise angle is positive, angle is in degrees
@@ -273,12 +262,10 @@ void motion_rotate(float angle) {
   float rightOutput, leftOutput;
   elapsedMicros moveTime;
   
-  motionCalc motionCalc (linearDistance, max_vel_rotate, 0, max_accel_rotate, max_decel_rotate);
+  MotionCalc motionCalc (linearDistance, max_vel_rotate, 0, max_accel_rotate, max_decel_rotate);
 
-
-  PID_Controller* left_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
-  PID_Controller* right_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
-
+  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   // zero encoders and clock before move
   moveTime = 0;
@@ -302,22 +289,21 @@ void motion_rotate(float angle) {
     leftOutput = left_motor_output_calculator.Calculate(forcePerMotor, idealLinearVelocity);
     rightOutput = right_motor_output_calculator.Calculate(-forcePerMotor, idealLinearVelocity);
 
-    leftOutput += left_PID->Calculate(errorLeft);
-    rightOutput += right_PID->Calculate(errorRight);
+    leftOutput += left_PID.Calculate(errorLeft);
+    rightOutput += right_PID.Calculate(errorRight);
 
     // set motors to run at specified rate
     motor_set(&motor_a, leftOutput);
     motor_set(&motor_b, rightOutput);
     
-    
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
 
   }
+
   motor_set(&motor_a, 0);
   motor_set(&motor_b, 0);
   enc_left_write(0);
   enc_right_write(0);
-
 }
 
 void motion_corner(float angle, float radius, float exit_speed) {
@@ -327,6 +313,7 @@ void motion_corner(float angle, float radius, float exit_speed) {
   float idealDistance, idealVelocity;
   float forceLeftMotor, forceRightMotor;
   float distance;
+
   if (radius < 0) {
     radius *= -1;
   }
@@ -355,13 +342,13 @@ void motion_corner(float angle, float radius, float exit_speed) {
     rightFraction = (radius + MM_BETWEEN_WHEELS / 2) / radius;
   }
   
-  motionCalc motionCalc (distance, max_vel_corner, exit_speed, max_accel_corner, max_decel_corner);
+  MotionCalc motionCalc (distance, max_vel_corner, exit_speed, max_accel_corner, max_decel_corner);
 
-  PID_Controller* left_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
-  PID_Controller* right_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
+  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   // zero clock before move
-  moveTime = 0;   
+  moveTime = 0;
 
   // execute motion
   while (idealDistance != distance) {
@@ -391,39 +378,39 @@ void motion_corner(float angle, float radius, float exit_speed) {
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
     // add PID error correction to ideal value
-    leftOutput += left_PID->Calculate(errorLeft);
-    rightOutput += right_PID->Calculate(errorRight);
+    leftOutput += left_PID.Calculate(errorLeft);
+    rightOutput += right_PID.Calculate(errorRight);
 
     // set motors to run at specified rate
     motor_set(&motor_a, leftOutput);
     motor_set(&motor_b, rightOutput);
   }
+
   enc_left_write(0);
   enc_right_write(0);
 }
 
-void motion_hold(unsigned int time)
-{
+void motion_hold(unsigned int time) {
   float errorRight, errorLeft;
   float rightOutput, leftOutput;
   elapsedMicros currentTime;
 
-  PID_Controller* left_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
-  PID_Controller* right_PID = new PID_Controller(KP_POSITION,KI_POSITION,KD_POSITION);
+  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
-  currentTime = 0;   
+  currentTime = 0;
 
   while (currentTime / 1000 < time) {
-    
     errorLeft = enc_left_extrapolate();
     errorRight = enc_right_extrapolate();
 
-    leftOutput = left_PID->Calculate(errorLeft);
-    rightOutput = right_PID->Calculate(errorRight);
+    leftOutput = left_PID.Calculate(errorLeft);
+    rightOutput = right_PID.Calculate(errorRight);
 
     motor_set(&motor_a, leftOutput);
     motor_set(&motor_b, rightOutput);
   }
+
   motor_set(&motor_a, 0);
   motor_set(&motor_b, 0);
 }
