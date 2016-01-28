@@ -7,8 +7,6 @@
 
 #define BAUD 9600
 
-RangeSensorContainer RangeSensors;
-
 int incomingByte = 0;
 void setup()
 {
@@ -18,7 +16,6 @@ void setup()
 
   // initialize all classes
   motors_init();
-  RangeSensors = RangeSensorContainer();
   
   Serial2.begin(BAUD);
   
@@ -36,14 +33,14 @@ void setup()
 
 void loop() {
 
-  RangeSensor.UpdateRange();
-  Serial2.print("diag_left=");
-  Serial2.print(RangeSensor.IsWall(RANGE_DIAG_LEFT_PIN),3);
-  Serial2.print("  front=");
-  Serial2.print(RangeSensor.IsWall(RANGE_FRONT_PIN),3);
-  Serial2.print("  diag_right=");
-  Serial2.println(RangeSensor.IsWall(RANGE_DIAG_RIGHT_PIN),3);
-  delay(50);
+  // RangeSensors.updateReadings();
+  // Serial2.print("diag_left=");
+  // Serial2.print(RangeSensors.isWall(RANGE_DIAG_LEFT_PIN),3);
+  // Serial2.print("  front=");
+  // Serial2.print(RangeSensors.isWall(RANGE_FRONT_PIN),3);
+  // Serial2.print("  diag_right=");
+  // Serial2.println(RangeSensors.isWall(RANGE_DIAG_RIGHT_PIN),3);
+  // delay(50);
   
 
 

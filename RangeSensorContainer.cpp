@@ -1,11 +1,12 @@
 #include "RangeSensorContainer.h"
 #include "conf.h"
 
-	RangeSensorContainer::RangeSensorContainer() 
+RangeSensorContainer RangeSensors;
+
+RangeSensorContainer::RangeSensorContainer() 
 	: leftSensor(RANGE_DIAG_LEFT_PIN), rightSensor(RANGE_DIAG_RIGHT_PIN)
 {
   Serial.printf("RangeContainer Made DEBUG");
-
 }
 
 void RangeSensorContainer::updateReadings() {

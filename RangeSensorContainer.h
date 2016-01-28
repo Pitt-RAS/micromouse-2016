@@ -24,4 +24,6 @@ class RangeSensorContainer {
 
 };
 
+extern RangeSensorContainer RangeSensors;
+
 #endif

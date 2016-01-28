@@ -1,25 +1,19 @@
 #ifndef RANGESENSOR_H
 #define RANGESENSOR_H
 
-struct node{
-    int range;
-    float distance;
-    node *next;
-};
-
-#define maxQueueLength 10
+#include "conf.h"
 
 class RangeSensor {
-private:
-    node * rawRoot;
-    node * averageRoot;
-    int pin;
-    //Last Update Time
-public:
-    RangeSensor(int tempPin);
-    int getRange(int elapsedSteps);
-    int getRange() { return averageRoot->range; }
-    int getRangeAtIndex(int index);
+ private:
+  int distance_queue_[RANGE_QUEUE_LENGTH];
+  int distance_queue_index_ = 0;
+  int distance_queue_sum_ = 0;
+  int pin_;
+ public:
+  RangeSensor(int temp_pin);
+  void clearOutdatedValues();
+  void clearAllValues();
+  int getRange();
 };
 
 #endif
