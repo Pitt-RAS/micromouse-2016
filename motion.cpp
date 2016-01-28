@@ -1,142 +1,26 @@
+#include "Arduino.h"
+#include "stdio.h"
+
 #include "conf.h"
 #include "motors.h"
-#include "Arduino.h"
 #include "sensors_encoders.h"
-#include "string"
-#include "stdio.h"
+#include "MotionCalc.h"
 #include "RangeSensorContainer.h"
 
-float max_accel_straight = MAX_ACCEL_STRAIGHT;
-float max_decel_straight = MAX_DECEL_STRAIGHT;
+static float max_accel_straight = MAX_ACCEL_STRAIGHT;
+static float max_decel_straight = MAX_DECEL_STRAIGHT;
 
 // This can probably match the straight accels until they become very high.  testing required
-float max_accel_rotate = MAX_ACCEL_ROTATE;
-float max_decel_rotate = MAX_DECEL_ROTATE;
+static float max_accel_rotate = MAX_ACCEL_ROTATE;
+static float max_decel_rotate = MAX_DECEL_ROTATE;
 
 // should be calculated based on turn radius and max velocity so that the friction force required is not more than the force available
-float max_accel_corner = MAX_ACCEL_CORNER;
-float max_decel_corner = MAX_DECEL_CORNER;
+static float max_accel_corner = MAX_ACCEL_CORNER;
+static float max_decel_corner = MAX_DECEL_CORNER;
 
-float max_vel_straight = MAX_VEL_STRAIGHT;
-float max_vel_rotate = MAX_VEL_ROTATE;
-float max_vel_corner = MAX_VEL_CORNER;
-
-class MotionCalc {
-  private:
-    float max_accel, max_decel;
-    float vStart, vEnd, vMax;
-    float dStart, dEnd, dTot;
-    float aStart, aEnd;
-    int tStart, tConst, tEnd;
-
-  public:
-    MotionCalc (float, float, float, float, float);
-
-    float idealDistance (int elapsedTime) {
-      if (elapsedTime < tStart) {
-        return (elapsedTime / 1000 * (vStart + .5 * aStart * elapsedTime / 1000000));
-      }
-      else if (elapsedTime < (tStart + tConst)) {
-        return (dStart * 1000 + vMax * (elapsedTime - tStart) / 1000);
-      }
-      else if (elapsedTime < (tStart + tConst + tEnd)) {
-        float t = ((float)elapsedTime - tStart - tConst) / 1000000;
-        return (((dTot - dEnd) + (vMax * t + .5 * aEnd * t * t)) * 1000);
-      }
-      else {
-        return (dTot * 1000);
-      }
-    }
-
-    float idealVelocity (int elapsedTime) {
-      if (elapsedTime <= tStart) {
-        return (vStart + aStart * elapsedTime / 1000000);
-      }
-      else if (elapsedTime < (tStart + tConst)) {
-        return (vMax);
-      }
-      else if (elapsedTime < (tStart + tConst + tEnd)) {
-        return (vMax + aEnd * (elapsedTime - tStart - tConst) / 1000000);
-      }
-      else {
-        return (vEnd);
-      }
-    }
-
-    float idealAccel (int elapsedTime) {
-      if (elapsedTime <= tStart) {
-        return (aStart);
-      }
-      else if (elapsedTime < (tStart + tConst)) {
-        return (0);
-      }
-      else if (elapsedTime < (tStart + tConst + tEnd)) {
-        return (aEnd);
-      }
-      else {
-        return (0);
-      }
-    }
-};
-
-MotionCalc::MotionCalc (float temp_dTot, float temp_vMax, float temp_vEnd, float temp_max_accel, float temp_max_decel) {
-  dTot = temp_dTot;
-  vMax = temp_vMax;
-  vEnd = temp_vEnd;
-  max_accel = temp_max_accel;
-  max_decel = temp_max_decel;
-
-  // make sure that accel and decel have the correct sign
-  if (max_accel < 0) {
-    max_accel *= -1;
-  }
-  if (max_decel > 0) {
-    max_decel *= -1;
-  }
-
-  // turn dTot into meters
-  dTot /= 1000;
-
-  // get current speed by averaging current instantaneous speed of left and right wheels
-  vStart = (enc_left_velocity() + enc_right_velocity()) / 2;
-
-  // set constants from global.  Do this a different way later to reference conf.h
-  if (((dTot < 0) && (vMax > 0)) || ((dTot > 0) && (vMax < 0))) {
-    vMax = -vMax;
-  }
-
-  if (vStart <= vMax) {
-    aStart = max_accel;
-  }
-  else {
-    aStart = max_decel;
-  }
-
-  if (vEnd <= vMax) {
-    aEnd = max_decel;
-  }
-  else {
-    aEnd = max_accel;
-  }
-
-  // do initial calculations
-  // set distances assuming there is room to reach max speed
-  dStart = (vMax * vMax - vStart * vStart) / (2 * aStart);
-  dEnd = (vEnd * vEnd - vMax * vMax) / (2 * aEnd);
-  tConst = 1000000 * (dTot - dStart - dEnd) / vMax;
-
-  // set distances if there is not space to reach max speed
-  if (tConst < 0) {
-    dStart = (vStart * vStart - vEnd * vEnd + 2 * aEnd * dTot) / (2 * aEnd - 2 * aStart);
-    dEnd = dTot - dStart;
-    vMax = sqrt(vStart * vStart + 2 * aStart * dStart);
-    tConst = 0;
-  }
-
-  // calculate tStart and tEnd based on dStart and dEnd
-  tStart = (1000000 * (-vStart + sqrt(vStart * vStart + 2 * aStart * dStart)) / aStart);
-  tEnd =  (1000000 * (-vEnd + sqrt(vEnd * vEnd + 2 * -aEnd * dEnd)) / -aEnd);
-}
+static float max_vel_straight = MAX_VEL_STRAIGHT;
+static float max_vel_rotate = MAX_VEL_ROTATE;
+static float max_vel_corner = MAX_VEL_CORNER;
 
 // input current speed and desired force
 class idealMotorOutputCalculator {
@@ -165,20 +49,19 @@ class PIDController {
     float i_term = 0;
     elapsedMicros elapsed_time;
     float last_error = 0;
-	  float kp, ki, kd;
+    float kp, ki, kd;
   public:
     float i_upper_bound = 2;
     float i_lower_bound = -2;
     PIDController(float, float, float);
     float Calculate(float error);
-} ;
+};
 
 PIDController::PIDController(float tempKP, float tempKI, float tempKD) {
-	kp = tempKP;
-	ki = tempKI;
-	kd = tempKD;
+  kp = tempKP;
+  ki = tempKI;
+  kd = tempKD;
 }
-
 
 float PIDController::Calculate(float error) {
   i_term += ki * error * elapsed_time;
@@ -199,7 +82,9 @@ void motion_forward(float distance, float exit_speed) {
   float forcePerMotor;
   elapsedMicros moveTime;
 
-  MotionCalc motionCalc (distance, max_vel_straight, exit_speed, max_accel_straight, max_decel_straight);
+  float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
+  MotionCalc motionCalc (distance, max_vel_straight, current_speed, exit_speed, max_accel_straight,
+                         max_decel_straight);
 
   PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
@@ -207,7 +92,7 @@ void motion_forward(float distance, float exit_speed) {
   PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
 
   // zero clock before move
-  moveTime = 0;   
+  moveTime = 0;
 
   // execute motion
   while (idealDistance != distance) {
@@ -215,7 +100,7 @@ void motion_forward(float distance, float exit_speed) {
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
-    // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.  
+    // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.
     RangeSensors.updateReadings();
     rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromTarget(.5));
 
@@ -224,7 +109,7 @@ void motion_forward(float distance, float exit_speed) {
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
-    
+
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
     if (idealVelocity > 0) {
       forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
@@ -261,8 +146,10 @@ void motion_rotate(float angle) {
   float forcePerMotor;
   float rightOutput, leftOutput;
   elapsedMicros moveTime;
-  
-  MotionCalc motionCalc (linearDistance, max_vel_rotate, 0, max_accel_rotate, max_decel_rotate);
+
+  float current_speed = (enc_left_velocity() - enc_right_velocity()) / 2;
+  MotionCalc motionCalc (linearDistance, max_vel_rotate, current_speed, 0, max_accel_rotate,
+                         max_decel_rotate);
 
   PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
@@ -275,7 +162,7 @@ void motion_rotate(float angle) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
-    
+
     errorLeft = enc_left_extrapolate() - idealLinearDistance;
     errorRight = enc_right_extrapolate() + idealLinearDistance;
 
@@ -295,7 +182,7 @@ void motion_rotate(float angle) {
     // set motors to run at specified rate
     motor_set(&motor_a, leftOutput);
     motor_set(&motor_b, rightOutput);
-    
+
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
 
   }
@@ -325,7 +212,7 @@ void motion_corner(float angle, float radius, float exit_speed) {
   if (exit_speed < 0) {
     exit_speed *= -1;
   }
-  
+
   distance = angle * 3.14159265359 * radius / 180;
   if (distance < 0) {
     distance *= -1;
@@ -341,8 +228,10 @@ void motion_corner(float angle, float radius, float exit_speed) {
     leftFraction = (radius - MM_BETWEEN_WHEELS / 2) / radius;
     rightFraction = (radius + MM_BETWEEN_WHEELS / 2) / radius;
   }
-  
-  MotionCalc motionCalc (distance, max_vel_corner, exit_speed, max_accel_corner, max_decel_corner);
+
+  float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
+  MotionCalc motionCalc (distance, max_vel_corner, current_speed, exit_speed, max_accel_corner,
+                         max_decel_corner);
 
   PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
@@ -358,7 +247,7 @@ void motion_corner(float angle, float radius, float exit_speed) {
 
     errorLeft = enc_left_extrapolate() - idealDistance * rightFraction;
     errorRight = enc_right_extrapolate() - idealDistance * leftFraction;
-    
+
     // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
     if (idealVelocity * leftFraction > 0) {
       forceLeftMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) * leftFraction + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
