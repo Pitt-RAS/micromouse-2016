@@ -6,7 +6,7 @@ class Orientation {
     Orientation();
     static void interruptHandler();
 
-    Orientation* _instance = NULL;
+//    Orientation* _instance = NULL;
   public:
     Orientation* getInstance();
 

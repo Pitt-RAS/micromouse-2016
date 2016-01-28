@@ -1,52 +1,48 @@
-#include <EncoderMod.h>
-
+#include "EncoderMod.h"
 #include "conf.h"
 #include "motors.h"
 #include "motion.h"
 #include "sensors_encoders.h"
-#include "sensors_range.h"
+#include "RangeSensorContainer.h"
 
 #define BAUD 9600
 
 int incomingByte = 0;
 void setup()
 {
-  analogWriteFrequency(MOTOR_AP, 46875);  // Set higher pwm frequency for smoother motor control
-  analogWriteFrequency(MOTOR_BP, 46875);  // Set higher pwm frequency for smoother motor control
+  analogWriteFrequency(MOTOR_AP_PIN, 46875);  // Set higher pwm frequency for smoother motor control
+  analogWriteFrequency(MOTOR_BP_PIN, 46875);  // Set higher pwm frequency for smoother motor control
   analogWriteResolution(10);  // PWM resolution is 0-1023
 
+  // initialize all classes
   motors_init();
-
+  
   Serial2.begin(BAUD);
-
-  pinMode(BUTTON1, INPUT);
-  while (digitalRead(BUTTON1) == LOW);
+  
+  pinMode(BUTTON1_PIN, INPUT);
+  while (digitalRead(BUTTON1_PIN) == LOW);
   delay(1000);
+  
   enc_left_write(0);
   enc_right_write(0);
+
+  motion_forward(600, 0);
+  motion_hold(100);
 
 }
 
 void loop() {
 
-
+  // RangeSensors.updateReadings();
+  // Serial2.print("diag_left=");
+  // Serial2.print(RangeSensors.isWall(RANGE_DIAG_LEFT_PIN),3);
+  // Serial2.print("  front=");
+  // Serial2.print(RangeSensors.isWall(RANGE_FRONT_PIN),3);
+  // Serial2.print("  diag_right=");
+  // Serial2.println(RangeSensors.isWall(RANGE_DIAG_RIGHT_PIN),3);
+  // delay(50);
   
-  Serial2.println(RangeSensor::read(RANGE_FRONT));
-  delay(100);
-  
 
-  //  Serial2.print("\t");
-  //  Serial2.print(RangeSensor::read(RANGE_FRONT_LEFT));
-  //  Serial2.print("\t");
-  //  Serial2.print(RangeSensor::read(RANGE_FRONT_RIGHT));
-  //  Serial2.print("\t");
-  //  Serial2.print(RangeSensor::read(RANGE_LEFT));
-  //  Serial2.print("\t");
-  //  Serial2.print(RangeSensor::read(RANGE_RIGHT));
-  //  Serial2.println();
-
-  //  motion_forward(700,0);
-  //  motion_rotate(90);
 
 
 
@@ -68,37 +64,6 @@ void loop() {
   //    }
   //  }
 
-
-
-
-  //    if ((elapsedTimeNow > 1000) && (elapsedTimeNow < 1100)){
-  //      velocityTimer = 0;
-  //      enc_left_write(0);
-  //    }
-  //    else if ((elapsedTimeNow > 10000) && (elapsedTimeNow < 10100)) {
-  //      if (distance == 0) {
-  //      int elapsedVelocityTime = velocityTimer;
-  //      distance = enc_left_read();
-  //      Serial2.println(distance / 1000 / (velocityTimer / 1000000), 5);
-  //      }
-  //    }
-  //    else if (elapsedTimeNow > 10100) {
-  //      motor_set(&motor_a, 0);
-  //    }
-
-
-
-
-  //  Serial2.print(enc_left_read());
-  //  Serial2.print(" ");
-  //  Serial2.print(enc_left_extrapolate());
-  //  Serial2.print(" ");
-  //  Serial2.println(enc_left_velocity());
-  //  Serial2.print(" ");
-  //  Serial2.print(enc_right_read());
-  //  Serial2.print(" ");
-  //  Serial2.println(enc_right_extrapolate());
-  //  delay(10);
 
 
 

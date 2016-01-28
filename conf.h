@@ -1,62 +1,86 @@
 #ifndef CONF_H
 #define CONF_H
 
+#include <Arduino.h>
+
 // Define pin assignments for teensy3.2 on Rev1 PCB
-#define ENCODER_A1 1
-#define ENCODER_A2 0
-#define MOTOR_A1 4
-#define MOTOR_A2 2
-#define MOTOR_AP 3
+#define ENCODER_A1_PIN 1
+#define ENCODER_A2_PIN 0
+#define MOTOR_A1_PIN 4
+#define MOTOR_A2_PIN 2
+#define MOTOR_AP_PIN 3
 
-#define ENCODER_B1 12
-#define ENCODER_B2 11
-#define MOTOR_B1 7
-#define MOTOR_B2 6
-#define MOTOR_BP 5
+#define ENCODER_B1_PIN 12
+#define ENCODER_B2_PIN 11
+#define MOTOR_B1_PIN 7
+#define MOTOR_B2_PIN 6
+#define MOTOR_BP_PIN 5
 
-#define BUTTON1 23
-#define BUTTON2 22
-#define BUTTON3 21
+#define BUTTON1_PIN 23
+#define BUTTON2_PIN 22
+#define BUTTON3_PIN 21
 
-#define SCL_ 18
-#define SDA_ 19
+#define SCL_PIN 18
+#define SDA_PIN 19
 
-#define EMITTER1 29
-#define EMITTER2 30
-#define EMITTER3 31
-#define EMITTER4 32
-#define EMITTER5 33
+#define EMITTER1_PIN 29
+#define EMITTER2_PIN 30
+#define EMITTER3_PIN 31
+#define EMITTER4_PIN 32
+#define EMITTER5_PIN 33
 
-#define RANGE1 A14
-#define RANGE2 A0
-#define RANGE3 A1
-#define RANGE4 A2
-#define RANGE5 A3
+#define RANGE1_PIN A14
+#define RANGE2_PIN A0
+#define RANGE3_PIN A1
+#define RANGE4_PIN A2
+#define RANGE5_PIN A3
+
+// RANGE SENSOR OPTIONS
 
 // Range sensor directions
-#define RANGE_FRONT_LEFT RANGE1
-#define RANGE_FRONT_RIGHT RANGE2
-#define RANGE_LEFT RANGE3
-#define RANGE_RIGHT RANGE4
-#define RANGE_FRONT RANGE5
+#define RANGE_DIAG_LEFT_PIN RANGE1_PIN
+#define RANGE_DIAG_RIGHT_PIN RANGE2_PIN
+#define RANGE_LEFT_PIN RANGE3_PIN
+#define RANGE_RIGHT_PIN RANGE4_PIN
+#define RANGE_FRONT_PIN RANGE5_PIN
 
 // Range sensor distance offsets
-#define RANGE_FRONT_LEFT_OFFSET -35
-#define RANGE_FRONT_RIGHT_OFFSET -35
+#define RANGE_DIAG_LEFT_OFFSET -35
+#define RANGE_DIAG_RIGHT_OFFSET -35
 #define RANGE_LEFT_OFFSET 15
 #define RANGE_RIGHT_OFFSET 15
 #define RANGE_FRONT_OFFSET 30
+
+// Range sensor wall thresholds
+#define RANGE_DIAG_LEFT_WALL_THRESHOLD 75
+#define RANGE_DIAG_RIGHT_WALL_THRESHOLD 75
+#define RANGE_LEFT_WALL_THRESHOLD 70
+#define RANGE_RIGHT_WALL_THRESHOLD 70
+#define RANGE_FRONT_WALL_THRESHOLD 125
+
+// Range sensor middle readings
+#define RANGE_DIAG_LEFT_MIDDLE 80
+#define RANGE_DIAG_RIGHT_MIDDLE 80
+#define RANGE_LEFT_MIDDLE 100
+#define RANGE_RIGHT_MIDDLE 100
+#define RANGE_FRONT_MIDDLE 100
+
+// Number of samples in moving average
+#define RANGE_QUEUE_LENGTH 10
+
+// Number of old samples to clear when wall status changes
+#define RANGE_QUEUE_NUM_TO_CLEAR 5
 
 // Motion control paremeters
 #define MM_PER_BLOCK 180
 #define MM_PER_STEP 0.7928
 
 // PID tuning parameters
-#define KP_POSITION .4
+#define KP_POSITION .01
 #define KI_POSITION 0
 #define KD_POSITION 0
 
-#define KP_ROTATION .1
+#define KP_ROTATION 1
 #define KI_ROTATION 0
 #define KD_ROTATION 0
 
@@ -66,16 +90,16 @@
 #define NUMBER_OF_MOTORS 2
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
-#define MAX_ACCEL_STRAIGHT 1.5 // m/s/s  
-#define MAX_DECEL_STRAIGHT -1.5 // m/s/s
-#define MAX_ACCEL_ROTATE 1.5 // m/s/s  
-#define MAX_DECEL_ROTATE -1.5 // m/s/s
-#define MAX_ACCEL_CORNER 1.5 // m/s/s  
-#define MAX_DECEL_CORNER -1.5 // m/s/s
+#define MAX_ACCEL_STRAIGHT 3 // m/s/s  
+#define MAX_DECEL_STRAIGHT -3 // m/s/s
+#define MAX_ACCEL_ROTATE 3 // m/s/s  
+#define MAX_DECEL_ROTATE -3 // m/s/s
+#define MAX_ACCEL_CORNER 3 // m/s/s  
+#define MAX_DECEL_CORNER -3 // m/s/s
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT .5 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT .2 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
