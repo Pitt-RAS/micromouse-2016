@@ -402,7 +402,7 @@ void motion_corner(float angle, float radius, float exit_speed) {
   enc_right_write(0);
 }
 
-void motion_hold(int time)
+void motion_hold(unsigned int time)
 {
   float errorRight, errorLeft;
   float rightOutput, leftOutput;

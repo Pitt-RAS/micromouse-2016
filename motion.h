@@ -8,7 +8,7 @@ void motion_forward(float distance, float exit_speed);
 void motion_rotate(float angle);
 void motion_corner(float angle, float radius, float exit_speed);
 
-void motion_hold(int time);
+void motion_hold(unsigned int time);
 
 // functions to set max velocity variables
 void motion_set_maxAccel_straight(float temp_max_accel_straight);
