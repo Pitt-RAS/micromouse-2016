@@ -1,17 +1,14 @@
 #ifndef MOTORS_H
 #define MOTORS_H
 
-// describes a motor
-struct motor {
-    int pin1, pin2, pinpwm;
+class Motor {
+  private:
+    int pin1_, pin2_, pin_pwm_;
+  public:
+    Motor(int pin1, int pin2, int pwm_pin);
+    void Set(float accel, float current_velocity);
 };
 
-extern struct motor motor_a, motor_b;
-
-// Initialize motors
-void motors_init();
-
-// Run a motor at speed, where -1.0 <= speed <= 1.0.
-void motor_set(struct motor *motor, float speed);
+extern Motor motor_l, motor_r;
 
 #endif

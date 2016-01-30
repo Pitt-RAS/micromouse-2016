@@ -15,8 +15,6 @@ void setup()
   analogWriteResolution(10);  // PWM resolution is 0-1023
 
   // initialize all classes
-  motors_init();
-  
   Serial2.begin(BAUD);
   
   pinMode(BUTTON1_PIN, INPUT);

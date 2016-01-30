@@ -23,33 +23,9 @@ static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
 
-// input current speed and desired force
-class idealMotorOutputCalculator {
-  private:
-    float motorOutput;
-    float requiredCurrent, currentBEMF;
-    float velocityPerVBEMF, forcePerAmp;
-
-  public:
-    idealMotorOutputCalculator();
-    float Calculate (float desiredForce, float currentVelocity) {
-      requiredCurrent = desiredForce / forcePerAmp;
-      currentBEMF = currentVelocity / velocityPerVBEMF;
-      return ((requiredCurrent * RATED_INTERNAL_RESISTANCE + currentBEMF) / BATTERY_VOLTAGE);
-    }
-} left_motor_output_calculator, right_motor_output_calculator;
-
-idealMotorOutputCalculator::idealMotorOutputCalculator() {
-  // calcluate these terms initially in case float math isn't done precompile
-  velocityPerVBEMF = VELOCITY_PER_VBEMF;
-  forcePerAmp = FORCE_PER_AMP;
-}
-
 void motion_forward(float distance, float exit_speed) {
-  float errorRight, errorLeft, errorCenter, rotationOffset;
-  float rightOutput, leftOutput;
+  float errorRight, errorLeft, rotationOffset;
   float idealDistance, idealVelocity;
-  float forcePerMotor;
   elapsedMicros moveTime;
 
   float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
@@ -80,27 +56,8 @@ void motion_forward(float distance, float exit_speed) {
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
 
-    // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
-    if (idealVelocity > 0) {
-      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
-    }
-    else {
-      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
-    }
-
-    leftOutput = left_motor_output_calculator.Calculate(forcePerMotor, idealVelocity);
-    rightOutput = right_motor_output_calculator.Calculate(forcePerMotor, idealVelocity);
-
-    //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
-    // add PID error correction to ideal value
-    leftOutput += left_PID.Calculate(errorLeft);
-    rightOutput += right_PID.Calculate(errorRight);
-
-    //Serial2.println(errorLeft);
-
-    // set motors to run at specified rate
-    motor_set(&motor_a, leftOutput);
-    motor_set(&motor_b, rightOutput);
+    motor_l.Set(motionCalc.idealAccel(moveTime) + left_PID.Calculate(errorLeft), idealVelocity);
+    motor_r.Set(motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight), idealVelocity);
   }
 
   enc_left_write(0);
@@ -113,8 +70,6 @@ void motion_rotate(float angle) {
   float idealLinearDistance, idealLinearVelocity;
   float errorLeft, errorRight;
   float linearDistance = distancePerDegree * angle;
-  float forcePerMotor;
-  float rightOutput, leftOutput;
   elapsedMicros moveTime;
 
   float current_speed = (enc_left_velocity() - enc_right_velocity()) / 2;
@@ -136,39 +91,23 @@ void motion_rotate(float angle) {
     errorLeft = enc_left_extrapolate() - idealLinearDistance;
     errorRight = enc_right_extrapolate() + idealLinearDistance;
 
-    if (idealLinearVelocity > 0) {
-      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
-    }
-    else {
-      forcePerMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
-    }
-
-    leftOutput = left_motor_output_calculator.Calculate(forcePerMotor, idealLinearVelocity);
-    rightOutput = right_motor_output_calculator.Calculate(-forcePerMotor, idealLinearVelocity);
-
-    leftOutput += left_PID.Calculate(errorLeft);
-    rightOutput += right_PID.Calculate(errorRight);
-
-    // set motors to run at specified rate
-    motor_set(&motor_a, leftOutput);
-    motor_set(&motor_b, rightOutput);
+    motor_l.Set(motionCalc.idealAccel(moveTime) + left_PID.Calculate(errorLeft),
+                idealLinearVelocity);
+    motor_r.Set(-motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight),
+                idealLinearVelocity);
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
 
   }
 
-  motor_set(&motor_a, 0);
-  motor_set(&motor_b, 0);
   enc_left_write(0);
   enc_right_write(0);
 }
 
 void motion_corner(float angle, float radius, float exit_speed) {
   float errorRight, errorLeft;
-  float rightOutput, leftOutput;
   float leftFraction, rightFraction;
   float idealDistance, idealVelocity;
-  float forceLeftMotor, forceRightMotor;
   float distance;
 
   if (radius < 0) {
@@ -218,31 +157,10 @@ void motion_corner(float angle, float radius, float exit_speed) {
     errorLeft = enc_left_extrapolate() - idealDistance * rightFraction;
     errorRight = enc_right_extrapolate() - idealDistance * leftFraction;
 
-    // use instantaneous velocity of each encoder to calculate what the ideal PWM would be
-    if (idealVelocity * leftFraction > 0) {
-      forceLeftMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) * leftFraction + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
-    }
-    else {
-      forceLeftMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) * leftFraction - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
-    }
-    if (idealVelocity * rightFraction > 0) {
-      forceRightMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) * rightFraction + FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
-    }
-    else {
-      forceRightMotor = (ROBOT_MASS * motionCalc.idealAccel(moveTime) * rightFraction - FRICTION_FORCE) / NUMBER_OF_MOTORS; // this is acceleration motors should have at a current time
-    }
-
-    leftOutput = left_motor_output_calculator.Calculate(forceLeftMotor, idealVelocity * leftFraction);
-    rightOutput = right_motor_output_calculator.Calculate(forceRightMotor, idealVelocity * rightFraction);
-
-    //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
-    // add PID error correction to ideal value
-    leftOutput += left_PID.Calculate(errorLeft);
-    rightOutput += right_PID.Calculate(errorRight);
-
-    // set motors to run at specified rate
-    motor_set(&motor_a, leftOutput);
-    motor_set(&motor_b, rightOutput);
+    motor_l.Set(motionCalc.idealAccel(moveTime) * leftFraction + left_PID.Calculate(errorLeft),
+                idealVelocity * leftFraction);
+    motor_r.Set(motionCalc.idealAccel(moveTime) * rightFraction + right_PID.Calculate(errorRight),
+                idealVelocity * rightFraction);
   }
 
   enc_left_write(0);
@@ -266,12 +184,12 @@ void motion_hold(unsigned int time) {
     leftOutput = left_PID.Calculate(errorLeft);
     rightOutput = right_PID.Calculate(errorRight);
 
-    motor_set(&motor_a, leftOutput);
-    motor_set(&motor_b, rightOutput);
+    motor_l.Set(leftOutput, 0);
+    motor_r.Set(rightOutput, 0);
   }
 
-  motor_set(&motor_a, 0);
-  motor_set(&motor_b, 0);
+  motor_l.Set(0, 0);
+  motor_r.Set(0, 0);
 }
 
 // functions to set max velocity variables
