@@ -14,6 +14,7 @@ Orientation::Orientation() {
   Wire.begin(I2C_MASTER, 0, I2C_PINS_18_19, I2C_PULLUP_INT, I2C_RATE_400);
 
   mpu_.initialize();
+  mpu_.testConnection();
   Serial2.println(mpu_.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
   uint8_t dev_status = mpu_.dmpInitialize();
 

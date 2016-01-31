@@ -1,7 +1,13 @@
 #ifndef MICROMOUSE_SENSORS_ORIENTATION_H_
 #define MICROMOUSE_SENSORS_ORIENTATION_H_
 
-#include "MPU6050_6Axis_MotionApps20.h"
+#include <Arduino.h>
+
+#include <helper_3dmath.h>
+#define MPU6050_INCLUDE_DMP_MOTIONAPPS20
+#include <MPU6050.h>
+
+class MPU6050;
 
 class Orientation {
   private:
