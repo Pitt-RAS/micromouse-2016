@@ -4,29 +4,25 @@
 RangeSensorContainer RangeSensors;
 
 RangeSensorContainer::RangeSensorContainer() 
-	: leftSensor(RANGE_DIAG_LEFT_PIN), rightSensor(RANGE_DIAG_RIGHT_PIN)
+	: leftSensor(RANGE_DIAG_LEFT_PIN, LEFT_LOW_THRESHOLD, LEFT_HIGH_THRESHOLD), rightSensor(RANGE_DIAG_RIGHT_PIN, RIGHT_LOW_THRESHOLD, RIGHT_HIGH_THRESHOLD)
 {
 }
 
 void RangeSensorContainer::updateReadings() {
-	leftSensor.getRange();
-	rightSensor.getRange();
+	leftSensor.updateRange();
+	rightSensor.updateRange();
 }
 
-//Schmidt Trigger, Time Adjust, Varrying Threshold, getLastRange, Reset 
 bool RangeSensorContainer::isWall(Direction wallToCheck) {
+	
 	switch (wallToCheck) {
 		case left:
-			if (leftSensor.getRange() < RANGE_DIAG_LEFT_WALL_THRESHOLD) {
-				return true;
-			}
+				return leftSensor.isWall();
 			break;
 		case front:
 			break;
 		case right:
-			if (rightSensor.getRange() < RANGE_DIAG_RIGHT_WALL_THRESHOLD) {
-				return true;
-			}
+				return rightSensor.isWall();
 			break;
     case back:
       break;
@@ -35,17 +31,16 @@ bool RangeSensorContainer::isWall(Direction wallToCheck) {
 	return false;
 }
 
-float RangeSensorContainer::errorFromTarget(float target) {
+float RangeSensorContainer::errorFromCenter() {
   float errorCenter;
-	updateReadings();
 	if (isWall(left) && isWall(right)) {
-		errorCenter = .5 * leftSensor.getRange() - rightSensor.getRange();
+		errorCenter = .5 * leftSensor.getRange(1) - rightSensor.getRange(1);
 	}
 	else if (isWall(left)) {
-		errorCenter = (leftSensor.getRange() - RANGE_DIAG_LEFT_MIDDLE);
+		errorCenter = (leftSensor.getRange(1) - RANGE_DIAG_LEFT_MIDDLE);
 	}
 	else if (isWall(right)) {
-		errorCenter = (RANGE_DIAG_RIGHT_MIDDLE - rightSensor.getRange());
+		errorCenter = (RANGE_DIAG_RIGHT_MIDDLE - rightSensor.getRange(1));
 	}
 	else {
 		errorCenter = 0;

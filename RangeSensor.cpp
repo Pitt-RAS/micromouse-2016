@@ -3,10 +3,12 @@
 #include "conf.h"
 #include "RangeSensor.h"
 
-RangeSensor::RangeSensor(int temp_pin) {
+RangeSensor::RangeSensor(int temp_pin, int lowT, int highT) {
   pin_ = temp_pin;
+  low_threshold_ = lowT;
+  high_threshold_ = highT;
   memset(raw_queue_, 0, sizeof(raw_queue_));
-  memeset(history_queue_, 0, sizeof(history_queue_));
+  memset(history_queue_, 0, sizeof(history_queue_));
 }
 
 void RangeSensor::refreshRawQueue() {
@@ -27,15 +29,15 @@ void RangeSensor::clearRawQueue() {
 
 void RangeSensor::clearHistory() {
 	history_queue_index_ = 0;
-	memeset(history_queue_, 0, sizeof(history_queue_));
+	memset(history_queue_, 0, sizeof(history_queue_));
 }
 
 //Update Raw Range Queue so ranges are accurate later when needed by higher level
 void RangeSensor::updateRange() {
-  distance_queue_sum_ -= distance_queue_[distance_queue_index_];
-  distance_queue_[distance_queue_index_] = (int) 20760 / (analogRead(pin_) - 11);
-  distance_queue_sum_ += distance_queue_[distance_queue_index_];
-  distance_queue_index_ = (distance_queue_index_ + 1) % RANGE_QUEUE_MAX_LENGTH;
+  raw_queue_sum_ -= raw_queue_[raw_queue_index_];
+  raw_queue_[raw_queue_index_] = (int) 20760 / (analogRead(pin_) - 11);
+  raw_queue_sum_ += raw_queue_[raw_queue_index_];
+  raw_queue_index_ = (raw_queue_index_ + 1) % RANGE_QUEUE_MAX_LENGTH;
 
   if(raw_queue_length_ != RANGE_QUEUE_MAX_LENGTH) {
 	  raw_queue_length_++;
@@ -44,11 +46,20 @@ void RangeSensor::updateRange() {
 
 //Force to take new reading and adjust Queue
 int RangeSensor::getRange() {
- 
-  history_queue_[history_queue_index_] = raw_queue_sum_ / raw_queue_length_;
+
+  int raw_queue_average_ = raw_queue_sum_ / raw_queue_length_;
+
+  history_queue_[history_queue_index_] = raw_queue_average_;
   history_queue_index_ = (history_queue_index_ + 1) % HISTORY_QUEUE_MAX_LENGTH ;
+
+  if(sawWall) {
+	sawWall = raw_queue_average_ < high_threshold_;
+  }
+  else {
+	sawWall = raw_queue_average_ < low_threshold_;
+  }
   
-  return getRange(1);
+  return raw_queue_average_;
 }
 
 int RangeSensor::getRange(int index) {
@@ -65,3 +76,9 @@ int RangeSensor::getRange(int index) {
 
 }
 
+bool RangeSensor::isWall() {
+
+  getRange();
+  return sawWall;
+
+}

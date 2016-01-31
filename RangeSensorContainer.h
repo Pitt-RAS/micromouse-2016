@@ -20,7 +20,7 @@ class RangeSensorContainer {
 
 		void updateReadings();
 		bool isWall(Direction wallToCheck); //Maybe directly return error for pid 
-    float errorFromTarget(float target);
+    	float errorFromCenter();
 
 };
 
