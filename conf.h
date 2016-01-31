@@ -82,7 +82,7 @@
 #define MM_PER_STEP 0.7928
 
 // PID tuning parameters
-#define KP_POSITION .01
+#define KP_POSITION 7
 #define KI_POSITION 0
 #define KD_POSITION 0
 
@@ -92,7 +92,7 @@
 
 // Robot characteristics
 #define ROBOT_MASS .226 // kilograms
-#define MM_BETWEEN_WHEELS 76.75 // millimeters
+#define MM_BETWEEN_WHEELS 122 // millimeters
 #define NUMBER_OF_MOTORS 2
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
@@ -119,7 +119,7 @@
 #define WHEEL_RADIUS (MM_PER_STEP * STEPS_PER_MOTOR_REV * GEAR_RATIO / (2 * 3.14159265359))// in millimeters
 #define FORCE_PER_AMP (RATED_TORQUE_PER_AMP * GEAR_RATIO * NUMBER_OF_MOTORS * 1000 / WHEEL_RADIUS) // in Newtons
 #define VELOCITY_PER_VBEMF (RATED_RPM_PER_VBEMF * STEPS_PER_MOTOR_REV * GEAR_RATIO * MM_PER_STEP / (60000)) // 60000 is for mm to m and s to min
-#define FRICTION_FORCE (RATED_FREERUN_CURRENT * FORCE_PER_AMP + 0.6) // Newtons (0.08 calculated Newtons from motor/gearbox)  amount of force opposing motion in robot including rolling resistance, sliding, gearing
+#define FRICTION_FORCE (RATED_FREERUN_CURRENT * FORCE_PER_AMP + 0.10) // Newtons (0.08 calculated Newtons from motor/gearbox)  amount of force opposing motion in robot including rolling resistance, sliding, gearing
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
