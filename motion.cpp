@@ -47,8 +47,9 @@ void motion_forward(float distance, float exit_speed) {
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
     // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.
-    RangeSensors.updateReadings();
-    rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
+    //RangeSensors.updateReadings();
+    //rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
+    rotationOffset = 0;
 
     errorLeft = enc_left_extrapolate() - idealDistance - rotationOffset;
     errorRight = enc_right_extrapolate() - idealDistance + rotationOffset;
