@@ -31,6 +31,17 @@ void loop()
   enc_left_write(0);
   enc_right_write(0);
 
-  motion_forward(600, 0);
-  motion_hold(100);
+  //SerialDriver serial_driver;
+  //serial_driver.setSleepTime(200);
+  //Driver &driver = serial_driver;
+
+  RobotDriver robot_driver;
+  Driver &driver = robot_driver;
+
+  driver.move(kNorth, 3);
+  driver.move(kEast, 1);
+  driver.move(kWest, 1);
+  driver.move(kSouth, 1);
+  driver.move(kEast, 2);
+  driver.move(kNorth, 1);
 }
