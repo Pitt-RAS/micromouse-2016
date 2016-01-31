@@ -2,14 +2,20 @@
 #include "conf.h"
 
 #include <Arduino.h>
-#include "I2Cdev.h"
-#include "MPU6050_6Axis_MotionApps20.h"
+
+#include <I2Cdev.h>
+
+#include <MPU6050_6Axis_MotionApps20.h>
+#include <helper_3dmath.h>
+
+volatile bool Orientation::mpu_interrupt_ = false;
+Orientation* Orientation::instance_ = NULL;
 
 Orientation::Orientation() {
-  Wire.begin();
-  Wire.setClock(400000);
+  Wire.begin(I2C_MASTER, 0, I2C_PINS_18_19, I2C_PULLUP_INT, I2C_RATE_400);
 
   mpu_.initialize();
+  mpu_.testConnection();
   Serial2.println(mpu_.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
   uint8_t dev_status = mpu_.dmpInitialize();
 
@@ -27,6 +33,7 @@ Orientation::Orientation() {
 
     // enable interrupt detection
     Serial2.println(F("Enabling MPU6050 interrupt detection..."));
+    pinMode(IMU_INTERRUPT_PIN, INPUT);
     attachInterrupt(digitalPinToInterrupt(IMU_INTERRUPT_PIN), interruptHandler, RISING);
 
     // set our DMP Ready flag so the main update() function knows it's okay to use it
@@ -127,7 +134,7 @@ void Orientation::resetHeading() {
 }
 
 float Orientation::getHeading() {
-  return raw_heading_ + heading_offset_;
+  return (raw_heading_ + heading_offset_) * RAD_TO_DEG;
 }
 
 void Orientation::resetMaxForwardAccel() {

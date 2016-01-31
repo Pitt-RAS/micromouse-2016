@@ -1,7 +1,13 @@
 #ifndef MICROMOUSE_SENSORS_ORIENTATION_H_
 #define MICROMOUSE_SENSORS_ORIENTATION_H_
 
-#include "MPU6050_6Axis_MotionApps20.h"
+#include <Arduino.h>
+
+#include <helper_3dmath.h>
+#define MPU6050_INCLUDE_DMP_MOTIONAPPS20
+#include <MPU6050.h>
+
+class MPU6050;
 
 class Orientation {
   private:
@@ -10,7 +16,8 @@ class Orientation {
 
     static volatile bool mpu_interrupt_;
 
-    Orientation* instance_ = NULL;
+    static Orientation* instance_;
+
     MPU6050 mpu_;
     bool dmp_ready_ = false;
     uint16_t packet_size_;
@@ -22,7 +29,7 @@ class Orientation {
     float max_forward_accel_ = 0;
     float max_radial_accel_ = 0;
   public:
-    Orientation* getInstance();
+    static Orientation* getInstance();
 
     void update();
 

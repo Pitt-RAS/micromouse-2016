@@ -1,4 +1,5 @@
 #include <Arduino.h>
+
 #include <LedDisplay.h>
 #include "conf.h"
 #include "data.h"
@@ -9,8 +10,13 @@
 #include "RangeSensorContainer.h"
 #include "motors.h"
 #include "sensors_encoders.h"
+#include "sensors_orientation.h"
 #include "EncoderMod.h"
 #include "IdealSweptTurns.h"
+#include <I2Cdev.h>
+#include <helper_3dmath.h>
+#define MPU6050_INCLUDE_DMP_MOTIONAPPS20
+#include <MPU6050.h>
 
 #define BAUD 9600
 
