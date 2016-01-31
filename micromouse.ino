@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include "conf.h"
+#include "data.h"
+#include "driver.h"
 #include "motion.h"
 #include "RangeSensorContainer.h"
 #include "motors.h"
