@@ -31,8 +31,10 @@ void Motor::Set(float accel, float current_velocity) {
 
   if (current_velocity > 0) {
     force = (ROBOT_MASS * accel + FRICTION_FORCE) / NUMBER_OF_MOTORS;
-  } else {
+  } else if (current_velocity < 0) {
     force = (ROBOT_MASS * accel - FRICTION_FORCE) / NUMBER_OF_MOTORS;
+  } else {
+    force = 0;
   }
 
   speed = idealMotorOutput(force, current_velocity);
