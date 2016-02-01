@@ -135,6 +135,8 @@ void Orientation::update() {
     max_forward_accel_ = max(max_forward_accel_, curr_forward_accel);
     max_radial_accel_ = max(max_radial_accel_, curr_radial_accel);
   }
+    //Serial2.println(orientation->getHeading());
+    //Serial2.println(buf[i - 2]);
 }
 
 void Orientation::resetHeading() {
