@@ -116,7 +116,7 @@
 #define KI_POSITION 0
 #define KD_POSITION 0
 
-#define KP_ROTATION 1
+#define KP_ROTATION 0
 #define KI_ROTATION 0
 #define KD_ROTATION 0
 

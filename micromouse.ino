@@ -49,6 +49,7 @@ void setup()
 void loop()
 {
   Navigator<RobotDriver> navigator;
+  Orientation* orientation = Orientation::getInstance();
 
   // Wait for button press.
   while (digitalRead(BUTTON1_PIN) == HIGH);
@@ -58,6 +59,7 @@ void loop()
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
+  orientation->resetHeading();
 
   navigator.runDevelopmentCode();
 }

@@ -4,6 +4,7 @@
 #include "conf.h"
 #include "motors.h"
 #include "sensors_encoders.h"
+#include "sensors_orientation.h"
 #include "MotionCalc.h"
 #include "PIDController.h"
 #include "RangeSensorContainer.h"
@@ -25,6 +26,8 @@ static float max_decel_corner = MAX_DECEL_CORNER;
 static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
+
+static Orientation* orientation = NULL;
 
 // instantiate the turn lookup tables
 //IdealSweptTurns turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
@@ -286,7 +289,8 @@ void motion_collect(float distance, float exit_speed){
 void motion_rotate(float angle) {
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealLinearDistance, idealLinearVelocity;
-  float errorFrontRight, errorBackRight, errorFrontLeft, errorBackLeft;
+  float errorFrontRight, errorBackRight, errorFrontLeft, errorBackLeft, errorRotation;
+  float rotation_correction;
   float linearDistance = distancePerDegree * angle;
   elapsedMicros moveTime;
 
@@ -294,24 +298,34 @@ void motion_rotate(float angle) {
   MotionCalc motionCalc (linearDistance, max_vel_rotate, current_speed, 0, max_accel_rotate,
                          max_decel_rotate);
 
+  if (orientation == NULL) {
+    orientation = Orientation::getInstance();
+  }
+
   PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
 
   // zero encoders and clock before move
   moveTime = 0;
 
   // the right will always be the negative of the left in order to rotate on a point.
   while (idealLinearDistance != linearDistance) {
+    orientation->update();
+
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
-    errorFrontLeft = enc_left_front_extrapolate() - idealLinearDistance;
-    errorBackLeft = enc_left_back_extrapolate() - idealLinearDistance;
-    errorFrontRight = enc_right_front_extrapolate() + idealLinearDistance;
-    errorBackRight = enc_right_back_extrapolate() + idealLinearDistance;
+    errorRotation = orientation->getHeading() * distancePerDegree - idealLinearDistance;
+    rotation_correction = rotation_PID.Calculate(errorRotation);
+
+    errorFrontLeft = enc_left_front_extrapolate() - idealLinearDistance + rotation_correction;
+    errorBackLeft = enc_left_back_extrapolate() - idealLinearDistance + rotation_correction;
+    errorFrontRight = enc_right_front_extrapolate() + idealLinearDistance - rotation_correction;
+    errorBackRight = enc_right_back_extrapolate() + idealLinearDistance - rotation_correction;
 
     motor_lf.Set(motionCalc.idealAccel(moveTime) + left_front_PID.Calculate(errorFrontLeft),
                 idealLinearVelocity);
@@ -330,6 +344,7 @@ void motion_rotate(float angle) {
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
+  orientation->resetHeading();
 }
 
 void motion_corner(SweptTurnType turn_type, float speed) {
@@ -342,6 +357,9 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float total_time;
   IdealSweptTurns* turn_table;
+  if (orientation == NULL) {
+    orientation = Orientation::getInstance();
+  }
 
   switch (turn_type) {
     //case kLeftTurn45:
@@ -438,33 +456,8 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
+  orientation->resetHeading();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 void motion_hold(unsigned int time) {
   float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;

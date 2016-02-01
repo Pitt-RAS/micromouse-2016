@@ -111,6 +111,15 @@ void Orientation::update() {
     mpu_.dmpGetGravity(&gravity, &orientation);
     mpu_.dmpGetYawPitchRoll(tait_bryan, &orientation, &gravity);
 
+    if (raw_heading_ == NAN) {
+      heading_offset_ = -tait_bryan[0];
+    }
+
+    if (raw_heading_ < -PI/2 && tait_bryan[0] > PI/2) {
+      completed_rotations_--;
+    } else if (raw_heading_ > PI/2 && tait_bryan[0] < -PI/2) {
+      completed_rotations_++;
+    }
     raw_heading_ = tait_bryan[0];
 
     mpu_.dmpGetAccel(&accel, fifo_buffer);
@@ -127,14 +136,17 @@ void Orientation::update() {
     max_forward_accel_ = max(max_forward_accel_, curr_forward_accel);
     max_radial_accel_ = max(max_radial_accel_, curr_radial_accel);
   }
+    //Serial2.println(orientation->getHeading());
+    //Serial2.println(buf[i - 2]);
 }
 
 void Orientation::resetHeading() {
   heading_offset_ = -raw_heading_;
+  completed_rotations_ = 0;
 }
 
 float Orientation::getHeading() {
-  return (raw_heading_ + heading_offset_) * RAD_TO_DEG;
+  return -(raw_heading_ + heading_offset_) * RAD_TO_DEG - 360 * completed_rotations_;
 }
 
 void Orientation::resetMaxForwardAccel() {
