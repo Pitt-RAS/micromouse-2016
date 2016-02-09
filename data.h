@@ -4,6 +4,7 @@
 #ifdef COMPILE_FOR_PC
 #include <string>
 #include <fstream>
+#include <iostream>
 #endif
 
 #ifndef COMPILE_FOR_PC
@@ -439,6 +440,12 @@ void Maze<x_size, y_size>::loadFile(std::string path)
   int n;
   Compass8 direction;
 
+  if (!file.good()) {
+    std::cerr << "Warning: Could not load file `real.maze'" << std::endl
+              << "         Continuing without loading a maze." << std::endl;
+    return;
+  }
+
   file >> x;
   file >> y;
 
@@ -453,6 +460,8 @@ void Maze<x_size, y_size>::loadFile(std::string path)
 
     addWall(x, y, direction);
   }
+
+  file.close();
 }
 
 #endif // #ifdef COMPILE_FOR_PC

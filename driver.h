@@ -211,6 +211,7 @@ class SerialDriver : public SimulationDriver
     SerialDriver();
 };
 
+// Driver for our Micromouse robot
 class RobotDriver : public Driver, public Turnable
 {
   public:

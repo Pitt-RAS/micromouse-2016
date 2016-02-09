@@ -113,6 +113,10 @@ int SimulationDriver::getSleepTime()
 SimulationDriver::SimulationDriver()
 {
   sleep_time_ = kDefaultSleepTime;
+
+#ifdef COMPILE_FOR_PC
+  real_maze_.loadFile("real.maze");
+#endif
 }
 
 void SimulationDriver::setSleepTime(int time)
