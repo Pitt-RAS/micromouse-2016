@@ -20,6 +20,18 @@ void setup()
   // PWM resolution is 0-1023.
   analogWriteResolution(10);
 
+  pinMode(EMITTER1_PIN, OUTPUT);
+  pinMode(EMITTER2_PIN, OUTPUT);
+  pinMode(EMITTER3_PIN, OUTPUT);
+  pinMode(EMITTER4_PIN, OUTPUT);
+  pinMode(EMITTER5_PIN, OUTPUT);
+
+  digitalWrite(EMITTER1_PIN, LOW);
+  digitalWrite(EMITTER2_PIN, LOW);
+  digitalWrite(EMITTER3_PIN, LOW);
+  digitalWrite(EMITTER4_PIN, LOW);
+  digitalWrite(EMITTER5_PIN, LOW);
+
   pinMode(BUTTON1_PIN, INPUT);
 }
 
