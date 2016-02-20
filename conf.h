@@ -78,11 +78,11 @@
 #define RANGE_QUEUE_NUM_TO_CLEAR 5
 
 // Motion control paremeters
-#define MM_PER_BLOCK 180
-#define MM_PER_STEP 0.7928
+#define MM_PER_BLOCK 140
+#define MM_PER_STEP 0.6444
 
 // PID tuning parameters
-#define KP_POSITION 7
+#define KP_POSITION 5.69
 #define KI_POSITION 0
 #define KD_POSITION 0
 
@@ -92,12 +92,12 @@
 
 // Robot characteristics
 #define ROBOT_MASS .226 // kilograms
-#define MM_BETWEEN_WHEELS 122 // millimeters
+#define MM_BETWEEN_WHEELS 85.5 // millimeters
 #define NUMBER_OF_MOTORS 2
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
-#define MAX_ACCEL_STRAIGHT 3 // m/s/s  
-#define MAX_DECEL_STRAIGHT -3 // m/s/s
+#define MAX_ACCEL_STRAIGHT 4 // m/s/s
+#define MAX_DECEL_STRAIGHT -4 // m/s/s
 #define MAX_ACCEL_ROTATE 3 // m/s/s  
 #define MAX_DECEL_ROTATE -3 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
@@ -105,7 +105,7 @@
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT .2 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 0.5 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters

@@ -113,6 +113,10 @@ int SimulationDriver::getSleepTime()
 SimulationDriver::SimulationDriver()
 {
   sleep_time_ = kDefaultSleepTime;
+
+#ifdef COMPILE_FOR_PC
+  real_maze_.loadFile("real.maze");
+#endif
 }
 
 void SimulationDriver::setSleepTime(int time)
@@ -314,8 +318,8 @@ void RobotDriver::turn(Compass8 dir)
       motion_rotate(45.0 * arc_to_turn);
     }
     else {
-      arc_to_turn -= 4;
-      motion_rotate(-45.0 * arc_to_turn);
+      arc_to_turn -= 8;
+      motion_rotate(45.0 * arc_to_turn);
     }
   }
 
