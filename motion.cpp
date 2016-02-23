@@ -65,6 +65,123 @@ void motion_forward(float distance, float exit_speed) {
   enc_right_write(0);
 }
 
+void motion_collect(float distance, float exit_speed){
+    float errorRight, errorLeft, rotationOffset;
+  float idealDistance, idealVelocity;
+  elapsedMicros moveTime;
+
+  float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
+  MotionCalc motionCalc (distance, max_vel_straight, current_speed, exit_speed, max_accel_straight,
+                         max_decel_straight);
+
+  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+
+  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
+
+  //RangeSensor front_left_sensor(RANGE_FRONT_LEFT_PIN, 0, 0);
+  //RangeSensor front_right_sensor(RANGE_FRONT_RIGHT_PIN, 0, 0);
+
+  float off_reading_L, off_reading_R, on_reading_R, on_reading_L, value_L, value_R;
+  int delayTime = 45;
+  int num_range_value = distance/5;
+  int num_readings = 100;
+  int i;
+  
+  String reading_output_L[num_range_value];
+  String reading_output_R[num_range_value];
+  
+  int reading_counter = 0;
+
+  // zero clock before move
+  moveTime = 0;
+
+  // execute motion
+  while (idealDistance != distance) {
+    //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
+    idealDistance = motionCalc.idealDistance(moveTime);
+    idealVelocity = motionCalc.idealVelocity(moveTime);
+
+    if((int)idealDistance%(5) == 0){ // takes a reading every 5mm
+      on_reading_L = 0;
+      off_reading_L = 0;
+      on_reading_R = 0;
+      off_reading_R = 0;
+
+
+      for(i = 0; i<num_readings; i++)
+      {
+        digitalWrite(EMITTER2_PIN, HIGH);
+        delayMicroseconds(delayTime);
+
+        on_reading_L += analogRead(RANGE2_PIN);
+
+        digitalWrite(EMITTER2_PIN, LOW);
+
+        delay(5);
+
+        off_reading_L += analogRead(RANGE2_PIN);
+
+        delay(5);
+
+        digitalWrite(EMITTER1_PIN, HIGH);
+        delayMicroseconds(delayTime);
+
+        on_reading_R += analogRead(RANGE1_PIN);
+
+        digitalWrite(EMITTER1_PIN, LOW);
+
+        delay(5);
+
+        off_reading_R += analogRead(RANGE1_PIN);
+      }
+      
+      
+      on_reading_L /= num_readings;
+      off_reading_L /= num_readings;
+      on_reading_R /= num_readings;
+      off_reading_R /= num_readings;
+
+      value_L = on_reading_L - off_reading_L;
+      value_R = on_reading_R - off_reading_R;
+
+      String left_data = (idealDistance) + ' ' + (value_L);
+      String right_data = (idealDistance) + ' ' + (value_R);
+
+      reading_output_L[reading_counter] = left_data;
+      reading_output_R[reading_counter] = right_data;
+
+      reading_counter++;
+    }
+
+    for(i = 0; i<num_range_value; i++){
+      Serial.println(reading_output_L[i]);
+    }
+    for(i = 0; i<num_range_value; i++){
+      Serial.println(reading_output_R[i]);
+    }
+
+    // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.
+    //RangeSensors.updateReadings();
+    //rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
+    rotationOffset = 0;
+
+    errorLeft = enc_left_extrapolate() - idealDistance - rotationOffset;
+    errorRight = enc_right_extrapolate() - idealDistance + rotationOffset;
+
+    // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
+    // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
+
+    motor_l.Set(motionCalc.idealAccel(moveTime) + left_PID.Calculate(errorLeft), idealVelocity);
+    motor_r.Set(motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight), idealVelocity);
+  }
+
+
+
+  enc_left_write(0);
+  enc_right_write(0);
+}
+
 // clockwise angle is positive, angle is in degrees
 void motion_rotate(float angle) {
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
