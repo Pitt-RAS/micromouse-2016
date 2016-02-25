@@ -51,13 +51,16 @@ MotionCalc::MotionCalc (float temp_dTot, float temp_vMax, float temp_vStart, flo
   if (tConst < 0) {
     dStart = (vStart * vStart - vEnd * vEnd + 2 * aEnd * dTot) / (2 * aEnd - 2 * aStart);
     dEnd = dTot - dStart;
-    vMax = sqrt(vStart * vStart + 2 * aStart * dStart);
+    vMax = sqrt(vStart * vStart + 2 * abs(aStart * dStart));
+    if (dTot < 0) {
+        vMax *= -1;
+    }
     tConst = 0;
   }
 
   // calculate tStart and tEnd based on dStart and dEnd
-  tStart = (1000000 * (-vStart + sqrt(vStart * vStart + 2 * aStart * dStart)) / aStart);
-  tEnd =  (1000000 * (-vEnd + sqrt(vEnd * vEnd + 2 * -aEnd * dEnd)) / -aEnd);
+  tStart = (1000000 * (vMax - vStart) / aStart);
+  tEnd =  (1000000 * (vEnd - vMax) / aEnd);
 }
 
 float MotionCalc::idealDistance (int elapsedTime) {
