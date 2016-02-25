@@ -78,7 +78,7 @@
 #define RANGE_QUEUE_NUM_TO_CLEAR 5
 
 // Motion control paremeters
-#define MM_PER_BLOCK 140
+#define MM_PER_BLOCK 180
 #define MM_PER_STEP 0.6444
 
 // PID tuning parameters
