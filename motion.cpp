@@ -382,6 +382,52 @@ void motion_hold(unsigned int time) {
   motor_r.Set(0, 0);
 }
 
+void motion_hold_range(int setpoint, unsigned int time) {
+  float errorRight, errorLeft;
+  float rightOutput, leftOutput;
+  elapsedMicros currentTime;
+
+  digitalWrite(13, HIGH);
+
+  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+
+  currentTime = 0;
+
+  float off_reading1, off_reading2, on_reading1, on_reading2;
+  while (currentTime / 1000 < time) {
+    off_reading1 = analogRead(RANGE2_PIN);
+    digitalWrite(EMITTER2_PIN, HIGH);
+    delayMicroseconds(45);
+    on_reading1 = analogRead(RANGE2_PIN);
+    digitalWrite(EMITTER2_PIN, LOW);
+
+    delayMicroseconds(45);
+
+    off_reading2 = analogRead(RANGE1_PIN);
+    digitalWrite(EMITTER1_PIN, HIGH);
+    delayMicroseconds(45);
+    on_reading2 = analogRead(RANGE1_PIN);
+    digitalWrite(EMITTER1_PIN, LOW);
+
+    on_reading1 = (154.83 * pow((on_reading1 - off_reading1 + 28.4686), -0.4) - 1.6) * 10;
+
+    on_reading2 = (108.411 * pow((on_reading2 - off_reading2 - 1.12978), -0.4) - 1.6) * 10;
+
+    errorLeft = setpoint - on_reading1;
+    errorRight = setpoint - on_reading2;
+
+    leftOutput = left_PID.Calculate(errorLeft);
+    rightOutput = right_PID.Calculate(errorRight);
+
+    motor_l.Set(leftOutput, 0);
+    motor_r.Set(rightOutput, 0);
+  }
+
+  motor_l.Set(0, 0);
+  motor_r.Set(0, 0);
+}
+
 // functions to set max velocity variables
 void motion_set_maxAccel_straight(float temp_max_accel_straight) {
   max_accel_straight = temp_max_accel_straight;
