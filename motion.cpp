@@ -7,6 +7,8 @@
 #include "MotionCalc.h"
 #include "PIDController.h"
 #include "RangeSensorContainer.h"
+#include "RangeSensor.h"
+#include "motion.h"
 
 static float max_accel_straight = MAX_ACCEL_STRAIGHT;
 static float max_decel_straight = MAX_DECEL_STRAIGHT;
@@ -85,12 +87,14 @@ void motion_collect(float distance, float exit_speed){
   float off_reading_L, off_reading_R, on_reading_R, on_reading_L, value_L, value_R;
   int delayTime = 45;
   int num_range_value = distance/5;
-  int num_readings = 100;
+  int num_readings = 1;
   int i;
-  
-  String reading_output_L[num_range_value];
-  String reading_output_R[num_range_value];
-  
+  int last_reading_distance = -1;
+  int int_distance;
+
+  int reading_output_L[num_range_value];
+  int reading_output_R[num_range_value];
+
   int reading_counter = 0;
 
   // zero clock before move
@@ -102,7 +106,12 @@ void motion_collect(float distance, float exit_speed){
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
-    if((int)idealDistance%(5) == 0){ // takes a reading every 5mm
+    int_distance = (int) idealDistance;
+
+    // takes a reading every 5mm
+    if (int_distance % 5 == 0 && int_distance > last_reading_distance) {
+      last_reading_distance = int_distance;
+
       on_reading_L = 0;
       off_reading_L = 0;
       on_reading_R = 0;
@@ -111,32 +120,35 @@ void motion_collect(float distance, float exit_speed){
 
       for(i = 0; i<num_readings; i++)
       {
-        digitalWrite(EMITTER2_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_L += analogRead(RANGE2_PIN);
-
-        digitalWrite(EMITTER2_PIN, LOW);
-
-        delay(5);
-
-        off_reading_L += analogRead(RANGE2_PIN);
-
-        delay(5);
+        // Front left
 
         digitalWrite(EMITTER1_PIN, HIGH);
         delayMicroseconds(delayTime);
 
-        on_reading_R += analogRead(RANGE1_PIN);
+        on_reading_L += analogRead(RANGE1_PIN);
 
         digitalWrite(EMITTER1_PIN, LOW);
 
-        delay(5);
+        delayMicroseconds(delayTime);
 
-        off_reading_R += analogRead(RANGE1_PIN);
+        off_reading_L += analogRead(RANGE1_PIN);
+
+        // Front right
+
+        digitalWrite(EMITTER2_PIN, HIGH);
+        delayMicroseconds(delayTime);
+
+        on_reading_R += analogRead(RANGE2_PIN);
+
+        digitalWrite(EMITTER2_PIN, LOW);
+
+        delayMicroseconds(delayTime);
+
+        off_reading_R += analogRead(RANGE2_PIN);
+
+        delayMicroseconds(delayTime);
       }
-      
-      
+
       on_reading_L /= num_readings;
       off_reading_L /= num_readings;
       on_reading_R /= num_readings;
@@ -145,29 +157,14 @@ void motion_collect(float distance, float exit_speed){
       value_L = on_reading_L - off_reading_L;
       value_R = on_reading_R - off_reading_R;
 
-      String left_data = (idealDistance) + ' ' + (value_L);
-      String right_data = (idealDistance) + ' ' + (value_R);
-
-      reading_output_L[reading_counter] = left_data;
-      reading_output_R[reading_counter] = right_data;
+      reading_output_L[reading_counter] = value_L;
+      reading_output_R[reading_counter] = value_R;
 
       reading_counter++;
     }
 
-    for(i = 0; i<num_range_value; i++){
-      Serial.println(reading_output_L[i]);
-    }
-    for(i = 0; i<num_range_value; i++){
-      Serial.println(reading_output_R[i]);
-    }
-
-    // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.
-    //RangeSensors.updateReadings();
-    //rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
-    rotationOffset = 0;
-
-    errorLeft = enc_left_extrapolate() - idealDistance - rotationOffset;
-    errorRight = enc_right_extrapolate() - idealDistance + rotationOffset;
+    errorLeft = enc_left_extrapolate() - idealDistance;
+    errorRight = enc_right_extrapolate() - idealDistance;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
@@ -176,10 +173,25 @@ void motion_collect(float distance, float exit_speed){
     motor_r.Set(motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight), idealVelocity);
   }
 
-
-
   enc_left_write(0);
   enc_right_write(0);
+
+  motion_hold(100);
+
+  Serial.println("=== Front Left ===");
+  for(i = 0; i<num_range_value; i++){
+    Serial.print(reading_output_L[i]);
+    Serial.print(" ");
+    Serial.print((int) distance - 5 * i);
+    Serial.println();
+  }
+  Serial.println("=== Front Right ===");
+  for(i = 0; i<num_range_value; i++){
+    Serial.print(reading_output_R[i]);
+    Serial.print(" ");
+    Serial.print((int) distance - 5 * i);
+    Serial.println();
+  }
 }
 
 // clockwise angle is positive, angle is in degrees
