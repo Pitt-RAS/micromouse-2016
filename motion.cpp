@@ -389,8 +389,8 @@ void motion_hold_range(int setpoint, unsigned int time) {
 
   digitalWrite(13, HIGH);
 
-  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
+  PIDController right_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
 
   currentTime = 0;
 
