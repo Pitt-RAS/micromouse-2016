@@ -106,7 +106,7 @@ void motion_collect(float distance, float exit_speed){
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
-    int_distance = (int) idealDistance;
+    int_distance = (int) ((enc_left_extrapolate() + enc_right_extrapolate()) / 2);
 
     // takes a reading every 5mm
     if (int_distance % 5 == 0 && int_distance > last_reading_distance) {
