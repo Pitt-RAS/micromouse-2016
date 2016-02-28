@@ -396,26 +396,26 @@ void motion_hold_range(int setpoint, unsigned int time) {
 
   float off_reading1, off_reading2, on_reading1, on_reading2;
   while (currentTime / 1000 < time) {
-    off_reading1 = analogRead(RANGE2_PIN);
-    digitalWrite(EMITTER2_PIN, HIGH);
+    off_reading1 = analogRead(RANGE3_PIN);
+    digitalWrite(EMITTER3_PIN, HIGH);
     delayMicroseconds(45);
-    on_reading1 = analogRead(RANGE2_PIN);
-    digitalWrite(EMITTER2_PIN, LOW);
+    on_reading1 = analogRead(RANGE3_PIN);
+    digitalWrite(EMITTER3_PIN, LOW);
 
     delayMicroseconds(45);
 
-    off_reading2 = analogRead(RANGE1_PIN);
-    digitalWrite(EMITTER1_PIN, HIGH);
+    off_reading2 = analogRead(RANGE5_PIN);
+    digitalWrite(EMITTER5_PIN, HIGH);
     delayMicroseconds(45);
-    on_reading2 = analogRead(RANGE1_PIN);
-    digitalWrite(EMITTER1_PIN, LOW);
+    on_reading2 = analogRead(RANGE5_PIN);
+    digitalWrite(EMITTER5_PIN, LOW);
 
-    on_reading1 = (154.83 * pow((on_reading1 - off_reading1 + 28.4686), -0.4) - 1.6) * 10;
+    on_reading1 = (4336.24 * pow((on_reading1 - off_reading1 + 180.403), -0.488198) - 102.882);
 
-    on_reading2 = (108.411 * pow((on_reading2 - off_reading2 - 1.12978), -0.4) - 1.6) * 10;
+    on_reading2 = (1172.86 * pow((on_reading2 - off_reading2 - 46.8304), -0.0430944) - 821.985);
 
-    errorLeft = setpoint - on_reading1;
-    errorRight = setpoint - on_reading2;
+    errorLeft = on_reading1 - on_reading2;
+    errorRight = on_reading2 - on_reading1;
 
     leftOutput = left_PID.Calculate(errorLeft);
     rightOutput = right_PID.Calculate(errorRight);
