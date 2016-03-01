@@ -34,7 +34,7 @@ bool RangeSensorContainer::isWall(Direction wallToCheck) {
 float RangeSensorContainer::errorFromCenter() {
   float errorCenter;
 	if (isWall(left) && isWall(right)) {
-		errorCenter = .5 * leftSensor.getRange(1) - rightSensor.getRange(1);
+		errorCenter = .5 * (leftSensor.getRange(1) - rightSensor.getRange(1));
 	}
 	else if (isWall(left)) {
 		errorCenter = (leftSensor.getRange(1) - RANGE_DIAG_LEFT_MIDDLE);
