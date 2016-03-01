@@ -56,16 +56,18 @@ void motion_forward(float distance, float exit_speed) {
   // zero clock before move
   moveTime = 0;
 
+  RangeSensors.updateReadings();
+
   // execute motion
   while (idealDistance != distance) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
-    // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.
-    //RangeSensors.updateReadings();
-    //rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
-    rotationOffset = 0;
+    // Add error from rangefinder data. Positive error is when it is too close
+    // to the left wall, requiring a positive angle to fix it.
+    RangeSensors.updateReadings();
+    rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
 
     errorFrontLeft = enc_left_front_extrapolate() - idealDistance - rotationOffset;
     errorFrontRight = enc_right_front_extrapolate() - idealDistance + rotationOffset;
