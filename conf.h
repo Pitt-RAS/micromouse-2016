@@ -57,11 +57,18 @@
 
 // RANGE SENSOR OPTIONS
 
+// Translation formula constants. distance = a * (reading - b)^c + d
+#define RANGE1_TRANSLATION { 0.0, 0.0, 0.0, 0.0, 0 }
+#define RANGE2_TRANSLATION { 0.0, 0.0, 0.0, 0.0, 0 }
+#define RANGE3_TRANSLATION { 4336.24, 180.403, -0.488198, -102.882, -10 }
+#define RANGE5_TRANSLATION { 1172.86, -46.8304, -0.0430944, -821.985, 10 }
+
 // Range sensor directions
-#define RANGE_DIAG_LEFT_PIN RANGE1_PIN
-#define RANGE_DIAG_RIGHT_PIN RANGE2_PIN
-#define RANGE_FRONT_LEFT_PIN RANGE3_PIN
-#define RANGE_FRONT_RIGHT_PIN RANGE4_PIN
+#define RANGE_DIAG_LEFT_PIN RANGE3_PIN
+#define RANGE_DIAG_RIGHT_PIN RANGE5_PIN
+#define RANGE_LEFT_PIN RANGE3_PIN
+#define RANGE_RIGHT_PIN RANGE4_PIN
+#define RANGE_FRONT_PIN RANGE5_PIN
 
 // Range sensor distance offsets
 #define RANGE_DIAG_LEFT_OFFSET -35
@@ -77,20 +84,20 @@
 #define RANGE_RIGHT_WALL_THRESHOLD 70
 #define RANGE_FRONT_WALL_THRESHOLD 125
 
-#define LEFT_LOW_THRESHOLD 50
-#define LEFT_HIGH_THRESHOLD 100
-#define RIGHT_LOW_THRESHOLD 50
-#define RIGHT_HIGH_THRESHOLD 100
+#define LEFT_LOW_THRESHOLD 150
+#define LEFT_HIGH_THRESHOLD 150
+#define RIGHT_LOW_THRESHOLD 150
+#define RIGHT_HIGH_THRESHOLD 150
 
 // Range sensor middle readings
-#define RANGE_DIAG_LEFT_MIDDLE 80
-#define RANGE_DIAG_RIGHT_MIDDLE 80
+#define RANGE_DIAG_LEFT_MIDDLE 100
+#define RANGE_DIAG_RIGHT_MIDDLE 100
 #define RANGE_LEFT_MIDDLE 100
 #define RANGE_RIGHT_MIDDLE 100
 #define RANGE_FRONT_MIDDLE 100
 
 // Number of samples in moving average
-#define RANGE_QUEUE_MAX_LENGTH 10
+#define RANGE_QUEUE_MAX_LENGTH 1
 #define HISTORY_QUEUE_MAX_LENGTH 100
 
 // Number of old samples to clear when wall status changes

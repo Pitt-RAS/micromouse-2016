@@ -17,6 +17,18 @@ class RangeSensor {
 
   int low_threshold_, high_threshold_;
   int pin_;
+  int emitter_pin_;
+
+  struct TranslationConstants {
+    float a;
+    float b;
+    float c;
+    float d;
+    int e;
+  };
+
+  TranslationConstants constants_;
+
  public:
   RangeSensor(int temp_pin, int lowT, int highT);
   void refreshRawQueue();
