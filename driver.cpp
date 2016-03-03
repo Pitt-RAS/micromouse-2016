@@ -61,6 +61,31 @@ int Driver::getY()
   return (int) (getYFloat() + 0.5);
 }
 
+void Driver::move(Path<16, 16> path)
+{
+  Compass8 movement_direction, next_direction;
+  int movement_distance;
+
+  next_direction = path.nextDirection();
+
+  while (!path.isEmpty())
+  {
+    movement_direction = next_direction;
+    movement_distance = 0;
+
+    while (next_direction == movement_direction) {
+      movement_distance++;
+
+      if (path.isEmpty())
+        break;
+
+      next_direction = path.nextDirection();
+    }
+
+    move(movement_direction, movement_distance);
+  }
+}
+
 
 
 
