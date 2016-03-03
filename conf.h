@@ -118,9 +118,9 @@
 #define KI_POSITION 0
 #define KD_POSITION 0
 
-#define KP_ROTATION 1
-#define KI_ROTATION 0
-#define KD_ROTATION 0
+#define KP_ROTATION 0.3
+#define KI_ROTATION 0.0
+#define KD_ROTATION 0.0
 
 #define KP_HOLD_RANGE 0.5
 #define KI_HOLD_RANGE 0
