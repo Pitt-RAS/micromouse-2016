@@ -38,10 +38,10 @@
 // RANGE SENSOR OPTIONS
 
 // Translation formula constants. distance = a * (reading - b)^c + d
-#define RANGE1_TRANSLATION { 4905.88, 27.0265, -0.672239, -87.2552, 0 }
+#define RANGE1_TRANSLATION { 845.177, -14.9819, -0.337217, -46.471, 0 }
 #define RANGE2_TRANSLATION { 0.0, 0.0, 0.0, 0.0, 0 }
-#define RANGE3_TRANSLATION { 4336.24, 180.403, -0.488198, -102.882, -10 }
-#define RANGE5_TRANSLATION { 1172.86, -46.8304, -0.0430944, -821.985, 10 }
+#define RANGE3_TRANSLATION { 4905.88, 27.0265, -0.672239, -87.2552, 0 }
+#define RANGE5_TRANSLATION { 1144.64, -13.4041, -0.389189, -103.488, 0 }
 
 // Range sensor directions
 #define RANGE_DIAG_LEFT_PIN RANGE3_PIN
