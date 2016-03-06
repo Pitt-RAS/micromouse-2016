@@ -90,6 +90,10 @@
 #define KI_ROTATION 0
 #define KD_ROTATION 0
 
+#define KP_HOLD_RANGE 0.5
+#define KI_HOLD_RANGE 0
+#define KD_HOLD_RANGE 0
+
 // Robot characteristics
 #define ROBOT_MASS .226 // kilograms
 #define MM_BETWEEN_WHEELS 85.5 // millimeters
