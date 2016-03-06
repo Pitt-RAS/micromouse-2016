@@ -7,6 +7,8 @@
 #include "MotionCalc.h"
 #include "PIDController.h"
 #include "RangeSensorContainer.h"
+#include "RangeSensor.h"
+#include "motion.h"
 
 static float max_accel_straight = MAX_ACCEL_STRAIGHT;
 static float max_decel_straight = MAX_DECEL_STRAIGHT;
@@ -63,6 +65,193 @@ void motion_forward(float distance, float exit_speed) {
 
   enc_left_write(0);
   enc_right_write(0);
+}
+
+void motion_collect(float distance, float exit_speed){
+    float errorRight, errorLeft, rotationOffset;
+  float idealDistance, idealVelocity;
+  elapsedMicros moveTime;
+
+  float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
+  MotionCalc motionCalc (distance, max_vel_straight, current_speed, exit_speed, max_accel_straight,
+                         max_decel_straight);
+
+  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+
+  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
+
+  //RangeSensor front_left_sensor(RANGE_FRONT_LEFT_PIN, 0, 0);
+  //RangeSensor front_right_sensor(RANGE_FRONT_RIGHT_PIN, 0, 0);
+
+  float off_reading_L, off_reading_R, off_reading_DL, off_reading_DR;
+  float on_reading_L, on_reading_R, on_reading_DL, on_reading_DR;
+  float value_L, value_R, value_DL, value_DR;
+  int delayTime = 45;
+  int num_range_value = distance/5;
+  int num_readings = 1;
+  int i;
+  int last_reading_distance = -1;
+  int int_distance;
+
+  int reading_output_L[num_range_value];
+  int reading_output_R[num_range_value];
+  int reading_output_DL[num_range_value];
+  int reading_output_DR[num_range_value];
+
+  int reading_counter = 0;
+
+  // zero clock before move
+  moveTime = 0;
+
+  // execute motion
+  while (idealDistance != distance) {
+    //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
+    idealDistance = motionCalc.idealDistance(moveTime);
+    idealVelocity = motionCalc.idealVelocity(moveTime);
+
+    int_distance = (int) ((enc_left_extrapolate() + enc_right_extrapolate()) / 2);
+
+    // takes a reading every 5mm
+    if (int_distance % 5 == 0 && int_distance > last_reading_distance) {
+      last_reading_distance = int_distance;
+
+      on_reading_L = 0;
+      off_reading_L = 0;
+      on_reading_R = 0;
+      off_reading_R = 0;
+      on_reading_DL = 0;
+      off_reading_DL = 0;
+      on_reading_DR = 0;
+      off_reading_DR = 0;
+
+
+      for(i = 0; i<num_readings; i++)
+      {
+        // Front left
+
+        digitalWrite(EMITTER1_PIN, HIGH);
+        delayMicroseconds(delayTime);
+
+        on_reading_L += analogRead(RANGE1_PIN);
+
+        digitalWrite(EMITTER1_PIN, LOW);
+
+        delayMicroseconds(delayTime);
+
+        off_reading_L += analogRead(RANGE1_PIN);
+
+        // Front right
+
+        digitalWrite(EMITTER2_PIN, HIGH);
+        delayMicroseconds(delayTime);
+
+        on_reading_R += analogRead(RANGE2_PIN);
+
+        digitalWrite(EMITTER2_PIN, LOW);
+
+        delayMicroseconds(delayTime);
+
+        off_reading_R += analogRead(RANGE2_PIN);
+
+        delayMicroseconds(delayTime);
+
+        // Diag left
+
+        digitalWrite(EMITTER3_PIN, HIGH);
+        delayMicroseconds(delayTime);
+
+        on_reading_DL += analogRead(RANGE3_PIN);
+
+        digitalWrite(EMITTER3_PIN, LOW);
+
+        delayMicroseconds(delayTime);
+
+        off_reading_DL += analogRead(RANGE3_PIN);
+
+        delayMicroseconds(delayTime);
+
+        // Diag right
+
+        digitalWrite(EMITTER5_PIN, HIGH);
+        delayMicroseconds(delayTime);
+
+        on_reading_DR += analogRead(RANGE5_PIN);
+
+        digitalWrite(EMITTER5_PIN, LOW);
+
+        delayMicroseconds(delayTime);
+
+        off_reading_DR += analogRead(RANGE5_PIN);
+
+        delayMicroseconds(delayTime);
+      }
+
+      on_reading_L /= num_readings;
+      off_reading_L /= num_readings;
+      on_reading_R /= num_readings;
+      off_reading_R /= num_readings;
+      on_reading_DL /= num_readings;
+      off_reading_DL /= num_readings;
+      on_reading_DR /= num_readings;
+      off_reading_DR /= num_readings;
+
+      value_L = on_reading_L - off_reading_L;
+      value_R = on_reading_R - off_reading_R;
+      value_DL = on_reading_DL - off_reading_DL;
+      value_DR = on_reading_DR - off_reading_DR;
+
+      reading_output_L[reading_counter] = value_L;
+      reading_output_R[reading_counter] = value_R;
+      reading_output_DL[reading_counter] = value_DL;
+      reading_output_DR[reading_counter] = value_DR;
+
+      reading_counter++;
+    }
+
+    errorLeft = enc_left_extrapolate() - idealDistance;
+    errorRight = enc_right_extrapolate() - idealDistance;
+
+    // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
+    // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
+
+    motor_l.Set(motionCalc.idealAccel(moveTime) + left_PID.Calculate(errorLeft), idealVelocity);
+    motor_r.Set(motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight), idealVelocity);
+  }
+
+  enc_left_write(0);
+  enc_right_write(0);
+
+  motion_hold(100);
+
+  Serial.println("=== Front Left ===");
+  for(i = 0; i<num_range_value; i++){
+    Serial.print(reading_output_L[i]);
+    Serial.print(" ");
+    Serial.print((int) distance - 5 * i);
+    Serial.println();
+  }
+  Serial.println("=== Front Right ===");
+  for(i = 0; i<num_range_value; i++){
+    Serial.print(reading_output_R[i]);
+    Serial.print(" ");
+    Serial.print((int) distance - 5 * i);
+    Serial.println();
+  }
+  Serial.println("=== Diag Left ===");
+  for(i = 0; i<num_range_value; i++){
+    Serial.print(reading_output_DL[i]);
+    Serial.print(" ");
+    Serial.print((int) distance - 5 * i);
+    Serial.println();
+  }
+  Serial.println("=== Diag Right ===");
+  for(i = 0; i<num_range_value; i++){
+    Serial.print(reading_output_DR[i]);
+    Serial.print(" ");
+    Serial.print((int) distance - 5 * i);
+    Serial.println();
+  }
 }
 
 // clockwise angle is positive, angle is in degrees
