@@ -68,7 +68,7 @@ void motion_forward(float distance, float exit_speed) {
 }
 
 void motion_collect(float distance, float exit_speed){
-    float errorRight, errorLeft, rotationOffset;
+    float errorRight, errorLeft;
   float idealDistance, idealVelocity;
   elapsedMicros moveTime;
 
