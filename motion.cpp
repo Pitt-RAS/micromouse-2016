@@ -410,9 +410,9 @@ void motion_hold_range(int setpoint, unsigned int time) {
     on_reading2 = analogRead(RANGE5_PIN);
     digitalWrite(EMITTER5_PIN, LOW);
 
-    on_reading1 = (4336.24 * pow((on_reading1 - off_reading1 + 180.403), -0.488198) - 102.882);
+    on_reading1 = (4905.88 * pow((on_reading1 - off_reading1 + 27.0265), -0.672239) + -87.2552);
 
-    on_reading2 = (1172.86 * pow((on_reading2 - off_reading2 - 46.8304), -0.0430944) - 821.985);
+    on_reading2 = (1144.64 * pow((on_reading2 - off_reading2 + -13.4041), -0.389189) + -103.488);
 
     errorLeft = on_reading1 - on_reading2;
     errorRight = on_reading2 - on_reading1;
