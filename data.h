@@ -203,6 +203,109 @@ class Queue
     storage_type *peek();
 };
 
+// Standard interface for a fixed capacity path data structure
+//
+// A Path is a planned sequence of Compass8 directions leading through a Maze
+// between a start location and a finish location. Each direction points to the
+// next adjacent cell in a chain of adjacent cells connecting start to finish.
+//
+// A Path cannot be changed after initialization. The directions of a Path can
+// be retrieved only once, individually, in order.
+//
+// When all directions have been read from a Path, the Path is empty. If a
+// direction is read from an empty path, kNorth will always be returned. If
+// initial calculation is unsuccessful, a Path will always report that it is
+// empty. A calculation may be unsuccessful because of implementation specific
+// constraints or because there is no possible traversal between start and
+// finish.
+//
+// The idea is to use a Path reference that points to an instance of a derived
+// class. This way, a different derived class can be dropped in without
+// changing the surrounding code.
+//
+// Usually, a number of different connections exist between a given start
+// location and a given end location. The derived class is responsible for
+// calculating a particular path between start and finish using some algorithm.
+// This Path class is responsible for providing the interface.
+//
+//   DerivedPathClass derived_path<type, size, size>;
+//   Path &path = derived_path;
+//   Compass8 first_direction;
+//   Compass8 second_direction;
+//
+//   if (!path.isEmpty())
+//     first_direction = path.nextDirection();
+//     // Do something with first_direction.
+//
+//   if (!path.isEmpty())
+//     second_direction = path.nextDirection();
+//     // Do something with second_direction.
+//
+template <size_t x_size, size_t y_size>
+class Path
+{
+  private:
+    bool out_of_range_;
+    bool solution_exists_;
+
+  protected:
+    // Maze through which the Path is to be calculated
+    //
+    // This variable shall only be used during calculation. With this
+    // restriction, the referenced variable may safely pass out of scope after
+    // calculation.
+    Maze<x_size, y_size> &maze_;
+
+    // Start and finish maze box coordinates
+    size_t start_x_;
+    size_t start_y_;
+    size_t finish_x_;
+    size_t finish_y_;
+
+    // Queue which stores directions in order from start to finish
+    Queue<Compass8, x_size * y_size> directions_;
+
+    // Data to be stored in the directions_ queue
+    //
+    // [kNorth, kSouth, kEast, kWest]
+    Compass8 directions_data_[4];
+
+    // Sets the state to indicate that a solution exists. This is irreversible.
+    // If this function is not called, isEmpty() will always return true, and
+    // nextDirection() will always return kNorth.
+    void setSolutionExists();
+
+  public:
+    // Some functionality must be implemented in a derived class constructor.
+
+    // The derived constructor is responsible for populating the directions_
+    // queue with directions. The queue must be populated in order from start
+    // to finish.
+
+    // This base Path constructor does not populate the directions_ queue.
+    Path(Maze<x_size, y_size> &maze, size_t start_x, size_t start_y,
+                                              size_t finish_x, size_t finish_y);
+
+    // Returns whether or not the Path is empty.
+    bool isEmpty();
+
+    // Returns the next direction in the Path. The first call returns the first
+    // direction, the following call returns the direction to the box after,
+    // and so on. The final call returns the direction from the second to last
+    // box to the finish.
+    Compass8 nextDirection();
+};
+
+// Path that uses the flood fill algorithm
+template <size_t x_size, size_t y_size>
+class FloodFillPath :
+  public Path<x_size, y_size>
+{
+  public:
+    FloodFillPath(Maze<x_size, y_size> &maze, size_t start_x, size_t start_y,
+                                              size_t finish_x, size_t finish_y);
+};
+
 
 
 
@@ -540,6 +643,234 @@ storage_type *Queue<storage_type, capacity>::peek()
     return NULL;
 
   return array_[front_];
+}
+
+
+
+
+template <size_t x_size, size_t y_size>
+void Path<x_size, y_size>::setSolutionExists()
+{
+  if (!out_of_range_)
+    solution_exists_ = true;
+}
+
+template <size_t x_size, size_t y_size>
+Path<x_size, y_size>::Path(Maze<x_size, y_size> &maze,
+                        size_t start_x, size_t start_y,
+                        size_t finish_x, size_t finish_y) :
+  out_of_range_(false), solution_exists_(false),
+  maze_(maze), start_x_(start_x), start_y_(start_y),
+  finish_x_(finish_x), finish_y_(finish_y)
+{
+  if (start_x_ < 0 || start_x_ >= x_size) {
+    start_x_ = 0;
+    out_of_range_ = true;
+  }
+  if (start_y_ < 0 || start_y_ >= x_size) {
+    start_y_ = 0;
+    out_of_range_ = true;
+  }
+  if (finish_x_ < 0 || finish_x_ >= x_size) {
+    finish_x_ = 0;
+    out_of_range_ = true;
+  }
+  if (finish_y_ < 0 || finish_y_ >= x_size) {
+    finish_y_ = 0;
+    out_of_range_ = true;
+  }
+
+  directions_data_[0] = kNorth;
+  directions_data_[1] = kSouth;
+  directions_data_[2] = kEast;
+  directions_data_[3] = kWest;
+}
+
+template <size_t x_size, size_t y_size>
+bool Path<x_size, y_size>::isEmpty()
+{
+  if (!solution_exists_)
+    return true;
+
+  return directions_.isEmpty();
+}
+
+template <size_t x_size, size_t y_size>
+Compass8 Path<x_size, y_size>::nextDirection()
+{
+  if (directions_.isEmpty() || !solution_exists_)
+    return kNorth;
+
+  return *directions_.dequeue();
+}
+
+
+
+
+template <size_t x_size, size_t y_size>
+FloodFillPath<x_size, y_size>::FloodFillPath(
+    Maze<x_size, y_size> &maze,
+    size_t start_x, size_t start_y,
+                size_t finish_x, size_t finish_y) :
+    Path<x_size, y_size>(maze,
+          start_x, start_y, finish_x, finish_y)
+{
+  Queue<unsigned char, x_size * y_size> paint_queue;
+  unsigned char boxes_[y_size][x_size];
+  size_t x, y;
+  bool breaking;
+  size_t distance;
+  unsigned char *item;
+  Compass8 *direction_ptr;
+
+  if (this->start_x_ == this->finish_x_ && this->start_y_ == this->finish_y_)
+    return;
+
+  for (x = 0; x < x_size; x++)
+  for (y = 0; y < y_size; y++) {
+    boxes_[y][x] = 0;
+  }
+
+  x = this->finish_x_;
+  y = this->finish_y_;
+  distance = 0;
+
+  // "Paint" the boxes with distances from the finish.
+
+  paint_queue.enqueue(&boxes_[y][x]);
+
+  while (!paint_queue.isEmpty()) {
+    item = paint_queue.dequeue();
+
+    breaking = false;
+
+    for (x = 0; x < x_size; x++) {
+      for (y = 0; y < y_size; y++) {
+        if (item == &boxes_[y][x])
+          breaking = true;
+
+        if (breaking)
+          break;
+      }
+
+      if (breaking)
+        break;
+    }
+
+    if (boxes_[y][x] != 0)
+      continue;
+
+    if (x == this->finish_x_ && y == this->finish_y_) {
+      boxes_[y][x] = 0;
+    }
+    else {
+      distance++;
+      boxes_[y][x] = distance;
+    }
+
+    if (!this->maze_.isWall(x, y, kNorth)
+          && y + 1 < y_size && boxes_[y + 1][x] == 0) {
+      paint_queue.enqueue(&boxes_[y + 1][x]);
+    }
+
+    if (!this->maze_.isWall(x, y, kSouth)
+          && y - 1 >= 0 && boxes_[y - 1][x] == 0) {
+      paint_queue.enqueue(&boxes_[y - 1][x]);
+    }
+
+    if (!this->maze_.isWall(x, y, kEast)
+          && x + 1 < x_size && boxes_[y][x + 1] == 0) {
+      paint_queue.enqueue(&boxes_[y][x + 1]);
+    }
+
+    if (!this->maze_.isWall(x, y, kWest)
+          && x - 1 >= 0 && boxes_[y][x - 1] == 0) {
+      paint_queue.enqueue(&boxes_[y][x - 1]);
+    }
+  }
+
+  x = this->start_x_;
+  y = this->start_y_;
+
+  // Stop if no solution was found.
+  if (boxes_[y][x] == 0)
+    return;
+
+  // Populate the waypoints queue.
+  // We do this by always choosing the box with the smallest painted distance.
+
+  while (x != this->finish_x_ || y != this->finish_y_) {
+    distance = boxes_[y][x];
+
+    if (!this->maze_.isWall(x, y, kNorth)
+          && y + 1 < y_size && boxes_[y + 1][x] < distance) {
+      distance = boxes_[y + 1][x];
+    }
+
+    if (!this->maze_.isWall(x, y, kSouth)
+          && y - 1 >= 0 && boxes_[y - 1][x] < distance) {
+      distance = boxes_[y - 1][x];
+    }
+
+    if (!this->maze_.isWall(x, y, kEast)
+          && x + 1 < x_size && boxes_[y][x + 1] < distance) {
+      distance = boxes_[y][x + 1];
+    }
+
+    if (!this->maze_.isWall(x, y, kWest)
+          && x - 1 >= 0 && boxes_[y][x - 1] < distance) {
+      distance = boxes_[y][x - 1];
+    }
+
+    direction_ptr = NULL;
+
+    if (distance != 0) {
+      if (distance == boxes_[y + 1][x]) {
+        direction_ptr = &this->directions_data_[0];
+        y = y + 1;
+      }
+
+      if (distance == boxes_[y - 1][x]) {
+        direction_ptr = &this->directions_data_[1];
+        y = y - 1;
+      }
+
+      if (distance == boxes_[y][x + 1]) {
+        direction_ptr = &this->directions_data_[2];
+        x = x + 1;
+      }
+
+      if (distance == boxes_[y][x - 1]) {
+        direction_ptr = &this->directions_data_[3];
+        x = x - 1;
+      }
+    }
+    else {
+      if (x == this->finish_x_ && y + 1 == this->finish_y_) {
+        direction_ptr = &this->directions_data_[0];
+        y = y + 1;
+      }
+      if (x == this->finish_x_ && y - 1 == this->finish_y_) {
+        direction_ptr = &this->directions_data_[1];
+        y = y - 1;
+      }
+      if (x + 1 == this->finish_x_ && y == this->finish_y_) {
+        direction_ptr = &this->directions_data_[2];
+        x = x + 1;
+      }
+      if (x - 1 == this->finish_x_ && y == this->finish_y_) {
+        direction_ptr = &this->directions_data_[3];
+        x = x - 1;
+      }
+    }
+
+    if (direction_ptr == NULL)
+      return;
+
+    this->directions_.enqueue(direction_ptr);
+  }
+
+  this->setSolutionExists();
 }
 
 

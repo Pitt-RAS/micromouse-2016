@@ -79,13 +79,19 @@ class Driver
     // unit: blocks North of the SW corner
     int getY();
 
-    // Then next two methods must be implemented in a derived class.
+
+    // The next two methods must be implemented in a derived class.
 
     // Returns whether there is a wall in the given direction.
     virtual bool isWall(Compass8 dir) = 0;
 
     // Moves the robot a number of blocks in a given direction.
     virtual void move(Compass8 dir, int distance) = 0;
+
+    // The next method may be overridden in a derived class.
+
+    // Moves the robot through the given Path.
+    virtual void move(Path<16, 16> path);
 };
 
 // Standard driver interface for a robot that must be turned (as opposed to one
@@ -130,7 +136,7 @@ class Turnable
 class SimulationDriver : public Driver, public Turnable
 {
   private:
-    const static int kDefaultSleepTime = 500;
+    const static int kDefaultSleepTime = 250;
 
     int sleep_time_;
 

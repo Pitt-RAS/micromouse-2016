@@ -39,10 +39,14 @@ class Navigator
   public:
     Navigator();
 
+    void nod();
+
     void driveBox2UnitsLeftTurns();
     void driveBox2UnitsRightTurns();
 
     void driveCardboardMaze();
+
+    void findFinish();
 
     // For development. Fill this method in with whatever you're working on.
     // This method is what will be called by mazesim-rewrite.
@@ -60,6 +64,16 @@ class Navigator
 template <typename driver_type>
 Navigator<driver_type>::Navigator() : derived_driver(), driver(derived_driver)
 {
+}
+
+template <typename driver_type>
+void Navigator<driver_type>::nod()
+{
+  driver.move(kNorthWest, 0);
+  driver.move(kNorthEast, 0);
+  driver.move(kNorthWest, 0);
+  driver.move(kNorthEast, 0);
+  driver.move(kNorth, 0);
 }
 
 template <typename driver_type>
@@ -95,14 +109,37 @@ void Navigator<driver_type>::driveCardboardMaze()
 }
 
 template <typename driver_type>
+void Navigator<driver_type>::findFinish()
+{
+  while (driver.getX() != 8 || driver.getY() != 8) {
+    if (driver.isWall(kNorth))
+      maze.addWall(driver.getX(), driver.getY(), kNorth);
+
+    if (driver.isWall(kSouth))
+      maze.addWall(driver.getX(), driver.getY(), kSouth);
+
+    if (driver.isWall(kEast))
+      maze.addWall(driver.getX(), driver.getY(), kEast);
+
+    if (driver.isWall(kWest))
+      maze.addWall(driver.getX(), driver.getY(), kWest);
+
+    {
+      FloodFillPath<16, 16>
+        path(maze, driver.getX(), driver.getY(), 8, 8);
+
+      if (path.isEmpty())
+        break;
+
+      driver.move(path.nextDirection(), 1);
+    }
+  }
+}
+
+template <typename driver_type>
 void Navigator<driver_type>::runDevelopmentCode()
 {
-  // For now, nod left and right to indicate we're running development code.
-  driver.move(kNorthWest, 0);
-  driver.move(kNorthEast, 0);
-  driver.move(kNorthWest, 0);
-  driver.move(kNorthEast, 0);
-  driver.move(kNorth, 0);
+  nod();
 }
 
 
