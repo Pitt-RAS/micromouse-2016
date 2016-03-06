@@ -1,0 +1,12 @@
+Try this.
+
+  gnuplot -p left.gnuplot
+
+  gnuplot -p right.gnuplot
+
+The -p option makes the plot window persist after the script exits.
+
+
+Love,
+
+Ryan
