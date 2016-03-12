@@ -7,8 +7,6 @@
 #define MPU6050_INCLUDE_DMP_MOTIONAPPS20
 #include <MPU6050.h>
 
-class MPU6050;
-
 class Orientation {
   private:
     Orientation();
@@ -19,21 +17,26 @@ class Orientation {
     static Orientation* instance_;
 
     MPU6050 mpu_;
-    bool dmp_ready_ = false;
     uint16_t packet_size_;
     uint16_t fifo_count_ = 0;
 
-    float raw_heading_ = NAN;
-    float heading_offset_ = 0;
-    int completed_rotations_ = 0;
+    float secondary_gyro_offset_ = 0;
 
+    float raw_heading_ = 0;
+    int16_t last_gyro_reading_ = 0;
+    unsigned long last_update_time_ = 0;
+    unsigned long next_update_time_ = 0;
+    
     float max_forward_accel_ = 0;
     float max_radial_accel_ = 0;
   public:
     static Orientation* getInstance();
 
+    // determine the right offset for the gyro
+    void calibrate();
+
     // get the latest data from the IMU
-    void update();
+    bool update();
 
     // designates the current heading as 0 degrees
     void resetHeading();

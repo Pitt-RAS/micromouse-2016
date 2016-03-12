@@ -14,46 +14,32 @@ Orientation::Orientation() {
   Wire.begin(I2C_MASTER, 0, I2C_PINS_18_19, I2C_PULLUP_INT, I2C_RATE_400);
 
   mpu_.initialize();
-  mpu_.testConnection();
-  Serial2.println(mpu_.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
-  uint8_t dev_status = mpu_.dmpInitialize();
+  Serial.println(mpu_.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
-  // supply your own gyro offsets here, scaled for min sensitivity
-  mpu_.setXGyroOffset(0);
-  mpu_.setYGyroOffset(-60);
-  mpu_.setZGyroOffset(-24);
+  mpu_.setFullScaleGyroRange(MPU6050_GYRO_FS_2000);
   mpu_.setZAccelOffset(1788); // 1688 factory default for my test chip
 
-  // make sure it worked (returns 0 if so)
-  if (dev_status == 0) {
-    // turn on the DMP, now that it's ready
-    Serial2.println(F("Enabling DMP..."));
-    mpu_.setDMPEnabled(true);
+  // enable interrupt detection
+  Serial.println(F("Enabling MPU6050 interrupt detection..."));
+  pinMode(IMU_INTERRUPT_PIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(IMU_INTERRUPT_PIN), interruptHandler, RISING);
 
-    // enable interrupt detection
-    Serial2.println(F("Enabling MPU6050 interrupt detection..."));
-    pinMode(IMU_INTERRUPT_PIN, INPUT);
-    attachInterrupt(digitalPinToInterrupt(IMU_INTERRUPT_PIN), interruptHandler, RISING);
+  mpu_.setRate(1); // Sample rate of 500Hz (assuming LPF is enabled)
+  mpu_.setDLPFMode(MPU6050_DLPF_BW_188); // Enable DLPF
+  mpu_.setFIFOEnabled(true);
+  mpu_.setZGyroFIFOEnabled(true);
 
-    // set our DMP Ready flag so the main update() function knows it's okay to use it
-    Serial2.println(F("DMP ready! Waiting for first interrupt..."));
-    dmp_ready_ = true;
+  mpu_.setIntFIFOBufferOverflowEnabled(true);
+  mpu_.setIntDataReadyEnabled(true);
 
-    // get expected DMP packet size for later comparison
-    packet_size_ = mpu_.dmpGetFIFOPacketSize();
-  } else {
-    // ERROR!
-    // 1 = initial memory load failed
-    // 2 = DMP configuration updates failed
-    // (if it's going to break, usually the code will be 1)
-    Serial2.print(F("DMP Initialization failed (code "));
-    Serial2.print(dev_status);
-    Serial2.println(F(")"));
-  }
+  packet_size_ = 2;
+
+  calibrate();
 }
 
 void Orientation::interruptHandler() {
   mpu_interrupt_ = true;
+  Orientation::instance_->next_update_time_ = micros();
 }
 
 Orientation* Orientation::getInstance() {
@@ -64,21 +50,61 @@ Orientation* Orientation::getInstance() {
   return instance_;
 }
 
-void Orientation::update() {
-  if (!dmp_ready_) return;
+void Orientation::calibrate() {
+  mpu_.setZGyroOffset(0);
+  int32_t total = 0;
+  int16_t offset = 0;
 
+  for (int round = 0; round < GYRO_CALIBRATION_ROUNDS; round++) {
+    total = 0;
+
+    for (int i = 0; i < GYRO_CALIBRATION_SAMPLES; i++) {
+      while (!update()) {
+        // wait for actual data
+      }
+
+      if (i > 0 && abs(total / i - last_gyro_reading_) > 100) {
+        Serial.println("Calibration failed, restarting calibration...");
+        calibrate();
+        return;
+      }
+
+      total += last_gyro_reading_;
+    }
+
+    offset += total / GYRO_CALIBRATION_SAMPLES;
+    mpu_.setZGyroOffset(-offset);
+    delay(1);
+  }
+
+  total = 0;
+  for (int i = 0; i < GYRO_CALIBRATION_SAMPLES; i++) {
+    while (!update()) {
+      // wait for actual data
+    }
+
+    if (i > 0 && abs(total / i - last_gyro_reading_) > 100) {
+      Serial.println("Calibration failed, restarting calibration...");
+      calibrate();
+      return;
+    }
+
+    total += last_gyro_reading_;
+  }
+
+  secondary_gyro_offset_ = (float)total / GYRO_CALIBRATION_SAMPLES;
+
+  raw_heading_ = 0;
+  Serial.println("Gyro calibration successful");
+}
+
+bool Orientation::update() {
   if (!mpu_interrupt_ && fifo_count_ < packet_size_) {
-    return;
+    return false;
   }
 
   uint8_t mpu_int_status;
   uint8_t fifo_buffer[64];
-  Quaternion orientation;
-  VectorFloat gravity;
-  float tait_bryan[3];
-  VectorInt16 accel, world_accel;
-  float cos_heading, sin_heading;
-  float curr_forward_accel, curr_radial_accel;
 
   // reset interrupt flag and get INT_STATUS byte
   mpu_interrupt_ = false;
@@ -91,9 +117,10 @@ void Orientation::update() {
   if ((mpu_int_status & 0x10) || fifo_count_ == 1024) {
     // reset so we can continue cleanly
     mpu_.resetFIFO();
-    Serial2.println(F("FIFO overflow!"));
+    Serial.println(F("FIFO overflow!"));
+    return false;
 
-  // check for DMP data ready interrupt
+  // check for data ready interrupt
   } else if (mpu_int_status & 0x01) {
     // wait for correct available data length
     while (fifo_count_ < packet_size_) {
@@ -106,46 +133,26 @@ void Orientation::update() {
     // track FIFO count here in case there is > 1 packet available
     fifo_count_ -= packet_size_;
 
-    mpu_.dmpGetQuaternion(&orientation, fifo_buffer);
-    mpu_.dmpGetGravity(&gravity, &orientation);
-    mpu_.dmpGetYawPitchRoll(tait_bryan, &orientation, &gravity);
+    float dt = (next_update_time_ - last_update_time_) / 1000000.0;
+    raw_heading_ += last_gyro_reading_ / GYRO_LSB_PER_DEG_PER_S * dt;
 
-    if (raw_heading_ == NAN) {
-      heading_offset_ = -tait_bryan[0];
-    }
+    last_gyro_reading_ = (uint16_t)fifo_buffer[0] << 8 | fifo_buffer[1];
+    last_gyro_reading_ -= secondary_gyro_offset_;
 
-    if (raw_heading_ < -PI/2 && tait_bryan[0] > PI/2) {
-      completed_rotations_--;
-    } else if (raw_heading_ > PI/2 && tait_bryan[0] < -PI/2) {
-      completed_rotations_++;
-    }
-    raw_heading_ = tait_bryan[0];
+    last_update_time_ = next_update_time_;
 
-    mpu_.dmpGetAccel(&accel, fifo_buffer);
-    mpu_.dmpGetLinearAccel(&accel, &accel, &gravity);
-    mpu_.dmpGetLinearAccelInWorld(&world_accel, &accel, &orientation);
-
-    cos_heading = cos(raw_heading_ * M_PI / 180.0);
-    sin_heading = sin(raw_heading_ * M_PI / 180.0);
-    curr_forward_accel = cos_heading * world_accel.x + sin_heading * world_accel.y;
-    curr_forward_accel = abs(curr_forward_accel) * 9.8 / 8192; // convert to m/s
-    curr_radial_accel = -sin_heading * world_accel.x + cos_heading * world_accel.y;
-    curr_radial_accel = abs(curr_radial_accel) * 9.8 / 8192; // convert to m/s
-
-    max_forward_accel_ = max(max_forward_accel_, curr_forward_accel);
-    max_radial_accel_ = max(max_radial_accel_, curr_radial_accel);
+    return true;
   }
-    //Serial2.println(orientation->getHeading());
-    //Serial2.println(buf[i - 2]);
 }
 
 void Orientation::resetHeading() {
-  heading_offset_ = -raw_heading_;
-  completed_rotations_ = 0;
+  raw_heading_ = 0;
+  last_update_time_ = micros();
 }
 
 float Orientation::getHeading() {
-  return -(raw_heading_ + heading_offset_) * RAD_TO_DEG - 360 * completed_rotations_;
+  float elapsed_time = (micros() - last_update_time_) / 1000000.0;
+  return raw_heading_ + last_gyro_reading_ * elapsed_time;
 }
 
 void Orientation::resetMaxForwardAccel() {
