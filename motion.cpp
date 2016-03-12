@@ -43,12 +43,21 @@ void motion_forward(float distance, float exit_speed) {
   moveTime = 0;
 
   RangeSensors.updateReadings();
+  float savedError = 0;
 
   // execute motion
   while (idealDistance != distance) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
+
+    float leftReading, rightReading, position, nearestWhole, difference;
+
+    leftReading = enc_left_front_extrapolate();
+    rightReading = enc_right_front_extrapolate();
+    position = (leftReading + rightReading) / 2 / MM_PER_BLOCK;
+    nearestWhole = (int) (position + 0.5);
+    difference = position - nearestWhole;
 
     // Add error from rangefinder data. Positive error is when it is too close
     // to the left wall, requiring a positive angle to fix it.
@@ -57,6 +66,11 @@ void motion_forward(float distance, float exit_speed) {
 
     errorLeft = enc_left_extrapolate() - idealDistance - rotationOffset;
     errorRight = enc_right_extrapolate() - idealDistance + rotationOffset;
+
+    if (-0.25 < difference && difference < 0.25)
+      rotationOffset = savedError;
+    else
+      savedError = rotationOffset;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
