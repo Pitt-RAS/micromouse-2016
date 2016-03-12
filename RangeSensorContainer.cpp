@@ -4,28 +4,31 @@
 RangeSensorContainer RangeSensors;
 
 RangeSensorContainer::RangeSensorContainer() 
-	: leftSensor(RANGE_DIAG_LEFT_PIN, LEFT_LOW_THRESHOLD, LEFT_HIGH_THRESHOLD), rightSensor(RANGE_DIAG_RIGHT_PIN, RIGHT_LOW_THRESHOLD, RIGHT_HIGH_THRESHOLD)
+	: leftSensor(RANGE_DIAG_LEFT_PIN, LEFT_LOW_THRESHOLD, LEFT_HIGH_THRESHOLD), rightSensor(RANGE_DIAG_RIGHT_PIN, RIGHT_LOW_THRESHOLD, RIGHT_HIGH_THRESHOLD), frontSensor(RANGE_FRONT_PIN, FRONT_LOW_THRESHOLD, FRONT_HIGH_THRESHOLD)
 {
 }
 
 void RangeSensorContainer::updateReadings() {
 	leftSensor.updateRange();
 	rightSensor.updateRange();
+	frontSensor.updateRange();
 }
 
 bool RangeSensorContainer::isWall(Direction wallToCheck) {
 	
 	switch (wallToCheck) {
-		case left:
-				return leftSensor.isWall();
-			break;
-		case front:
-			break;
-		case right:
-				return rightSensor.isWall();
-			break;
-    case back:
-      break;
+	case left:
+		return leftSensor.isWall();
+		break;
+	case front:
+		return frontSensor.isWall();
+		break;
+	case right:
+		return rightSensor.isWall();
+		break;
+	case back:
+		return false;
+		break;
 	}
 
 	return false;
