@@ -16,7 +16,7 @@ class RangeSensorContainer {
 	
 	public:
 		RangeSensorContainer();
-		RangeSensor leftSensor, rightSensor;
+		RangeSensor leftSensor, rightSensor, frontSensor;
 
 		void updateReadings();
 		bool isWall(Direction wallToCheck); //Maybe directly return error for pid 
