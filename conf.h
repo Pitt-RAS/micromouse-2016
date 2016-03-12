@@ -96,13 +96,6 @@
 #define RANGE_RIGHT_MIDDLE 100
 #define RANGE_FRONT_MIDDLE 100
 
-// Number of samples in moving average
-#define RANGE_QUEUE_MAX_LENGTH 1
-#define HISTORY_QUEUE_MAX_LENGTH 100
-
-// Number of old samples to clear when wall status changes
-#define RANGE_QUEUE_NUM_TO_CLEAR 5
-
 // Gyro parameters
 #define GYRO_LSB_PER_DEG_PER_S 16.295
 #define GYRO_CALIBRATION_SAMPLES 2000
