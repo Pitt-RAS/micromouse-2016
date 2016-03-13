@@ -306,6 +306,15 @@ class FloodFillPath :
                                               size_t finish_x, size_t finish_y);
 };
 
+template <size_t x_size, size_t y_size>
+class KnownPath : public Path<x_size, y_size>
+{
+  public:
+    KnownPath(Maze<x_size, y_size> &maze, size_t start_x, size_t start_y,
+                                              size_t finish_x, size_t finish_y,
+                                              Path<x_size, y_size> &path);
+};
+
 
 
 
@@ -936,6 +945,50 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
     last_direction_ptr = direction_ptr;
 
     this->directions_.enqueue(direction_ptr);
+  }
+
+  this->setSolutionExists();
+}
+
+
+
+
+template <size_t x_size, size_t y_size>
+KnownPath<x_size, y_size>::KnownPath(
+    Maze<x_size, y_size> &maze,
+    size_t start_x, size_t start_y,
+    size_t finish_x, size_t finish_y,
+    Path<x_size, y_size> &path) :
+    Path<x_size, y_size>(maze,
+          start_x, start_y, finish_x, finish_y)
+{
+  int x, y;
+  Compass8 direction;
+
+  x = start_x;
+  y = start_y;
+
+  while (!path.isEmpty() && maze.isVisited(x, y)) {
+    direction = path.nextDirection();
+
+    switch (direction) {
+      case kNorth:
+        this->directions_.enqueue(&this->directions_data_[0]);
+        y++;
+        break;
+      case kSouth:
+        this->directions_.enqueue(&this->directions_data_[1]);
+        y--;
+        break;
+      case kEast:
+        this->directions_.enqueue(&this->directions_data_[2]);
+        x++;
+        break;
+      case kWest:
+        this->directions_.enqueue(&this->directions_data_[3]);
+        x--;
+        break;
+    }
   }
 
   this->setSolutionExists();
