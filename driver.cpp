@@ -100,18 +100,18 @@ void Driver::saveState(Maze<16, 16>& maze) {
   out_file.open("saved_state.maze");
 #endif
 
-  for (int i = 0; i < 16; i++) {
-    for (int j = 0; j < 16; j++) {
+  for (int x = 0; x < 16; x++) {
+    for (int y = 0; y < 16; y++) {
       uint8_t out = 0;
-      out |= maze.isWall(i, j, kNorth) << 0;
-      out |= maze.isWall(i, j, kEast) << 1;
-      out |= maze.isWall(i, j, kSouth) << 2;
-      out |= maze.isWall(i, j, kWest) << 3;
-      out |= maze.isVisited(i, j) << 4;
+      out |= maze.isWall(x, y, kNorth) << 0;
+      out |= maze.isWall(x, y, kEast) << 1;
+      out |= maze.isWall(x, y, kSouth) << 2;
+      out |= maze.isWall(x, y, kWest) << 3;
+      out |= maze.isVisited(x, y) << 4;
 #ifdef COMPILE_FOR_PC
       out_file << out;
 #else
-      EEPROM.write(16*i + j, out);
+      EEPROM.write(16*x + y, out);
 #endif
     }
   }
@@ -127,43 +127,43 @@ void Driver::loadState(Maze<16, 16>& maze) {
   in_file.open("saved_state.maze");
 #endif
 
-  for (int i = 0; i < 16; i++) {
-    for (int j = 0; j < 16; j++) {
+  for (int x = 0; x < 16; x++) {
+    for (int y = 0; y < 16; y++) {
       uint8_t in;
 #ifdef COMPILE_FOR_PC
       std::ifstream >> in;
 #else
-      in = EEPROM.read(16*i + j);
+      in = EEPROM.read(16*x + y);
 #endif
 
       if (in & (1 << 0)) {
-        maze.addWall(i, j, kNorth);
+        maze.addWall(x, y, kNorth);
       } else {
-        maze.removeWall(i, j, kNorth);
+        maze.removeWall(x, y, kNorth);
       }
 
       if (in & (1 << 1)) {
-        maze.addWall(i, j, kEast);
+        maze.addWall(x, y, kEast);
       } else {
-        maze.removeWall(i, j, kEast);
+        maze.removeWall(x, y, kEast);
       }
 
       if (in & (1 << 2)) {
-        maze.addWall(i, j, kSouth);
+        maze.addWall(x, y, kSouth);
       } else {
-        maze.removeWall(i, j, kSouth);
+        maze.removeWall(x, y, kSouth);
       }
 
       if (in & (1 << 3)) {
-        maze.addWall(i, j, kWest);
+        maze.addWall(x, y, kWest);
       } else {
-        maze.removeWall(i, j, kWest);
+        maze.removeWall(x, y, kWest);
       }
 
       if (in & (1 << 4)) {
-        maze.visit(i, j);
+        maze.visit(x, y);
       } else {
-        maze.unvisit(i, j);
+        maze.unvisit(x, y);
       }
     }
   }
