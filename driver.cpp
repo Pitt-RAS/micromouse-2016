@@ -455,7 +455,7 @@ void RobotDriver::move(Compass8 dir, int distance)
                             destination_y - getYFloat());
 
   motion_forward(MM_PER_BLOCK * distance_to_move, 0);
-  motion_hold(100);
+  motion_hold(10);
 
   setX(destination_x);
   setY(destination_y);
