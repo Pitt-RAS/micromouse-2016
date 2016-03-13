@@ -10,6 +10,7 @@
 #include "motors.h"
 #include "sensors_encoders.h"
 #include "EncoderMod.h"
+#include "SweptTurnTable.h"
 
 #define BAUD 9600
 
@@ -41,10 +42,14 @@ void setup()
 
 void loop()
 {
+  Navigator<RobotDriver> navigator;
+
   // Wait for button press.
   while (digitalRead(BUTTON1_PIN) == HIGH);
   delay(1000);
+  
+  enc_left_write(0);
+  enc_right_write(0);
 
-  char* strings[] = {"Hi", "Hello", "The"};
-  menu.getString(strings, 3, 3, 0, false);
+  navigator.runDevelopmentCode();
 }

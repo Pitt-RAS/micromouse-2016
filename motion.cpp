@@ -9,6 +9,7 @@
 #include "RangeSensorContainer.h"
 #include "RangeSensor.h"
 #include "motion.h"
+#include "SweptTurnTable.h"
 
 static float max_accel_straight = MAX_ACCEL_STRAIGHT;
 static float max_decel_straight = MAX_DECEL_STRAIGHT;
@@ -24,6 +25,8 @@ static float max_decel_corner = MAX_DECEL_CORNER;
 static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
+
+static float SweptTurnTable test_table(435.0,90.0,90.0,3000.0,500.0,100.0);
 
 void motion_forward(float distance, float exit_speed) {
   float errorRight, errorLeft, rotationOffset;
@@ -294,43 +297,25 @@ void motion_rotate(float angle) {
   enc_right_write(0);
 }
 
-void motion_corner(float angle, float radius, float exit_speed) {
+void motion_corner(int angle) {
   float errorRight, errorLeft;
   float leftFraction, rightFraction;
   float idealDistance, idealVelocity;
   float distance;
 
-  if (radius < 0) {
-    radius *= -1;
-  }
-  else if (radius == 0) {
-    motion_rotate(angle);
-    return;
-  }
+  
+    int i = 0;
+    for(i = 0; i < 500; i++){
+      Serial.print("ANGLE = ");
+      Serial.println(test_table.getAngleAtIndex(i),8);
+      delay(50);
+    }
 
-  if (exit_speed < 0) {
-    exit_speed *= -1;
-  }
 
-  distance = angle * 3.14159265359 * radius / 180;
-  if (distance < 0) {
-    distance *= -1;
-  }
 
   elapsedMicros moveTime;
 
-  if (angle <= 0) {
-    leftFraction = (radius + MM_BETWEEN_WHEELS / 2) / radius;
-    rightFraction = (radius - MM_BETWEEN_WHEELS / 2) / radius;
-  }
-  else {
-    leftFraction = (radius - MM_BETWEEN_WHEELS / 2) / radius;
-    rightFraction = (radius + MM_BETWEEN_WHEELS / 2) / radius;
-  }
-
-  float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
-  MotionCalc motionCalc (distance, max_vel_corner, current_speed, exit_speed, max_accel_corner,
-                         max_decel_corner);
+  
 
   PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
@@ -356,6 +341,32 @@ void motion_corner(float angle, float radius, float exit_speed) {
   enc_left_write(0);
   enc_right_write(0);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void motion_hold(unsigned int time) {
   float errorRight, errorLeft;
