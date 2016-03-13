@@ -54,7 +54,7 @@ MotionCalc::MotionCalc (float temp_dTot, float temp_vMax, float temp_vStart, flo
   }
 
   if (not_enough_space) {
-    if (dTot > 0 ^ vStart > vEnd) {
+    if ((dTot > 0) ^ (vStart > vEnd)) {
       aStart = (sq(vEnd) - sq(vStart)) / (2 * dTot);
     } else {
       aStart = (sq(vStart) - sq(vEnd)) / (2 * dTot);
