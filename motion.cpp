@@ -44,6 +44,7 @@ void motion_forward(float distance, float exit_speed) {
 
   RangeSensors.updateReadings();
   float savedError = 0;
+  bool passedMiddle = false;
 
   // execute motion
   while (idealDistance != distance) {
@@ -66,6 +67,12 @@ void motion_forward(float distance, float exit_speed) {
 
     errorLeft = enc_left_extrapolate() - idealDistance - rotationOffset;
     errorRight = enc_right_extrapolate() - idealDistance + rotationOffset;
+
+    // Save isWall state for use by high-level code.
+    if (!passedMiddle && position > distance / MM_PER_BLOCK - 0.5) {
+	    RangeSensors.saveIsWall();
+	    passedMiddle = true;
+    }
 
     if (-0.25 < difference && difference < 0.25)
       rotationOffset = savedError;
