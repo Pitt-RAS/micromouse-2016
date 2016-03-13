@@ -7,6 +7,7 @@
 
 #ifndef COMPILE_FOR_PC
 #include <Arduino.h>
+#include <EEPROM.h>
 #include "data.h"
 #include "motion.h"
 #include "conf.h"
@@ -92,6 +93,84 @@ void Driver::move(Path<16, 16> path)
   }
 }
 
+void Driver::saveState(Maze<16, 16>& maze) {
+#ifdef COMPILE_FOR_PC
+  std::ofstream out_file;
+  out_file.open("saved_state.maze");
+#endif
+
+  for (int i = 0; i < 16; i++) {
+    for (int j = 0; j < 16; j++) {
+      uint8_t out = 0;
+      out |= maze.isWall(i, j, kNorth) << 0;
+      out |= maze.isWall(i, j, kEast) << 1;
+      out |= maze.isWall(i, j, kSouth) << 2;
+      out |= maze.isWall(i, j, kWest) << 3;
+      out |= maze.isVisited(i, j) << 4;
+#ifdef COMPILE_FOR_PC
+      out_file << out;
+#else
+      EEPROM.write(16*i + j, out);
+#endif
+    }
+  }
+
+#ifdef COMPILE_FOR_PC
+  out_file.close();
+#endif
+}
+
+void Driver::loadState(Maze<16, 16>& maze) {
+#ifdef COMPILE_FOR_PC
+  std::ifstream in_file;
+  in_file.open("saved_state.maze");
+#endif
+
+  for (int i = 0; i < 16; i++) {
+    for (int j = 0; j < 16; j++) {
+      uint8_t in;
+#ifdef COMPILE_FOR_PC
+      std::ifstream >> in;
+#else
+      in = EEPROM.read(16*i + j);
+#endif
+
+      if (in & (1 << 0)) {
+        maze.addWall(i, j, kNorth);
+      } else {
+        maze.removeWall(i, j, kNorth);
+      }
+
+      if (in & (1 << 1)) {
+        maze.addWall(i, j, kEast);
+      } else {
+        maze.removeWall(i, j, kEast);
+      }
+
+      if (in & (1 << 2)) {
+        maze.addWall(i, j, kSouth);
+      } else {
+        maze.removeWall(i, j, kSouth);
+      }
+
+      if (in & (1 << 3)) {
+        maze.addWall(i, j, kWest);
+      } else {
+        maze.removeWall(i, j, kWest);
+      }
+
+      if (in & (1 << 4)) {
+        maze.visit(i, j);
+      } else {
+        maze.unvisit(i, j);
+      }
+    }
+  }
+
+#ifdef COMPILE_FOR_PC
+  in_file.close();
+#endif
+}
 
 
 
@@ -955,8 +1034,5 @@ void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
 
   moving_ = will_end_moving;
 }
-
-
-
 
 #endif // #ifndef COMPILE_FOR_PC
