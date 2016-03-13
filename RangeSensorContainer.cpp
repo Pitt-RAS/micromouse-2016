@@ -34,6 +34,32 @@ bool RangeSensorContainer::isWall(Direction wallToCheck) {
 	return false;
 }
 
+void RangeSensorContainer::saveIsWall()
+{
+  saved_left_ = leftSensor.isWall();
+  saved_right_ = rightSensor.isWall();
+}
+
+bool RangeSensorContainer::savedIsWall(Direction wallToCheck) {
+
+	switch (wallToCheck) {
+	case left:
+		return saved_left_;
+		break;
+	case front:
+		return frontSensor.isWall();
+		break;
+	case right:
+		return saved_right_;
+		break;
+	case back:
+		return false;
+		break;
+	}
+
+	return false;
+}
+
 float RangeSensorContainer::errorFromCenter() {
   float errorCenter;
 	if (isWall(left) && isWall(right)) {

@@ -13,6 +13,8 @@ enum Direction {
 
 class RangeSensorContainer {
 	private:
+		bool saved_left_ = true;
+		bool saved_right_ = true;
 	
 	public:
 		RangeSensorContainer();
@@ -20,6 +22,8 @@ class RangeSensorContainer {
 
 		void updateReadings();
 		bool isWall(Direction wallToCheck); //Maybe directly return error for pid 
+		void saveIsWall();
+		bool savedIsWall(Direction wallToCheck);
     	float errorFromCenter();
 
 };
