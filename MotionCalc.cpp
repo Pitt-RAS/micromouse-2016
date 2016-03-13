@@ -41,6 +41,33 @@ MotionCalc::MotionCalc (float temp_dTot, float temp_vMax, float temp_vStart, flo
     aEnd = max_accel;
   }
 
+  // check if there's enough space to reach exit speed
+  bool not_enough_space = false;
+  if (vEnd < vStart) {
+    if (max_decel > (sq(vEnd) - sq(vStart)) / (2 * dTot)) {
+      not_enough_space = true;
+    }
+  } else if (vEnd > vStart) {
+    if (max_accel < (sq(vEnd) - sq(vStart)) / (2 * dTot)) {
+      not_enough_space = true;
+    }
+  }
+
+  if (not_enough_space) {
+    if (dTot > 0 ^ vStart > vEnd) {
+      aStart = (sq(vEnd) - sq(vStart)) / (2 * dTot);
+    } else {
+      aStart = (sq(vStart) - sq(vEnd)) / (2 * dTot);
+    }
+
+    dStart = dTot;
+    dEnd = 0;
+    vMax = vEnd;
+    tStart = (vEnd - vStart) / aStart;
+    tConst = tEnd = 0;
+    return;
+  }
+
   // do initial calculations
   // set distances assuming there is room to reach max speed
   dStart = (vMax * vMax - vStart * vStart) / (2 * aStart);
