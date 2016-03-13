@@ -69,6 +69,9 @@ void Driver::move(Path<16, 16> path)
 
   next_direction = path.nextDirection();
 
+  if (path.isEmpty())
+    move(next_direction, 1);
+
   while (!path.isEmpty())
   {
     movement_direction = next_direction;
