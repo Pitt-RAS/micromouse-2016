@@ -136,6 +136,9 @@
 // Logging configuration
 #define LOG_SIZE 500
 
+// EEPROM save location parameters
+#define EEPROM_MAZE_LOCATION 0
+
 // Motion control paremeters
 #define MM_PER_BLOCK 180
 #define MM_PER_STEP 0.653868

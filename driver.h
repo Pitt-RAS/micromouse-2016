@@ -101,6 +101,9 @@ class Driver
 
     // Saves the state of the given cell only
     virtual void updateState(Maze<16, 16>& maze, size_t x, size_t y);
+
+    // Sets the saved state to an empty maze
+    virtual void clearState();
 };
 
 // Standard driver interface for a robot that must be turned (as opposed to one

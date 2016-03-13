@@ -111,7 +111,7 @@ void Driver::saveState(Maze<16, 16>& maze) {
 #ifdef COMPILE_FOR_PC
       out_file << out;
 #else
-      EEPROM.write(16*x + y, out);
+      EEPROM.write(EEPROM_MAZE_LOCATION + 16*x + y, out);
 #endif
     }
   }
@@ -133,7 +133,7 @@ void Driver::loadState(Maze<16, 16>& maze) {
 #ifdef COMPILE_FOR_PC
       std::ifstream >> in;
 #else
-      in = EEPROM.read(16*x + y);
+      in = EEPROM.read(EEPROM_MAZE_LOCATION + 16*x + y);
 #endif
 
       if (in & (1 << 0)) {
@@ -188,8 +188,13 @@ void Driver::updateState(Maze<16, 16>& maze, size_t x, size_t y) {
   out_file << out;
   out_file.close();
 #else
-  EEPROM.write(16*x + y, out);
+  EEPROM.write(EEPROM_MAZE_LOCATION + 16*x + y, out);
 #endif
+}
+
+void Driver::clearState() {
+  Maze<16, 16> maze;
+  saveState(maze);
 }
 
 
