@@ -1,6 +1,7 @@
 #include "driver.h"
 
 #ifdef COMPILE_FOR_PC
+#include <fstream>
 #include <iostream>
 #include <unistd.h>
 #endif
@@ -172,6 +173,24 @@ void Driver::loadState(Maze<16, 16>& maze) {
 #endif
 }
 
+void Driver::updateState(Maze<16, 16>& maze, size_t x, size_t y) {
+  uint8_t out = 0;
+  out |= maze.isWall(x, y, kNorth) << 0;
+  out |= maze.isWall(x, y, kEast) << 1;
+  out |= maze.isWall(x, y, kSouth) << 2;
+  out |= maze.isWall(x, y, kWest) << 3;
+  out |= maze.isVisited(x, y) << 4;
+
+#ifdef COMPILE_FOR_PC
+  std::fstream out_file;
+  out_file.open("saved_state.maze");
+  out_file.seekp(16*x + y);
+  out_file << out;
+  out_file.close();
+#else
+  EEPROM.write(16*x + y, out);
+#endif
+}
 
 
 Compass8 Turnable::getDir()
