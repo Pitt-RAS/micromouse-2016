@@ -29,7 +29,35 @@ SweptTurnTable::SweptTurnTable(float for_speed, float a, float i_turn_rad, float
 
 float SweptTurnTable::getAngleAtIndex(int index)
 {
-  return turn_table_[index];
+  if (index <= total_actual_time_ / 2) {
+    return turn_table_[index];
+  }
+  else {
+    return angle - turn_table_[total_actual_time_ - index];
+  }
+}
+
+float SweptTurnTable::getAngularAcceleration(int index)
+{
+  if (index < 0) {
+    return 0;
+  }
+  else if (index < accel_time_) {
+    return angular_acceleration;
+  }
+  else if (index < accel_time_ + const_time_) {
+    return 0;
+  }
+  else if (index < total_actual_time_) {
+    return - angular_acceleration;
+  }
+
+  return 0;
+}
+
+float SweptTurnTable::getTotalTime()
+{
+  return total_actual_time_;
 }
 
 float SweptTurnTable::getAngle(float velocity, float previous_angle)
@@ -53,8 +81,8 @@ float SweptTurnTable::getVelocity(int time, float previous_velocity)
 }
 void SweptTurnTable::generateTimes()
 {
-  accel_time_ = (int)((max_angular_velocity/angular_acceleration)*TOTAL_TURN_TIME+.5);
-  const_time_ = (int)(((angle/max_angular_velocity)*TOTAL_TURN_TIME+.5)-accel_time_);
+  accel_time_ = (int)((max_angular_velocity/angular_acceleration)*1000+.5);
+  const_time_ = (int)(((angle/max_angular_velocity)*1000+.5)-accel_time_);
   decell_time_ = accel_time_;
   total_actual_time_ = accel_time_+const_time_+decell_time_;
 }

@@ -26,7 +26,13 @@ static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
 
-static float SweptTurnTable test_table(435.0,90.0,90.0,3000.0,500.0,100.0);
+SweptTurnTable turn_90_table(
+    SWEPT_TURN_90_FORWARD_SPEED,
+    SWEPT_TURN_90_ANGLE,
+    SWEPT_TURN_90_IDEAL_RADIUS,
+    SWEPT_TURN_90_MAX_ANGULAR_ACCELERATION,
+    SWEPT_TURN_90_MAX_ANGULAR_VELOCITY,
+    SWEPT_TURN_90_MOUSE_WIDTH);
 
 void motion_forward(float distance, float exit_speed) {
   float errorRight, errorLeft, rotationOffset;
@@ -297,25 +303,16 @@ void motion_rotate(float angle) {
   enc_right_write(0);
 }
 
-void motion_corner(int angle) {
+void motion_corner(float angle, float speed) {
   float errorRight, errorLeft;
-  float leftFraction, rightFraction;
-  float idealDistance, idealVelocity;
-  float distance;
-
-  
-    int i = 0;
-    for(i = 0; i < 500; i++){
-      Serial.print("ANGLE = ");
-      Serial.println(test_table.getAngleAtIndex(i),8);
-      delay(50);
-    }
-
-
+  float idealDistance;
+  float rotation_offset;
+  float speed_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED * 1000;
+  float sign = 1;
+  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+  float total_time = turn_90_table.getTotalTime() / speed_scaling;
 
   elapsedMicros moveTime;
-
-  
 
   PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
@@ -323,19 +320,36 @@ void motion_corner(int angle) {
   // zero clock before move
   moveTime = 0;
 
+  if (angle < 0) {
+    angle = -angle;
+    sign = -1;
+  }
+
+  Serial.print("speed_scaling = ");
+  Serial.println(speed_scaling);
+  Serial.print("total_time = ");
+  Serial.println(total_time);
   // execute motion
-  while (idealDistance != distance) {
+  while (moveTime / 1000 < total_time) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
-    idealDistance = motionCalc.idealDistance(moveTime);
-    idealVelocity = motionCalc.idealVelocity(moveTime);
+    idealDistance = moveTime * speed / 1000;
 
-    errorLeft = enc_left_extrapolate() - idealDistance * rightFraction;
-    errorRight = enc_right_extrapolate() - idealDistance * leftFraction;
+    rotation_offset = sign * distancePerDegree
+      * turn_90_table.getAngleAtIndex(speed_scaling * moveTime / 1000);
 
-    motor_l.Set(motionCalc.idealAccel(moveTime) * leftFraction + left_PID.Calculate(errorLeft),
-                idealVelocity * leftFraction);
-    motor_r.Set(motionCalc.idealAccel(moveTime) * rightFraction + right_PID.Calculate(errorRight),
-                idealVelocity * rightFraction);
+    errorLeft = enc_left_extrapolate() - idealDistance - rotation_offset;
+    errorRight = enc_right_extrapolate() - idealDistance + rotation_offset;
+
+    motor_l.Set(distancePerDegree
+        * speed_scaling
+        * turn_90_table.getAngularAcceleration(moveTime / 1000) / 1000
+        + left_PID.Calculate(errorLeft),
+        enc_left_velocity());
+    motor_r.Set(- distancePerDegree
+        * speed_scaling
+        * turn_90_table.getAngularAcceleration(moveTime / 1000) / 1000
+        + right_PID.Calculate(errorRight),
+        enc_right_velocity());
   }
 
   enc_left_write(0);

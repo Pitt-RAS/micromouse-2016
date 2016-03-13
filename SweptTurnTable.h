@@ -30,6 +30,8 @@ class SweptTurnTable {
  public:
   SweptTurnTable(float for_speed, float a, float i_turn_rad, float a_acc, float m_a_vel, float m_w);
   float getAngleAtIndex(int index);
+  float getAngularAcceleration(int index);
+  float getTotalTime();
   
 };
 
