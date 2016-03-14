@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <LedDisplay.h>
 #include "conf.h"
 #include "data.h"
 #include "driver.h"

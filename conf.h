@@ -49,6 +49,12 @@
 
 #define BATTERY_PIN A14
 
+#define DISPLAY_DATA_PIN 15
+#define DISPLAY_RS_PIN 27
+#define DISPLAY_CLOCK_PIN 31
+#define DISPLAY_ENABLE_PIN 14
+#define DISPLAY_RESET_PIN 28
+
 // RANGE SENSOR OPTIONS
 
 // Range sensor directions
@@ -89,6 +95,18 @@
 
 // Number of old samples to clear when wall status changes
 #define RANGE_QUEUE_NUM_TO_CLEAR 5
+
+// Display control parameters
+#define DISPLAY_SIZE 4
+#define DISPLAY_BRIGHTNESS 10 // between 0 and 15 inclusive
+
+// Menu configuration
+#define BUTTON_OK_PIN BUTTON1_PIN
+#define BUTTON_BACK_PIN BUTTON2_PIN
+#define MENU_STEP_ANGLE 35 // distance between options in degrees
+#define MENU_KP 0.5
+#define MENU_KI 0
+#define MENU_KD 0
 
 // Motion control paremeters
 #define MM_PER_BLOCK 180
