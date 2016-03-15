@@ -3,24 +3,22 @@
 #include "conf.h"
 #include "SweptTurnTable.h"
  
-SweptTurnTable::SweptTurnTable(float for_speed, float a, float i_turn_rad, float a_acc, float m_a_vel, float m_w){
-  forward_speed = for_speed;
-  angle = a;
-  ideal_turn_radius = i_turn_rad;
-  angular_acceleration = a_acc;
-  max_angular_velocity = m_a_vel;
-  mouse_width = m_w;
+SweptTurnTable::SweptTurnTable(float temp_forward_speed, float temp_angle, float temp_angular_acceleration, float temp_max_angular_velocity){
+  forward_speed = temp_forward_speed;
+  angle = temp_angle;
+  angular_acceleration = temp_angular_acceleration;
+  max_angular_velocity = temp_max_angular_velocity;
 
   generateTimes();
 
-  TableInfo generate_table[1000];
+  TableInfo generate_table[500];
   generate_table[0] = {0,0};
   turn_table_[0] = 0;
 
   int i = 0;
-  for(i = 1; i<TOTAL_TURN_TIME;i++){
+  for(i = 1; i < (int)((total_actual_time_ / 2) + .5);i++){
     TableInfo cell_info;
-    cell_info.velocity = getVelocity(i, generate_table[i-1].velocity); 
+    cell_info.velocity = getAngularVelocity(i, generate_table[i-1].velocity); 
     cell_info.angle = getAngle(cell_info.velocity,generate_table[i-1].angle);
     generate_table[i] = cell_info;
     turn_table_[i] = cell_info.angle;
@@ -32,8 +30,11 @@ float SweptTurnTable::getAngleAtIndex(int index)
   if (index <= total_actual_time_ / 2) {
     return turn_table_[index];
   }
-  else {
+  else if (index <= total_actual_time_) {
     return angle - turn_table_[total_actual_time_ - index];
+  }
+  else {
+    return angle;
   }
 }
 
@@ -62,13 +63,14 @@ float SweptTurnTable::getTotalTime()
 
 float SweptTurnTable::getAngle(float velocity, float previous_angle)
 {
-  return previous_angle + velocity/TOTAL_TURN_TIME;
+  return previous_angle + velocity/total_actual_time_;
 }
-float SweptTurnTable::getVelocity(int time, float previous_velocity)
+
+float SweptTurnTable::getAngularVelocity(int time, float previous_velocity)
 {
   if(time <= total_actual_time_){
     if(time <= accel_time_){
-      return (float)angular_acceleration/TOTAL_TURN_TIME + previous_velocity;
+      return (float)angular_acceleration/total_actual_time_ + previous_velocity;
     }
     else{
       if(time <= (accel_time_ + const_time_ / 2))
@@ -79,11 +81,12 @@ float SweptTurnTable::getVelocity(int time, float previous_velocity)
   }
   return 0;
 }
+
+// generates the time segments in which the mouse is accelerating/decelerating or moving at a constant speed.  
 void SweptTurnTable::generateTimes()
 {
   accel_time_ = (int)((max_angular_velocity/angular_acceleration)*1000+.5);
   const_time_ = (int)(((angle/max_angular_velocity)*1000+.5)-accel_time_);
-  decell_time_ = accel_time_;
-  total_actual_time_ = accel_time_+const_time_+decell_time_;
+  total_actual_time_ = 2 * accel_time_ + const_time_;
 }
  

@@ -158,13 +158,32 @@
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
 #define MAX_VEL_ROTATE 0.1 // m/s
-#define MAX_VEL_CORNER .5 // m/s
+#define MAX_VEL_CORNER 0.5 // m/s
 
-#define SWEPT_TURN_90_FORWARD_SPEED 435.0
+
+// Zll forward speeds should be the same, and should be the maximum turn speed.  
+// All max angular accelerations can be the same, but don't have to be
+// highest reliable max angular accel is most accurate turn
+//  max angular accel can be calculated with below equation
+//  max angular accel = (max linear accel) * 90000 * ROBOT_MASS * MM_BETWEEN_WHEELS / (robot rot. inertia)
+#define SWEPT_TURN_45_FORWARD_SPEED 700.0
+#define SWEPT_TURN_45_ANGLE 45.0
+#define SWEPT_TURN_45_MAX_ANGULAR_ACCELERATION 20000.0
+#define SWEPT_TURN_45_MAX_ANGULAR_VELOCITY 620.0
+
+#define SWEPT_TURN_90_FORWARD_SPEED 700.0
 #define SWEPT_TURN_90_ANGLE 90.0
-#define SWEPT_TURN_90_IDEAL_RADIUS 90.0
-#define SWEPT_TURN_90_MAX_ANGULAR_ACCELERATION 3000.0
-#define SWEPT_TURN_90_MAX_ANGULAR_VELOCITY 500.0
-#define SWEPT_TURN_90_MOUSE_WIDTH 100.0
+#define SWEPT_TURN_90_MAX_ANGULAR_ACCELERATION 20000.0
+#define SWEPT_TURN_90_MAX_ANGULAR_VELOCITY 490.0
+
+#define SWEPT_TURN_135_FORWARD_SPEED 700.0
+#define SWEPT_TURN_135_ANGLE 135.0
+#define SWEPT_TURN_135_MAX_ANGULAR_ACCELERATION 20000.0
+#define SWEPT_TURN_135_MAX_ANGULAR_VELOCITY 463.0
+
+#define SWEPT_TURN_180_FORWARD_SPEED 700.0
+#define SWEPT_TURN_180_ANGLE 180.0
+#define SWEPT_TURN_180_MAX_ANGULAR_ACCELERATION 20000.0
+#define SWEPT_TURN_180_MAX_ANGULAR_VELOCITY 445.0
 
 #endif

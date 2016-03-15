@@ -26,13 +26,29 @@ static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
 
+SweptTurnTable turn_45_table(
+    SWEPT_TURN_45_FORWARD_SPEED,
+    SWEPT_TURN_45_ANGLE,
+    SWEPT_TURN_45_MAX_ANGULAR_ACCELERATION,
+    SWEPT_TURN_45_MAX_ANGULAR_VELOCITY);
+
 SweptTurnTable turn_90_table(
     SWEPT_TURN_90_FORWARD_SPEED,
     SWEPT_TURN_90_ANGLE,
-    SWEPT_TURN_90_IDEAL_RADIUS,
     SWEPT_TURN_90_MAX_ANGULAR_ACCELERATION,
-    SWEPT_TURN_90_MAX_ANGULAR_VELOCITY,
-    SWEPT_TURN_90_MOUSE_WIDTH);
+    SWEPT_TURN_90_MAX_ANGULAR_VELOCITY);
+
+SweptTurnTable turn_135_table(
+    SWEPT_TURN_135_FORWARD_SPEED,
+    SWEPT_TURN_135_ANGLE,
+    SWEPT_TURN_135_MAX_ANGULAR_ACCELERATION,
+    SWEPT_TURN_135_MAX_ANGULAR_VELOCITY);
+
+SweptTurnTable turn_180_table(
+    SWEPT_TURN_180_FORWARD_SPEED,
+    SWEPT_TURN_180_ANGLE,
+    SWEPT_TURN_180_MAX_ANGULAR_ACCELERATION,
+    SWEPT_TURN_180_MAX_ANGULAR_VELOCITY);
 
 void motion_forward(float distance, float exit_speed) {
   float errorRight, errorLeft, rotationOffset;
@@ -304,50 +320,65 @@ void motion_rotate(float angle) {
 }
 
 void motion_corner(float angle, float speed) {
-  float errorRight, errorLeft;
-  float idealDistance;
-  float rotation_offset;
-  float speed_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED * 1000;
   float sign = 1;
-  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
-  float total_time = turn_90_table.getTotalTime() / speed_scaling;
-
-  elapsedMicros moveTime;
-
-  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-
-  // zero clock before move
-  moveTime = 0;
-
   if (angle < 0) {
     angle = -angle;
     sign = -1;
   }
 
-  Serial.print("speed_scaling = ");
-  Serial.println(speed_scaling);
-  Serial.print("total_time = ");
-  Serial.println(total_time);
+// SOME SORT OF SWITCH IS NEEDED TO DETERMINE WHICH LOOKUP TABLE TO USE
+//  switch (angle) {
+//    case 45:
+//      
+//      break;
+//    case 90:
+//      
+//      break;
+//    case 135:
+//      
+//      break;
+//    case 180;
+//      
+//      break;
+//  }
+  float errorRight, errorLeft;
+  float idealDistance;
+  float rotation_offset;
+  float time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED * 1000;
+  int move_time_scaled = 0;
+  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+  float total_time = turn_90_table.getTotalTime();
+
+  elapsedMicros move_time;
+
+  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+
+  // zero clock before move
+  move_time = 0;
+  
+
   // execute motion
-  while (moveTime / 1000 < total_time) {
+  while (move_time_scaled / 1000 < total_time) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
-    idealDistance = moveTime * speed / 1000;
+    move_time_scaled = move_time * time_scaling;
+    
+    idealDistance = move_time_scaled * speed / 1000;
 
     rotation_offset = sign * distancePerDegree
-      * turn_90_table.getAngleAtIndex(speed_scaling * moveTime / 1000);
+      * turn_90_table.getAngleAtIndex(move_time_scaled / 1000);
 
     errorLeft = enc_left_extrapolate() - idealDistance - rotation_offset;
     errorRight = enc_right_extrapolate() - idealDistance + rotation_offset;
 
     motor_l.Set(distancePerDegree
-        * speed_scaling
-        * turn_90_table.getAngularAcceleration(moveTime / 1000) / 1000
+        * time_scaling
+        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
         + left_PID.Calculate(errorLeft),
         enc_left_velocity());
     motor_r.Set(- distancePerDegree
-        * speed_scaling
-        * turn_90_table.getAngularAcceleration(moveTime / 1000) / 1000
+        * time_scaling
+        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
         + right_PID.Calculate(errorRight),
         enc_right_velocity());
   }
