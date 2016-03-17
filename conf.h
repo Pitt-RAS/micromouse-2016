@@ -92,6 +92,7 @@
 #define RANGE_LEFT_MIDDLE 100
 #define RANGE_RIGHT_MIDDLE 100
 #define RANGE_FRONT_MIDDLE 100
+#define RANGE_MIDDLE 68
 
 // Gyro parameters
 #define GYRO_LSB_PER_DEG_PER_S 16.295

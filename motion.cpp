@@ -103,10 +103,10 @@ void motion_forward(float distance, float exit_speed) {
 	    passedMiddle = true;
     }
 
-    if (-0.25 < difference && difference < 0.25)
-      rangeOffset = savedError;
-    else
-      savedError = rangeOffset;
+    //if (-0.25 < difference && difference < 0.25)
+    //  rangeOffset = savedError;
+    //else
+    //  savedError = rangeOffset;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorFrontLeft and errorFrontRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets

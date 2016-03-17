@@ -65,19 +65,17 @@ bool RangeSensorContainer::savedIsWall(Direction wallToCheck) {
 }
 
 float RangeSensorContainer::errorFromCenter() {
-  float errorCenter;
-	if (isWall(left) && isWall(right)) {
-		errorCenter = .5 * (diagLeftSensor.getRange(1) - diagRightSensor.getRange(1));
-	}
-	else if (isWall(left)) {
-		errorCenter = (diagLeftSensor.getRange(1) - RANGE_DIAG_LEFT_MIDDLE);
-	}
-	else if (isWall(right)) {
-		errorCenter = (RANGE_DIAG_RIGHT_MIDDLE - diagRightSensor.getRange(1));
-	}
-	else {
-		errorCenter = 0;
-	}
+  float leftReading, rightReading;
 
-  return errorCenter;
+  leftReading = diagLeftSensor.getRange(1);
+  rightReading = diagRightSensor.getRange(1);
+
+  if (leftReading < RANGE_MIDDLE && rightReading < RANGE_MIDDLE)
+    return 0.5 * (leftReading - rightReading);
+  else if (leftReading < RANGE_MIDDLE)
+    return leftReading - RANGE_MIDDLE;
+  else if (rightReading < RANGE_MIDDLE)
+    return RANGE_MIDDLE - rightReading;
+  else
+    return 0.0;
 }
