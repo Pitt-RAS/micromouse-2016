@@ -10,7 +10,7 @@ IdealSweptTurns::IdealSweptTurns(float temp_tangential_velocity, float temp_turn
   time_step = temp_time_step;
   frict_force = ROBOT_MASS * MAX_COEFFICIENT_FRICTION * 9.81;
   inside_trigs = (ROBOT_MASS * (MM_BETWEEN_WHEELS / 1000) * tangential_velocity) / (2 * MOMENT_OF_INERTIA);
-  mm_per_degree = MM_BETWEEN_WHEELS / 2.0;
+  mm_per_degree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
 
   float j = 0;
   //get the max acceleration duration by finding the time that the angle begins to get smaller
