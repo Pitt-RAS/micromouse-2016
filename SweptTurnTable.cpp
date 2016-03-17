@@ -27,7 +27,8 @@ SweptTurnTable::SweptTurnTable(float temp_forward_speed, float temp_angle, float
 
 float SweptTurnTable::getAngleAtIndex(int index)
 {
-  if (index <= total_actual_time_ / 2) {
+
+   if (index <= total_actual_time_ / 2) {
     return turn_table_[index];
   }
   else if (index <= total_actual_time_) {

@@ -126,10 +126,12 @@
 
 // Robot characteristics
 #define ROBOT_MASS .226 // kilograms
+#define MOMENT_OF_INERTIA 0.0003 //kg -m^2
 #define MM_BETWEEN_WHEELS 73.5 // millimeters
 #define NUMBER_OF_MOTORS 2
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
+#define MAX_COEFFICIENT_FRICTION .75
 #define MAX_ACCEL_STRAIGHT 4 // m/s/s
 #define MAX_DECEL_STRAIGHT -4 // m/s/s
 #define MAX_ACCEL_ROTATE 3 // m/s/s  
