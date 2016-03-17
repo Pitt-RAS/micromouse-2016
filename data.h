@@ -720,15 +720,18 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
   size_t x, y;
   bool breaking;
   size_t distance;
+  size_t layer_size, next_layer_size;
   unsigned char *item;
   Compass8 *direction_ptr;
+  Compass8 *last_direction_ptr = NULL;
 
   if (this->start_x_ == this->finish_x_ && this->start_y_ == this->finish_y_)
     return;
 
-  for (x = 0; x < x_size; x++)
-  for (y = 0; y < y_size; y++) {
-    boxes_[y][x] = 0;
+  for (x = 0; x < x_size; x++) {
+    for (y = 0; y < y_size; y++) {
+      boxes_[y][x] = 0;
+    }
   }
 
   x = this->finish_x_;
@@ -738,9 +741,12 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
   // "Paint" the boxes with distances from the finish.
 
   paint_queue.enqueue(&boxes_[y][x]);
+  next_layer_size = 0;
+  layer_size = 1;
 
   while (!paint_queue.isEmpty()) {
     item = paint_queue.dequeue();
+    layer_size--;
 
     breaking = false;
 
@@ -757,35 +763,50 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
         break;
     }
 
-    if (boxes_[y][x] != 0)
+    if (boxes_[y][x] != 0) {
+      if (layer_size == 0) {
+        distance++;
+        layer_size = next_layer_size;
+        next_layer_size = 0;
+      }
       continue;
-
-    if (x == this->finish_x_ && y == this->finish_y_) {
-      boxes_[y][x] = 0;
-    }
-    else {
-      distance++;
-      boxes_[y][x] = distance;
     }
 
     if (!this->maze_.isWall(x, y, kNorth)
           && y + 1 < y_size && boxes_[y + 1][x] == 0) {
       paint_queue.enqueue(&boxes_[y + 1][x]);
+      next_layer_size++;
     }
 
     if (!this->maze_.isWall(x, y, kSouth)
           && y - 1 >= 0 && boxes_[y - 1][x] == 0) {
       paint_queue.enqueue(&boxes_[y - 1][x]);
+      next_layer_size++;
     }
 
     if (!this->maze_.isWall(x, y, kEast)
           && x + 1 < x_size && boxes_[y][x + 1] == 0) {
       paint_queue.enqueue(&boxes_[y][x + 1]);
+      next_layer_size++;
     }
 
     if (!this->maze_.isWall(x, y, kWest)
           && x - 1 >= 0 && boxes_[y][x - 1] == 0) {
       paint_queue.enqueue(&boxes_[y][x - 1]);
+      next_layer_size++;
+    }
+
+    if (x == this->finish_x_ && y == this->finish_y_) {
+      boxes_[y][x] = 0;
+    }
+    else {
+      boxes_[y][x] = distance;
+    }
+
+    if (layer_size == 0) {
+      distance++;
+      layer_size = next_layer_size;
+      next_layer_size = 0;
     }
   }
 
@@ -808,7 +829,7 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
     }
 
     if (!this->maze_.isWall(x, y, kSouth)
-          && y - 1 >= 0 && boxes_[y - 1][x] < distance) {
+          && y >= 1 && boxes_[y - 1][x] < distance) {
       distance = boxes_[y - 1][x];
     }
 
@@ -818,31 +839,68 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
     }
 
     if (!this->maze_.isWall(x, y, kWest)
-          && x - 1 >= 0 && boxes_[y][x - 1] < distance) {
+          && x >= 1 && boxes_[y][x - 1] < distance) {
       distance = boxes_[y][x - 1];
     }
 
     direction_ptr = NULL;
 
     if (distance != 0) {
-      if (distance == boxes_[y + 1][x]) {
-        direction_ptr = &this->directions_data_[0];
-        y = y + 1;
+      // check the forward direction first, and choose that if it's the same distance
+      //   as a turn would be
+      if (last_direction_ptr != NULL) {
+        switch (*last_direction_ptr) {
+          case kNorth: {
+            if (y + 1 < y_size && distance == boxes_[y + 1][x]) {
+              direction_ptr = &this->directions_data_[0];
+              y = y + 1;
+            }
+            break;
+          }
+          case kSouth: {
+            if (y >= 1 && distance == boxes_[y - 1][x]) {
+              direction_ptr = &this->directions_data_[1];
+              y = y - 1;
+            }
+            break;
+          }
+          case kEast: {
+            if (x + 1 < x_size && distance == boxes_[y][x + 1]) {
+              direction_ptr = &this->directions_data_[2];
+              x = x + 1;
+            }
+            break;
+          }
+          case kWest: {
+            if (x >= 1 && distance == boxes_[y][x - 1]) {
+              direction_ptr = &this->directions_data_[3];
+              x = x - 1;
+            }
+            break;
+          }
+        }
       }
 
-      if (distance == boxes_[y - 1][x]) {
-        direction_ptr = &this->directions_data_[1];
-        y = y - 1;
-      }
+      if (direction_ptr == NULL) {
+        if (y + 1 < y_size && distance == boxes_[y + 1][x]) {
+          direction_ptr = &this->directions_data_[0];
+          y = y + 1;
+        }
 
-      if (distance == boxes_[y][x + 1]) {
-        direction_ptr = &this->directions_data_[2];
-        x = x + 1;
-      }
+        if (y >= 1 && distance == boxes_[y - 1][x]) {
+          direction_ptr = &this->directions_data_[1];
+          y = y - 1;
+        }
 
-      if (distance == boxes_[y][x - 1]) {
-        direction_ptr = &this->directions_data_[3];
-        x = x - 1;
+        if (x + 1 < x_size && distance == boxes_[y][x + 1]) {
+          direction_ptr = &this->directions_data_[2];
+          x = x + 1;
+        }
+
+        if (x >= 1 && distance == boxes_[y][x - 1]) {
+          direction_ptr = &this->directions_data_[3];
+          x = x - 1;
+        }
       }
     }
     else {
@@ -866,6 +924,8 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
 
     if (direction_ptr == NULL)
       return;
+
+    last_direction_ptr = direction_ptr;
 
     this->directions_.enqueue(direction_ptr);
   }
