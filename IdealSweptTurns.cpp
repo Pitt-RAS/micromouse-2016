@@ -38,20 +38,20 @@ IdealSweptTurns::IdealSweptTurns(float temp_tangential_velocity, float temp_turn
     if(i <= (int)((turn_duration / 2) / time_step + 1)){
       if (i * time_step <= acceleration_duration) {
         Serial.println("acceleration step");
-        (offset_table[i]) = getTurnOffset(getAngleAtTime(i * time_step, false));
+        offset_table[i] = getTurnOffset(getAngleAtTime(i * time_step, false));
       }
       else {
         Serial.println("constant step1");
-        (offset_table[i]) = getTurnOffset(theta_accel + max_velocity * (i * time_step - acceleration_duration));
+        offset_table[i] = getTurnOffset(theta_accel + max_velocity * (i * time_step - acceleration_duration));
       }    
     }else{
       //reverse order for second half of turn
       if(i* time_step <= (acceleration_duration + const_velocity_duration)){
         Serial.println("constant step2");
-        (offset_table[i]) = getTurnOffset(theta_accel + max_velocity * (i * time_step - acceleration_duration));
+        offset_table[i] = getTurnOffset(theta_accel + max_velocity * (i * time_step - acceleration_duration));
       }else{
         Serial.println("dceleration step");
-        (offset_table[i]) = getTurnOffset(getAngleAtTime(i * time_step, false));
+        offset_table[i] = getTurnOffset(getAngleAtTime(i * time_step, false));
       }
     }  
   }

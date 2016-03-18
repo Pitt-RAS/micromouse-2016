@@ -27,7 +27,7 @@ static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
 
 // instantiate the 90 degree turn table
-IdealSweptTurns turn_90_table(0.8, 90.0, 0.001);
+//IdealSweptTurns turn_90_table(0.8, 90.0, 0.001);
 
 void motion_forward(float distance, float exit_speed) {
   float errorRight, errorLeft, rotationOffset;
@@ -326,7 +326,7 @@ void motion_corner(float angle, float speed) {
   float time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED * 1000;
   int move_time_scaled = 0;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
-  float total_time = turn_90_table.getTotalTime();
+//  float total_time = turn_90_table.getTotalTime();
 
   elapsedMicros move_time;
 
@@ -338,35 +338,35 @@ void motion_corner(float angle, float speed) {
   
 
   // execute motion
-  while (move_time_scaled < total_time) {
-    //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
-    move_time_scaled = move_time * time_scaling;
-    
-    idealDistance = move_time_scaled * speed / 1000;
-
-    rotation_offset = turn_90_table.getOffsetAtMicros(move_time_scaled);
-    
-
-    errorLeft = enc_left_extrapolate() - idealDistance - rotation_offset;
-    errorRight = enc_right_extrapolate() - idealDistance + rotation_offset;
-
-//    motor_l.Set(distancePerDegree
-//        * time_scaling
-//        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
-//        + left_PID.Calculate(errorLeft),
+//  while (move_time_scaled < total_time) {
+//    //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
+//    move_time_scaled = move_time * time_scaling;
+//    
+//    idealDistance = move_time_scaled * speed / 1000;
+//
+////    rotation_offset = turn_90_table.getOffsetAtMicros(move_time_scaled);
+//    
+//
+//    errorLeft = enc_left_extrapolate() - idealDistance - rotation_offset;
+//    errorRight = enc_right_extrapolate() - idealDistance + rotation_offset;
+//
+////    motor_l.Set(distancePerDegree
+////        * time_scaling
+////        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
+////        + left_PID.Calculate(errorLeft),
+////        enc_left_velocity());
+////    motor_r.Set(- distancePerDegree
+////        * time_scaling
+////        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
+////        + right_PID.Calculate(errorRight),
+////        enc_right_velocity());
+//   
+//       motor_l.Set(left_PID.Calculate(errorLeft),
 //        enc_left_velocity());
-//    motor_r.Set(- distancePerDegree
-//        * time_scaling
-//        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
-//        + right_PID.Calculate(errorRight),
+//       motor_r.Set(right_PID.Calculate(errorRight),
 //        enc_right_velocity());
-   
-       motor_l.Set(left_PID.Calculate(errorLeft),
-        enc_left_velocity());
-       motor_r.Set(right_PID.Calculate(errorRight),
-        enc_right_velocity());
-   
-   }
+//   
+//   }
 
   enc_left_write(0);
   enc_right_write(0);
