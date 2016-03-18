@@ -9,7 +9,7 @@
 #include "RangeSensorContainer.h"
 #include "RangeSensor.h"
 #include "motion.h"
-#include "SweptTurnTable.h"
+#include "IdealSweptTurns.h"
 
 static float max_accel_straight = MAX_ACCEL_STRAIGHT;
 static float max_decel_straight = MAX_DECEL_STRAIGHT;
@@ -26,29 +26,8 @@ static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
 
-SweptTurnTable turn_45_table(
-    SWEPT_TURN_45_FORWARD_SPEED,
-    SWEPT_TURN_45_ANGLE,
-    SWEPT_TURN_45_MAX_ANGULAR_ACCELERATION,
-    SWEPT_TURN_45_MAX_ANGULAR_VELOCITY);
-
-SweptTurnTable turn_90_table(
-    SWEPT_TURN_90_FORWARD_SPEED,
-    SWEPT_TURN_90_ANGLE,
-    SWEPT_TURN_90_MAX_ANGULAR_ACCELERATION,
-    SWEPT_TURN_90_MAX_ANGULAR_VELOCITY);
-
-SweptTurnTable turn_135_table(
-    SWEPT_TURN_135_FORWARD_SPEED,
-    SWEPT_TURN_135_ANGLE,
-    SWEPT_TURN_135_MAX_ANGULAR_ACCELERATION,
-    SWEPT_TURN_135_MAX_ANGULAR_VELOCITY);
-
-SweptTurnTable turn_180_table(
-    SWEPT_TURN_180_FORWARD_SPEED,
-    SWEPT_TURN_180_ANGLE,
-    SWEPT_TURN_180_MAX_ANGULAR_ACCELERATION,
-    SWEPT_TURN_180_MAX_ANGULAR_VELOCITY);
+// instantiate the 90 degree turn table
+IdealSweptTurns turn_90_table(0.8, 90.0, 0.001);
 
 void motion_forward(float distance, float exit_speed) {
   float errorRight, errorLeft, rotationOffset;
@@ -359,29 +338,35 @@ void motion_corner(float angle, float speed) {
   
 
   // execute motion
-  while (move_time_scaled / 1000 < total_time) {
+  while (move_time_scaled < total_time) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     move_time_scaled = move_time * time_scaling;
     
     idealDistance = move_time_scaled * speed / 1000;
 
-    rotation_offset = sign * distancePerDegree
-      * turn_90_table.getAngleAtIndex(move_time_scaled / 1000);
+    rotation_offset = turn_90_table.getOffsetAtMicros(move_time_scaled);
+    
 
     errorLeft = enc_left_extrapolate() - idealDistance - rotation_offset;
     errorRight = enc_right_extrapolate() - idealDistance + rotation_offset;
 
-    motor_l.Set(distancePerDegree
-        * time_scaling
-        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
-        + left_PID.Calculate(errorLeft),
+//    motor_l.Set(distancePerDegree
+//        * time_scaling
+//        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
+//        + left_PID.Calculate(errorLeft),
+//        enc_left_velocity());
+//    motor_r.Set(- distancePerDegree
+//        * time_scaling
+//        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
+//        + right_PID.Calculate(errorRight),
+//        enc_right_velocity());
+   
+       motor_l.Set(left_PID.Calculate(errorLeft),
         enc_left_velocity());
-    motor_r.Set(- distancePerDegree
-        * time_scaling
-        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
-        + right_PID.Calculate(errorRight),
+       motor_r.Set(right_PID.Calculate(errorRight),
         enc_right_velocity());
-  }
+   
+   }
 
   enc_left_write(0);
   enc_right_write(0);

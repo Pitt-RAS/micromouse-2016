@@ -14,8 +14,6 @@ class IdealSweptTurns {
   float frict_force;
   float inside_trigs;
   float mm_per_degree;
-
-  float offset_table[20000];
   
   float getAngleAtTime(float t, bool build_time_table);
   float getVelocityAtTime(float t);
@@ -24,7 +22,9 @@ class IdealSweptTurns {
  public:
   IdealSweptTurns(float temp_tangential_velocity, float temp_turn_angle, float temp_time_step);
   float getOffsetAtMicros(unsigned long input_time);
+  unsigned long getTotalTime();
   int getTotalTurnSteps();
+  float offset_table[500];
 };
 
 #endif
