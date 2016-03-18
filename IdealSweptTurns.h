@@ -15,15 +15,16 @@ class IdealSweptTurns {
   float inside_trigs;
   float mm_per_degree;
 
-  float offset_table[500];
+  float offset_table[20000];
   
-  float getAngleAtTime(float t);
+  float getAngleAtTime(float t, bool build_time_table);
   float getVelocityAtTime(float t);
   float getTurnOffset(float angle);
   
  public:
   IdealSweptTurns(float temp_tangential_velocity, float temp_turn_angle, float temp_time_step);
   float getOffsetAtMicros(unsigned long input_time);
+  int getTotalTurnSteps();
 };
 
 #endif

@@ -14,12 +14,12 @@ IdealSweptTurns::IdealSweptTurns(float temp_tangential_velocity, float temp_turn
 
   int i = 0;
   //get the max acceleration duration by finding the time that the angle begins to get smaller
-  while (getAngleAtTime(i * time_step) < getAngleAtTime((i + 1) * time_step)) {
+  while (getAngleAtTime(i * time_step, true) < getAngleAtTime((i + 1) * time_step, true)) {
     i++;
   }
 
   acceleration_duration = i * time_step;
-  float theta_accel = getAngleAtTime(acceleration_duration);
+  float theta_accel = getAngleAtTime(acceleration_duration,true);
   float theta_const = turn_angle - theta_accel * 2;
   
   const_velocity_duration = theta_const / getVelocityAtTime(acceleration_duration);
@@ -31,7 +31,7 @@ IdealSweptTurns::IdealSweptTurns(float temp_tangential_velocity, float temp_turn
   for (i = 0; i <= (int)((turn_duration) / time_step + 1); i++) {
     if(i <= (int)((turn_duration / 2) / time_step + 1)){
       if (i * time_step <= acceleration_duration) {
-        offset_table[i] = getTurnOffset(getAngleAtTime(i * time_step));
+        offset_table[i] = getTurnOffset(getAngleAtTime(i * time_step, false));
       }
       else {
         offset_table[i] = getTurnOffset(theta_accel + max_velocity * (i * time_step - acceleration_duration));
@@ -41,7 +41,7 @@ IdealSweptTurns::IdealSweptTurns(float temp_tangential_velocity, float temp_turn
       if(i* time_step <= (acceleration_duration + const_velocity_duration)){
         offset_table[i] = getTurnOffset(theta_accel + max_velocity * (i * time_step - acceleration_duration));
       }else{
-        offset_table[i] = getTurnOffset(getAngleAtTime(i * time_step));
+        offset_table[i] = getTurnOffset(getAngleAtTime(i * time_step, false));
       }
     }  
   }
@@ -55,14 +55,18 @@ float IdealSweptTurns::getOffsetAtMicros(unsigned long input_time)
   return (float)((((input_time / 1000000.0) - (float)index * time_step)/time_step)*(high_theta - low_theta));
 }
 
-float IdealSweptTurns::getAngleAtTime(float t)
+int IdealSweptTurns::getTotalTurnSteps()
 {
-  float return_angle = 0;
+  return (int)((turn_duration) / time_step + 1);
+}
+
+float IdealSweptTurns::getAngleAtTime(float t, bool build_time_table)
+{
   float abs_sec_func = abs(1 / cos(inside_trigs * t));
-  if(t <= acceleration_duration + const_velocity_duration)
+  if((t <= acceleration_duration + const_velocity_duration) || build_time_table)
     return (((2.0 * frict_force * MOMENT_OF_INERTIA) / (pow(ROBOT_MASS * tangential_velocity, 2) * (MM_BETWEEN_WHEELS / 1000))) * (-1.0 + abs_sec_func) / (abs_sec_func));
   else //extrapolate the decceleration angles by taking the reverse of the acceleration
-    return turn_angle - getAngleAtTime(turn_duration - t);
+    return turn_angle - getAngleAtTime(turn_duration - t, false);
 }
 
 float IdealSweptTurns::getVelocityAtTime(float t)
