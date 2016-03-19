@@ -17,7 +17,7 @@ class Orientation {
     static Orientation* instance_;
 
     MPU6050 mpu_;
-    uint16_t packet_size_;
+    uint16_t packet_size_ = 2;
     uint16_t fifo_count_ = 0;
 
     float secondary_gyro_offset_ = 0;
@@ -25,7 +25,7 @@ class Orientation {
     float raw_heading_ = 0;
     int16_t last_gyro_reading_ = 0;
     unsigned long last_update_time_ = 0;
-    unsigned long next_update_time_ = 0;
+    volatile unsigned long next_update_time_ = 0;
     
     float max_forward_accel_ = 0;
     float max_radial_accel_ = 0;

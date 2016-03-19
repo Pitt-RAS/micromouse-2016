@@ -11,7 +11,12 @@ volatile bool Orientation::mpu_interrupt_ = false;
 Orientation* Orientation::instance_ = NULL;
 
 Orientation::Orientation() {
-  Wire.begin(I2C_MASTER, 0, I2C_PINS_18_19, I2C_PULLUP_INT, I2C_RATE_400);
+#ifdef CORE_TEENSY
+  Wire.begin(I2C_MASTER, 0, I2C_PINS_18_19, I2C_PULLUP_EXT, I2C_RATE_400);
+#else
+  Wire.begin();
+  TWBR = 24;
+#endif
 
   mpu_.initialize();
   Serial.println(mpu_.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
@@ -22,7 +27,12 @@ Orientation::Orientation() {
   // enable interrupt detection
   Serial.println(F("Enabling MPU6050 interrupt detection..."));
   pinMode(IMU_INTERRUPT_PIN, INPUT);
+
+#ifdef CORE_TEENSY
+  attachInterrupt(IMU_INTERRUPT_PIN, interruptHandler, RISING);
+#else
   attachInterrupt(digitalPinToInterrupt(IMU_INTERRUPT_PIN), interruptHandler, RISING);
+#endif
 
   mpu_.setRate(1); // Sample rate of 500Hz (assuming LPF is enabled)
   mpu_.setDLPFMode(MPU6050_DLPF_BW_188); // Enable DLPF
@@ -32,14 +42,15 @@ Orientation::Orientation() {
   mpu_.setIntFIFOBufferOverflowEnabled(true);
   mpu_.setIntDataReadyEnabled(true);
 
-  packet_size_ = 2;
-
+  Serial.println("Calibrating gyro...");
   calibrate();
 }
 
 void Orientation::interruptHandler() {
   mpu_interrupt_ = true;
-  Orientation::instance_->next_update_time_ = micros();
+  if (Orientation::instance_ != NULL) {
+    Orientation::instance_->next_update_time_ = micros();
+  }
 }
 
 Orientation* Orientation::getInstance() {
@@ -74,7 +85,6 @@ void Orientation::calibrate() {
 
     offset += total / GYRO_CALIBRATION_SAMPLES;
     mpu_.setZGyroOffset(-offset);
-    delay(1);
   }
 
   total = 0;
@@ -142,6 +152,8 @@ bool Orientation::update() {
     last_update_time_ = next_update_time_;
 
     return true;
+  } else {
+    return false;
   }
 }
 
