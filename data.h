@@ -846,33 +846,37 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
     direction_ptr = NULL;
 
     if (distance != 0) {
-      // check the forward direction first, and choose that if it's the same distance
-      //   as a turn would be
+      // check the forward direction first, and choose that if it's the same
+      //   distance as a turn would be
       if (last_direction_ptr != NULL) {
         switch (*last_direction_ptr) {
           case kNorth: {
-            if (y + 1 < y_size && distance == boxes_[y + 1][x]) {
+            if (y + 1 < y_size && distance == boxes_[y + 1][x]
+                  && !this->maze_.isWall(x, y, kNorth)) {
               direction_ptr = &this->directions_data_[0];
               y = y + 1;
             }
             break;
           }
           case kSouth: {
-            if (y >= 1 && distance == boxes_[y - 1][x]) {
+            if (y >= 1 && distance == boxes_[y - 1][x]
+                  && !this->maze_.isWall(x, y, kSouth)) {
               direction_ptr = &this->directions_data_[1];
               y = y - 1;
             }
             break;
           }
           case kEast: {
-            if (x + 1 < x_size && distance == boxes_[y][x + 1]) {
+            if (x + 1 < x_size && distance == boxes_[y][x + 1]
+                  && !this->maze_.isWall(x, y, kEast)) {
               direction_ptr = &this->directions_data_[2];
               x = x + 1;
             }
             break;
           }
           case kWest: {
-            if (x >= 1 && distance == boxes_[y][x - 1]) {
+            if (x >= 1 && distance == boxes_[y][x - 1]
+                  && !this->maze_.isWall(x, y, kWest)) {
               direction_ptr = &this->directions_data_[3];
               x = x - 1;
             }
@@ -882,22 +886,26 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
       }
 
       if (direction_ptr == NULL) {
-        if (y + 1 < y_size && distance == boxes_[y + 1][x]) {
+        if (y + 1 < y_size && distance == boxes_[y + 1][x]
+              && !this->maze_.isWall(x, y, kNorth)) {
           direction_ptr = &this->directions_data_[0];
           y = y + 1;
         }
 
-        if (y >= 1 && distance == boxes_[y - 1][x]) {
+        if (y >= 1 && distance == boxes_[y - 1][x]
+              && !this->maze_.isWall(x, y, kSouth)) {
           direction_ptr = &this->directions_data_[1];
           y = y - 1;
         }
 
-        if (x + 1 < x_size && distance == boxes_[y][x + 1]) {
+        if (x + 1 < x_size && distance == boxes_[y][x + 1]
+              && !this->maze_.isWall(x, y, kEast)) {
           direction_ptr = &this->directions_data_[2];
           x = x + 1;
         }
 
-        if (x >= 1 && distance == boxes_[y][x - 1]) {
+        if (x >= 1 && distance == boxes_[y][x - 1]
+              && !this->maze_.isWall(x, y, kWest)) {
           direction_ptr = &this->directions_data_[3];
           x = x - 1;
         }
