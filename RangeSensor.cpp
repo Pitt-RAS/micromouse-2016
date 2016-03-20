@@ -22,9 +22,9 @@ RangeSensor::RangeSensor(int temp_pin, int lowT, int highT) {
       constants_ = RANGE3_TRANSLATION;
       break;
 
-    case RANGE5_PIN:
-      emitter_pin_ = EMITTER5_PIN;
-      constants_ = RANGE5_TRANSLATION;
+    case RANGE4_PIN:
+      emitter_pin_ = EMITTER4_PIN;
+      constants_ = RANGE4_TRANSLATION;
       break;
   }
 

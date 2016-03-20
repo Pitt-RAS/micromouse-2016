@@ -613,11 +613,11 @@ void motion_hold_range(int setpoint, unsigned int time) {
 
   while (currentTime / 1000 < time) {
 
-    RangeSensors.leftSensor.updateRange();
-    RangeSensors.rightSensor.updateRange();
+    RangeSensors.diagLeftSensor.updateRange();
+    RangeSensors.diagRightSensor.updateRange();
     
-    errorFrontLeft = RangeSensors.leftSensor.getRange();
-    errorFrontRight = RangeSensors.rightSensor.getRange();
+    errorFrontLeft = RangeSensors.diagLeftSensor.getRange();
+    errorFrontRight = RangeSensors.diagRightSensor.getRange();
     errorBackLeft = errorFrontLeft;
     errorBackRight = errorFrontRight;
 
