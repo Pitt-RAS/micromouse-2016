@@ -61,23 +61,22 @@ int Menu::getInt(int min, int max, int initial, int d) {
         enc_right_write(-distance_between_options / 2);
         result++;
         showInt(result, d);
-
-        // skip over the derivative spike from changing the setpoint
-        pid.Calculate(enc_right_extrapolate());
       }
     } else if (distance_from_center < -distance_between_options / 2) {
       if (result > min && result - 1 > -pow(10, d - 1)) {
         enc_right_write(distance_between_options / 2);
         result--;
         showInt(result, d);
-
-        // skip over the derivative spike from changing the setpoint
-        pid.Calculate(enc_right_extrapolate());
       }
     }
 
-    float error = pid.Calculate(enc_right_extrapolate());
-    motor_r.Set(error, enc_right_velocity());
+    if (abs(enc_right_extrapolate()) < MENU_DEAD_ZONE) {
+        motor_r.Set(0, enc_right_velocity());
+    } else if (enc_right_extrapolate() < 0) {
+        motor_r.Set(MENU_RESTORING_FORCE, enc_right_velocity());
+    } else {
+        motor_r.Set(-MENU_RESTORING_FORCE, enc_right_velocity());
+    }
   }
 
   return result;
