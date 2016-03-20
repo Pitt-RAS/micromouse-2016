@@ -32,7 +32,8 @@ void setup()
   digitalWrite(EMITTER3_PIN, LOW);
   digitalWrite(EMITTER4_PIN, LOW);
 
-  pinMode(BUTTON1_PIN, INPUT);
+  pinMode(BUTTON1_PIN, INPUT_PULLUP);
+  pinMode(BUTTON2_PIN, INPUT_PULLUP);
 }
 
 void loop()
@@ -40,7 +41,7 @@ void loop()
   Navigator<RobotDriver> navigator;
 
   // Wait for button press.
-  while (digitalRead(BUTTON1_PIN) == LOW);
+  while (digitalRead(BUTTON1_PIN) == HIGH);
   delay(1000);
   
   enc_left_write(0);
