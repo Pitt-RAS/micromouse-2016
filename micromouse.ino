@@ -4,6 +4,7 @@
 #include "data.h"
 #include "driver.h"
 #include "Navigator.h"
+#include "Menu.h"
 #include "motion.h"
 #include "RangeSensorContainer.h"
 #include "motors.h"

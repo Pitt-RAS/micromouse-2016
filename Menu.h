@@ -7,15 +7,14 @@
 class Menu {
  private:
   LedDisplay display_;
-  static bool initialized_;
+  bool initialized_;
 
+ public:
   Menu();
+  void begin();
 
   void showInt(int value, int d);
   void showString(char* s, bool left_align = true);
-
- public:
-  static void initialize();
 
   // gets a integer between min and max with at most d digits
   int getInt(int min, int max, int initial, int d);

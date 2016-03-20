@@ -8,12 +8,11 @@
 #include "sensors_encoders.h"
 
 bool Menu::initialized_ = false;
+Menu menu;
 
 Menu::Menu()
     : display_(DISPLAY_DATA_PIN, DISPLAY_RS_PIN, DISPLAY_CLOCK_PIN,
                DISPLAY_ENABLE_PIN, DISPLAY_RESET_PIN, DISPLAY_SIZE) {
-  display_.setBrightness(DISPLAY_BRIGHTNESS);
-  display_.begin();
 }
 
 void Menu::showInt(int value, int d) {
@@ -39,9 +38,10 @@ void Menu::showString(char* s, bool left_align) {
   }
 }
 
-void Menu::initialize() {
+void Menu::begin() {
   if (!initialized_) {
-    menu = Menu();
+    display_.setBrightness(DISPLAY_BRIGHTNESS);
+    display_.begin();
     initialized_ = true;
   }
 }
