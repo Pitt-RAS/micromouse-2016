@@ -347,6 +347,58 @@ void motion_rotate(float angle) {
   orientation->resetHeading();
 }
 
+void motion_gyro_rotate(float angle) {
+  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+  float idealLinearDistance, idealLinearVelocity;
+  float errorLeft, errorRight, errorRotation;
+  float rotation_correction;
+  float linearDistance = distancePerDegree * angle;
+  elapsedMicros moveTime;
+
+  float current_speed = (enc_left_front_velocity() + enc_left_back_velocity()
+                         - enc_right_front_velocity() - enc_right_back_velocity()) / 2;
+  MotionCalc motionCalc (linearDistance, max_vel_rotate, current_speed, 0, max_accel_rotate,
+                         max_decel_rotate);
+
+  if (orientation == NULL) {
+    orientation = Orientation::getInstance();
+  }
+
+  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
+
+  // zero encoders and clock before move
+  moveTime = 0;
+
+  // the right will always be the negative of the left in order to rotate on a point.
+  while (idealLinearDistance != linearDistance) {
+    orientation->update();
+
+    //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
+    idealLinearDistance = motionCalc.idealDistance(moveTime);
+    idealLinearVelocity = motionCalc.idealVelocity(moveTime);
+
+    errorRotation = orientation->getHeading() * distancePerDegree - idealLinearDistance;
+    rotation_correction = rotation_PID.Calculate(errorRotation);
+
+    // run PID loop here.  new PID loop will add or subtract from a predetermined
+    //   PWM value that was calculated with the motor curve and current ideal speed
+    motor_lf.Set(motionCalc.idealAccel(moveTime) + rotation_correction,
+                idealLinearVelocity);
+    motor_rf.Set(-motionCalc.idealAccel(moveTime) - rotation_correction,
+                idealLinearVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + rotation_correction,
+                idealLinearVelocity);
+    motor_rb.Set(-motionCalc.idealAccel(moveTime) - rotation_correction,
+                idealLinearVelocity);
+  }
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
+  orientation->resetHeading();
+}
+
 void motion_corner(SweptTurnType turn_type, float speed) {
   float sign;
   float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
