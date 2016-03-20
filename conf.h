@@ -3,46 +3,55 @@
 
 #include <Arduino.h>
 
-// Define pin assignments for teensy3.2 on Rev1 PCB
-#define ENCODER_A1_PIN 1
-#define ENCODER_A2_PIN 0
-#define MOTOR_A1_PIN 4
-#define MOTOR_A2_PIN 2
-#define MOTOR_AP_PIN 3
+// Define pin assignments for teensy3.2 on Rev2 PCB
+#define ENCODER_LF1_PIN 2
+#define ENCODER_LF2_PIN 4
+#define MOTOR_LF_DIRECTION_PIN 16
+#define MOTOR_LF_PWM_PIN 20
 
-#define ENCODER_B1_PIN 12
-#define ENCODER_B2_PIN 11
-#define MOTOR_B1_PIN 7
-#define MOTOR_B2_PIN 6
-#define MOTOR_BP_PIN 5
+#define ENCODER_RF1_PIN 8
+#define ENCODER_RF2_PIN 7
+#define MOTOR_RF_DIRECTION_PIN 18
+#define MOTOR_RF_PWM_PIN 22
 
-#define BUTTON1_PIN 23
-#define BUTTON2_PIN 22
-#define BUTTON3_PIN 21
+#define ENCODER_LB1_PIN 6
+#define ENCODER_LB2_PIN 5
+#define MOTOR_LB_DIRECTION_PIN 17
+#define MOTOR_LB_PWM_PIN 21
 
-#define SCL_PIN 18
-#define SDA_PIN 19
+#define ENCODER_RB1_PIN 9
+#define ENCODER_RB2_PIN 10
+#define MOTOR_RB_DIRECTION_PIN 19
+#define MOTOR_RB_PWM_PIN 23
 
-#define EMITTER1_PIN 29
-#define EMITTER2_PIN 30
-#define EMITTER3_PIN 31
-#define EMITTER4_PIN 32
-#define EMITTER5_PIN 33
+#define BUTTON1_PIN 26
+#define BUTTON2_PIN 32
 
-#define RANGE1_PIN A14
-#define RANGE2_PIN A0
-#define RANGE3_PIN A1
-#define RANGE4_PIN A2
-#define RANGE5_PIN A3
+#define SCL_PIN 29
+#define SDA_PIN 30
+#define IMU_INTERRUPT_PIN 11
+
+#define EMITTER1_PIN 24
+#define EMITTER2_PIN 25
+#define EMITTER3_PIN 12
+#define EMITTER4_PIN 33
+
+#define RANGE1_PIN A11
+#define RANGE2_PIN A12
+#define RANGE3_PIN A13
+#define RANGE4_PIN A10
+
+#define BUZZER_PIN 3
+
+#define BATTERY_PIN A14
 
 // RANGE SENSOR OPTIONS
 
 // Range sensor directions
 #define RANGE_DIAG_LEFT_PIN RANGE1_PIN
 #define RANGE_DIAG_RIGHT_PIN RANGE2_PIN
-#define RANGE_LEFT_PIN RANGE3_PIN
-#define RANGE_RIGHT_PIN RANGE4_PIN
-#define RANGE_FRONT_PIN RANGE5_PIN
+#define RANGE_FRONT_LEFT_PIN RANGE3_PIN
+#define RANGE_FRONT_RIGHT_PIN RANGE4_PIN
 
 // Range sensor distance offsets
 #define RANGE_DIAG_LEFT_OFFSET -35
