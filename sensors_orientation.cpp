@@ -22,6 +22,7 @@ Orientation::Orientation() {
   Serial.println(mpu_.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
   mpu_.setFullScaleGyroRange(MPU6050_GYRO_FS_2000);
+  mpu_.setZGyroOffset(GYRO_OFFSET_SETTING);
   mpu_.setZAccelOffset(1788); // 1688 factory default for my test chip
 
   // enable interrupt detection
@@ -41,9 +42,6 @@ Orientation::Orientation() {
 
   mpu_.setIntFIFOBufferOverflowEnabled(true);
   mpu_.setIntDataReadyEnabled(true);
-
-  Serial.println("Calibrating gyro...");
-  calibrate();
 }
 
 void Orientation::interruptHandler() {
@@ -62,6 +60,7 @@ Orientation* Orientation::getInstance() {
 }
 
 void Orientation::calibrate() {
+  Serial.println("Calibrating gyro...");
   mpu_.setZGyroOffset(0);
   int32_t total = 0;
   int16_t offset = 0;
@@ -86,6 +85,7 @@ void Orientation::calibrate() {
     offset += total / GYRO_CALIBRATION_SAMPLES;
     mpu_.setZGyroOffset(-offset);
   }
+  Serial.println(offset);
 
   total = 0;
   for (int i = 0; i < GYRO_CALIBRATION_SAMPLES; i++) {
@@ -103,6 +103,7 @@ void Orientation::calibrate() {
   }
 
   secondary_gyro_offset_ = (float)total / GYRO_CALIBRATION_SAMPLES;
+  Serial.println(secondary_gyro_offset_, 10);
 
   raw_heading_ = 0;
   Serial.println("Gyro calibration successful");

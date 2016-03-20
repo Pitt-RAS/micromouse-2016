@@ -7,6 +7,8 @@
 #define MPU6050_INCLUDE_DMP_MOTIONAPPS20
 #include <MPU6050.h>
 
+#include "conf.h"
+
 class Orientation {
   private:
     Orientation();
@@ -20,7 +22,7 @@ class Orientation {
     uint16_t packet_size_ = 2;
     uint16_t fifo_count_ = 0;
 
-    float secondary_gyro_offset_ = 0;
+    float secondary_gyro_offset_ = GYRO_SECONDARY_OFFSET;
 
     float raw_heading_ = 0;
     int16_t last_gyro_reading_ = 0;

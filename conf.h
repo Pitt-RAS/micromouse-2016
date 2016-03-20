@@ -97,9 +97,11 @@
 #define RANGE_QUEUE_NUM_TO_CLEAR 5
 
 // Gyro parameters
-#define GYRO_LSB_PER_DEG_PER_S 16.4
+#define GYRO_LSB_PER_DEG_PER_S 16.215
 #define GYRO_CALIBRATION_SAMPLES 1000
 #define GYRO_CALIBRATION_ROUNDS 2
+#define GYRO_OFFSET_SETTING -11
+#define GYRO_SECONDARY_OFFSET 2.179
 
 // Display control parameters
 #define DISPLAY_SIZE 4
@@ -121,7 +123,7 @@
 #define KI_POSITION 0
 #define KD_POSITION 0
 
-#define KP_ROTATION 0
+#define KP_ROTATION 1
 #define KI_ROTATION 0
 #define KD_ROTATION 0
 
