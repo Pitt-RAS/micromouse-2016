@@ -4,27 +4,31 @@
 RangeSensorContainer RangeSensors;
 
 RangeSensorContainer::RangeSensorContainer() 
-	: leftSensor(RANGE_DIAG_LEFT_PIN, LEFT_LOW_THRESHOLD, LEFT_HIGH_THRESHOLD), rightSensor(RANGE_DIAG_RIGHT_PIN, RIGHT_LOW_THRESHOLD, RIGHT_HIGH_THRESHOLD), frontSensor(RANGE_FRONT_PIN, FRONT_LOW_THRESHOLD, FRONT_HIGH_THRESHOLD)
+	: diagLeftSensor(RANGE_DIAG_LEFT_PIN, DIAG_LEFT_LOW_THRESHOLD, DIAG_LEFT_HIGH_THRESHOLD),
+    diagRightSensor(RANGE_DIAG_RIGHT_PIN, DIAG_RIGHT_LOW_THRESHOLD, DIAG_RIGHT_HIGH_THRESHOLD),
+    frontLeftSensor(RANGE_FRONT_LEFT_PIN, FRONT_LEFT_LOW_THRESHOLD, FRONT_LEFT_HIGH_THRESHOLD),
+    frontRightSensor(RANGE_FRONT_RIGHT_PIN, FRONT_RIGHT_LOW_THRESHOLD, FRONT_RIGHT_HIGH_THRESHOLD)
 {
 }
 
 void RangeSensorContainer::updateReadings() {
-	leftSensor.updateRange();
-	rightSensor.updateRange();
-	frontSensor.updateRange();
+	diagLeftSensor.updateRange();
+	diagRightSensor.updateRange();
+	frontLeftSensor.updateRange();
+	frontRightSensor.updateRange();
 }
 
 bool RangeSensorContainer::isWall(Direction wallToCheck) {
 	
 	switch (wallToCheck) {
 	case left:
-		return leftSensor.isWall();
+		return diagLeftSensor.isWall();
 		break;
 	case front:
-		return frontSensor.isWall();
+		return frontLeftSensor.isWall();
 		break;
 	case right:
-		return rightSensor.isWall();
+		return diagRightSensor.isWall();
 		break;
 	case back:
 		return false;
@@ -36,8 +40,8 @@ bool RangeSensorContainer::isWall(Direction wallToCheck) {
 
 void RangeSensorContainer::saveIsWall()
 {
-  saved_left_ = leftSensor.isWall();
-  saved_right_ = rightSensor.isWall();
+  saved_left_ = diagLeftSensor.isWall();
+  saved_right_ = diagRightSensor.isWall();
 }
 
 bool RangeSensorContainer::savedIsWall(Direction wallToCheck) {
@@ -47,7 +51,7 @@ bool RangeSensorContainer::savedIsWall(Direction wallToCheck) {
 		return saved_left_;
 		break;
 	case front:
-		return frontSensor.isWall();
+		return frontLeftSensor.isWall();
 		break;
 	case right:
 		return saved_right_;
@@ -63,13 +67,13 @@ bool RangeSensorContainer::savedIsWall(Direction wallToCheck) {
 float RangeSensorContainer::errorFromCenter() {
   float errorCenter;
 	if (isWall(left) && isWall(right)) {
-		errorCenter = .5 * (leftSensor.getRange(1) - rightSensor.getRange(1));
+		errorCenter = .5 * (diagLeftSensor.getRange(1) - diagRightSensor.getRange(1));
 	}
 	else if (isWall(left)) {
-		errorCenter = (leftSensor.getRange(1) - RANGE_DIAG_LEFT_MIDDLE);
+		errorCenter = (diagLeftSensor.getRange(1) - RANGE_DIAG_LEFT_MIDDLE);
 	}
 	else if (isWall(right)) {
-		errorCenter = (RANGE_DIAG_RIGHT_MIDDLE - rightSensor.getRange(1));
+		errorCenter = (RANGE_DIAG_RIGHT_MIDDLE - diagRightSensor.getRange(1));
 	}
 	else {
 		errorCenter = 0;
