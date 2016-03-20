@@ -14,8 +14,10 @@
 void setup()
 {
   // Set higher pwm frequency for smoother motor control.
-  analogWriteFrequency(MOTOR_AP_PIN, 46875);
-  analogWriteFrequency(MOTOR_BP_PIN, 46875);
+  analogWriteFrequency(MOTOR_LF_PWM_PIN, 46875);
+  analogWriteFrequency(MOTOR_RF_PWM_PIN, 46875);
+  analogWriteFrequency(MOTOR_LB_PWM_PIN, 46875);
+  analogWriteFrequency(MOTOR_RB_PWM_PIN, 46875);
 
   // PWM resolution is 0-1023.
   analogWriteResolution(10);
@@ -24,13 +26,11 @@ void setup()
   pinMode(EMITTER2_PIN, OUTPUT);
   pinMode(EMITTER3_PIN, OUTPUT);
   pinMode(EMITTER4_PIN, OUTPUT);
-  pinMode(EMITTER5_PIN, OUTPUT);
 
   digitalWrite(EMITTER1_PIN, LOW);
   digitalWrite(EMITTER2_PIN, LOW);
   digitalWrite(EMITTER3_PIN, LOW);
   digitalWrite(EMITTER4_PIN, LOW);
-  digitalWrite(EMITTER5_PIN, LOW);
 
   pinMode(BUTTON1_PIN, INPUT);
 }

@@ -2,8 +2,8 @@
 #include <EncoderMod.h>
 #include "conf.h"
 
-Encoder left_encoder(ENCODER_A1_PIN, ENCODER_A2_PIN);
-Encoder right_encoder(ENCODER_B1_PIN, ENCODER_B2_PIN);
+Encoder left_encoder(ENCODER_LF1_PIN, ENCODER_LF2_PIN);
+Encoder right_encoder(ENCODER_RF1_PIN, ENCODER_RF2_PIN);
 
 float enc_left_read() {
     return (left_encoder.read() * MM_PER_STEP);

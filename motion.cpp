@@ -130,59 +130,59 @@ void motion_collect(float distance, float exit_speed){
       {
         // Front left
 
-        digitalWrite(EMITTER1_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_L += analogRead(RANGE1_PIN);
-
-        digitalWrite(EMITTER1_PIN, LOW);
-
-        delayMicroseconds(delayTime);
-
-        off_reading_L += analogRead(RANGE1_PIN);
-
-        // Front right
-
-        digitalWrite(EMITTER2_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_R += analogRead(RANGE2_PIN);
-
-        digitalWrite(EMITTER2_PIN, LOW);
-
-        delayMicroseconds(delayTime);
-
-        off_reading_R += analogRead(RANGE2_PIN);
-
-        delayMicroseconds(delayTime);
-
-        // Diag left
-
         digitalWrite(EMITTER3_PIN, HIGH);
         delayMicroseconds(delayTime);
 
-        on_reading_DL += analogRead(RANGE3_PIN);
+        on_reading_L += analogRead(RANGE3_PIN);
 
         digitalWrite(EMITTER3_PIN, LOW);
 
         delayMicroseconds(delayTime);
 
-        off_reading_DL += analogRead(RANGE3_PIN);
+        off_reading_L += analogRead(RANGE3_PIN);
+
+        // Front right
+
+        digitalWrite(EMITTER4_PIN, HIGH);
+        delayMicroseconds(delayTime);
+
+        on_reading_R += analogRead(RANGE4_PIN);
+
+        digitalWrite(EMITTER4_PIN, LOW);
+
+        delayMicroseconds(delayTime);
+
+        off_reading_R += analogRead(RANGE4_PIN);
+
+        delayMicroseconds(delayTime);
+
+        // Diag left
+
+        digitalWrite(EMITTER1_PIN, HIGH);
+        delayMicroseconds(delayTime);
+
+        on_reading_DL += analogRead(RANGE1_PIN);
+
+        digitalWrite(EMITTER1_PIN, LOW);
+
+        delayMicroseconds(delayTime);
+
+        off_reading_DL += analogRead(RANGE1_PIN);
 
         delayMicroseconds(delayTime);
 
         // Diag right
 
-        digitalWrite(EMITTER5_PIN, HIGH);
+        digitalWrite(EMITTER2_PIN, HIGH);
         delayMicroseconds(delayTime);
 
-        on_reading_DR += analogRead(RANGE5_PIN);
+        on_reading_DR += analogRead(RANGE2_PIN);
 
-        digitalWrite(EMITTER5_PIN, LOW);
+        digitalWrite(EMITTER2_PIN, LOW);
 
         delayMicroseconds(delayTime);
 
-        off_reading_DR += analogRead(RANGE5_PIN);
+        off_reading_DR += analogRead(RANGE2_PIN);
 
         delayMicroseconds(delayTime);
       }
@@ -394,28 +394,13 @@ void motion_hold_range(int setpoint, unsigned int time) {
 
   currentTime = 0;
 
-  float off_reading1, off_reading2, on_reading1, on_reading2;
   while (currentTime / 1000 < time) {
-    off_reading1 = analogRead(RANGE3_PIN);
-    digitalWrite(EMITTER3_PIN, HIGH);
-    delayMicroseconds(45);
-    on_reading1 = analogRead(RANGE3_PIN);
-    digitalWrite(EMITTER3_PIN, LOW);
 
-    delayMicroseconds(45);
-
-    off_reading2 = analogRead(RANGE5_PIN);
-    digitalWrite(EMITTER5_PIN, HIGH);
-    delayMicroseconds(45);
-    on_reading2 = analogRead(RANGE5_PIN);
-    digitalWrite(EMITTER5_PIN, LOW);
-
-    on_reading1 = (4905.88 * pow((on_reading1 - off_reading1 + 27.0265), -0.672239) + -87.2552);
-
-    on_reading2 = (1144.64 * pow((on_reading2 - off_reading2 + -13.4041), -0.389189) + -103.488);
-
-    errorLeft = on_reading1 - on_reading2;
-    errorRight = on_reading2 - on_reading1;
+    RangeSensors.leftSensor.updateRange();
+    RangeSensors.rightSensor.updateRange();
+    
+    errorLeft = RangeSensors.leftSensor.getRange();
+    errorRight = RangeSensors.rightSensor.getRange();
 
     leftOutput = left_PID.Calculate(errorLeft);
     rightOutput = right_PID.Calculate(errorRight);

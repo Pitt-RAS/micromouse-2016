@@ -3,9 +3,9 @@
 
 class Motor {
   private:
-    int pin1_, pin2_, pin_pwm_;
+    int pin_, pin_pwm_;
   public:
-    Motor(int pin1, int pin2, int pwm_pin);
+    Motor(int pin, int pwm_pin);
     void Set(float accel, float current_velocity);
 };
 
