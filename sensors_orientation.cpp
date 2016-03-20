@@ -12,7 +12,7 @@ Orientation* Orientation::instance_ = NULL;
 
 Orientation::Orientation() {
 #ifdef CORE_TEENSY
-  Wire.begin(I2C_MASTER, 0, I2C_PINS_18_19, I2C_PULLUP_EXT, I2C_RATE_400);
+  Wire1.begin(I2C_MASTER, 0, I2C_PINS_29_30, I2C_PULLUP_EXT, I2C_RATE_400);
 #else
   Wire.begin();
   TWBR = 24;
