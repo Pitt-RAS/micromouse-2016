@@ -21,6 +21,7 @@ class RangeSensorContainer {
 		RangeSensor diagLeftSensor, diagRightSensor;
 		RangeSensor frontLeftSensor, frontRightSensor;
 
+		void updateReadings(int n);
 		void updateReadings();
 		bool isWall(Direction wallToCheck); //Maybe directly return error for pid 
 		void saveIsWall();

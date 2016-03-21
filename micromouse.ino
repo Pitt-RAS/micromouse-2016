@@ -37,21 +37,41 @@ void setup()
 
   pinMode(BUTTON1_PIN, INPUT_PULLUP);
   pinMode(BUTTON2_PIN, INPUT_PULLUP);
-  menu.begin();
+
+  while (digitalRead(BUTTON1_PIN) == HIGH);
 }
 
 void loop()
 {
-  Navigator<RobotDriver> navigator;
+  int dl, dr, fl, fr;
+  int i;
 
-  // Wait for button press.
-  while (digitalRead(BUTTON1_PIN) == HIGH);
-  delay(1000);
-  
-  enc_left_front_write(0);
-  enc_right_front_write(0);
-  enc_left_back_write(0);
-  enc_right_back_write(0);
+  int n = 1;
 
-  navigator.runDevelopmentCode();
+  while (true) {
+    for (i = 0; i < 1000; i++) {
+      RangeSensors.updateReadings(n);
+
+      dl = RangeSensors.diagLeftSensor.getRange();
+      dr = RangeSensors.diagRightSensor.getRange();
+      fl = RangeSensors.frontLeftSensor.getRange();
+      fr = RangeSensors.frontRightSensor.getRange();
+
+      if (digitalRead(BUTTON2_PIN) == LOW) {
+        delay(50);
+
+        while (digitalRead(BUTTON2_PIN) == LOW);
+        delay(50);
+
+        n++;
+
+        if (n > 4)
+          n = 1;
+
+        break;
+      }
+    }
+
+    Serial.printf("dl = %3d  dr = %3d  fl = %3d  fr = %3d\n", dl, dr, fl, fr);
+  }
 }

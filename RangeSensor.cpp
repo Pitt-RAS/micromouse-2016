@@ -39,17 +39,18 @@ void RangeSensor::updateRange() {
   off_reading = analogRead(pin_);
   digitalWrite(emitter_pin_, HIGH);
 
-  delayMicroseconds(45);
+  delayMicroseconds(40);
 
   on_reading = analogRead(pin_);
   digitalWrite(emitter_pin_, LOW);
 
-  delayMicroseconds(45);
+  delayMicroseconds(20);
 
-  sensed_distance = (constants_.a * pow((on_reading - off_reading
-          + constants_.b), constants_.c) + constants_.d) + constants_.e;
+  //sensed_distance = (constants_.a * pow((on_reading - off_reading
+  //        + constants_.b), constants_.c) + constants_.d) + constants_.e;
 
-  last_reading_ = sensed_distance;
+  //last_reading_ = sensed_distance;
+  last_reading_ = on_reading - off_reading;
 }
 
 int RangeSensor::getRange() {

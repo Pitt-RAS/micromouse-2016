@@ -11,12 +11,29 @@ RangeSensorContainer::RangeSensorContainer()
 {
 }
 
-void RangeSensorContainer::updateReadings() {
-	diagLeftSensor.updateRange();
-	diagRightSensor.updateRange();
-	frontLeftSensor.updateRange();
-	frontRightSensor.updateRange();
+void RangeSensorContainer::updateReadings(int n) {
+	switch (n) {
+	case 1:
+    diagLeftSensor.updateRange();
+    break;
+
+	case 2:
+    diagRightSensor.updateRange();
+    break;
+
+	case 3:
+    frontLeftSensor.updateRange();
+    break;
+
+	case 4:
+    frontRightSensor.updateRange();
+    break;
+	}
+
+  delayMicroseconds(60*3);
 }
+
+void RangeSensorContainer::updateReadings() {}
 
 bool RangeSensorContainer::isWall(Direction wallToCheck) {
 	
