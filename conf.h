@@ -105,7 +105,7 @@
 #define BUTTON_BACK_PIN BUTTON2_PIN
 #define MENU_STEP_ANGLE 35 // distance between options in degrees
 #define MENU_DEAD_ZONE 1
-#define MENU_RESTORING_FORCE 0.5
+#define MENU_RESTORING_FORCE 2
 
 // Motion control paremeters
 #define MM_PER_BLOCK 180

@@ -36,6 +36,7 @@ void setup()
 
   pinMode(BUTTON1_PIN, INPUT_PULLUP);
   pinMode(BUTTON2_PIN, INPUT_PULLUP);
+  menu.begin();
 }
 
 void loop()
