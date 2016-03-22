@@ -41,14 +41,10 @@ void setup()
 
 void loop()
 {
-  Navigator<RobotDriver> navigator;
-
   // Wait for button press.
   while (digitalRead(BUTTON1_PIN) == HIGH);
   delay(1000);
-  
-  enc_left_write(0);
-  enc_right_write(0);
 
-  navigator.runDevelopmentCode();
+  char* strings[] = {"Hi", "Hello", "The"};
+  menu.getString(strings, 3, 3, 0, false);
 }

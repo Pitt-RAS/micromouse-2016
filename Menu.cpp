@@ -44,7 +44,7 @@ void Menu::showString(char* s, int chars, bool left_align) {
       display_.write(' ');
     }
   }
-  for (int i = 0; i < min(len, DISPLAY_SIZE); i++) {
+  for (int i = 0; i < min(len, min(chars, DISPLAY_SIZE)); i++) {
     display_.write(s[i]);
   }
   if (left_align) {
@@ -112,7 +112,7 @@ size_t Menu::getString(char* strings[], size_t strings_len, size_t chars, size_t
   float distance_between_options = MENU_STEP_ANGLE * DEG_TO_RAD * WHEEL_RADIUS;
   size_t result = initial;
   enc_right_write(0);
-  showString(strings[result], left_align);
+  showString(strings[result], chars, left_align);
 
   motor_l.Set(0, 0);
 
