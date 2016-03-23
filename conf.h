@@ -22,8 +22,8 @@
 #define MOTOR_LB_PWM_PIN 21
 #define MOTOR_LB_FORWARD_STATE LOW
 
-#define ENCODER_RB1_PIN 10
-#define ENCODER_RB2_PIN 9
+#define ENCODER_RB1_PIN 9
+#define ENCODER_RB2_PIN 10
 #define MOTOR_RB_DIRECTION_PIN 19
 #define MOTOR_RB_PWM_PIN 23
 #define MOTOR_RB_FORWARD_STATE HIGH
@@ -128,12 +128,12 @@
 #define ROBOT_MASS .226 // kilograms
 #define MOMENT_OF_INERTIA 0.0003 //kg -m^2
 #define MM_BETWEEN_WHEELS 73.5 // millimeters
-#define NUMBER_OF_MOTORS 2
+#define NUMBER_OF_MOTORS 4
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
 #define MAX_COEFFICIENT_FRICTION 0.75
-#define MAX_ACCEL_STRAIGHT 4 // m/s/s
-#define MAX_DECEL_STRAIGHT -4 // m/s/s
+#define MAX_ACCEL_STRAIGHT 10 // m/s/s
+#define MAX_DECEL_STRAIGHT -7.6 // m/s/s
 #define MAX_ACCEL_ROTATE 3 // m/s/s  
 #define MAX_DECEL_ROTATE -3 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
@@ -141,7 +141,7 @@
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT 0.2 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 3.5 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
