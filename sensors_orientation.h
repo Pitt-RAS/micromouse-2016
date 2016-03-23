@@ -3,9 +3,7 @@
 
 #include <Arduino.h>
 
-#include <helper_3dmath.h>
-#define MPU6050_INCLUDE_DMP_MOTIONAPPS20
-#include <MPU6050.h>
+#include <MPU9150.h>
 
 #include "conf.h"
 
@@ -18,7 +16,7 @@ class Orientation {
 
     static Orientation* instance_;
 
-    MPU6050 mpu_;
+    MPU9150 mpu_;
     uint16_t packet_size_ = 2;
     uint16_t fifo_count_ = 0;
 

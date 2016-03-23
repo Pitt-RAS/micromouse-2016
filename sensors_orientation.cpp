@@ -4,8 +4,7 @@
 #include <Arduino.h>
 
 #include <I2Cdev.h>
-#include <MPU6050_6Axis_MotionApps20.h>
-#include <helper_3dmath.h>
+#include <MPU9150.h>
 
 volatile bool Orientation::mpu_interrupt_ = false;
 Orientation* Orientation::instance_ = NULL;
@@ -19,14 +18,14 @@ Orientation::Orientation() {
 #endif
 
   mpu_.initialize();
-  Serial.println(mpu_.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
+  Serial.println(mpu_.testConnection() ? F("MPU9150 connection successful") : F("MPU9150 connection failed"));
 
-  mpu_.setFullScaleGyroRange(MPU6050_GYRO_FS_2000);
+  mpu_.setFullScaleGyroRange(MPU9150_GYRO_FS_2000);
   mpu_.setZGyroOffset(GYRO_OFFSET_SETTING);
   mpu_.setZAccelOffset(1788); // 1688 factory default for my test chip
 
   // enable interrupt detection
-  Serial.println(F("Enabling MPU6050 interrupt detection..."));
+  Serial.println(F("Enabling MPU9150 interrupt detection..."));
   pinMode(IMU_INTERRUPT_PIN, INPUT);
 
 #ifdef CORE_TEENSY
@@ -36,7 +35,7 @@ Orientation::Orientation() {
 #endif
 
   mpu_.setRate(1); // Sample rate of 500Hz (assuming LPF is enabled)
-  mpu_.setDLPFMode(MPU6050_DLPF_BW_188); // Enable DLPF
+  mpu_.setDLPFMode(MPU9150_DLPF_BW_188); // Enable DLPF
   mpu_.setFIFOEnabled(true);
   mpu_.setZGyroFIFOEnabled(true);
 

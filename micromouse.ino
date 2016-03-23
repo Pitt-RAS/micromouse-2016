@@ -14,9 +14,7 @@
 #include "EncoderMod.h"
 #include "IdealSweptTurns.h"
 #include <I2Cdev.h>
-#include <helper_3dmath.h>
-#define MPU6050_INCLUDE_DMP_MOTIONAPPS20
-#include <MPU6050.h>
+#include <MPU9150.h>
 
 #define BAUD 9600
 
