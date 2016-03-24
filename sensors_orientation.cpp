@@ -84,6 +84,7 @@ void Orientation::calibrate() {
     offset += total / GYRO_CALIBRATION_SAMPLES;
     mpu_.setZGyroOffset(-offset);
   }
+  Serial.print("Primary offset: ");
   Serial.println(offset);
 
   total = 0;
@@ -102,6 +103,7 @@ void Orientation::calibrate() {
   }
 
   secondary_gyro_offset_ = (float)total / GYRO_CALIBRATION_SAMPLES;
+  Serial.print("Secondary offset: ");
   Serial.println(secondary_gyro_offset_, 10);
 
   raw_heading_ = 0;
