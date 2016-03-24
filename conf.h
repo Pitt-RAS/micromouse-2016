@@ -125,13 +125,13 @@
 #define KD_HOLD_RANGE 0
 
 // Robot characteristics
-#define ROBOT_MASS .226 // kilograms
-#define MOMENT_OF_INERTIA 0.0003 //kg -m^2
-#define MM_BETWEEN_WHEELS 78.5 // millimeters
+#define ROBOT_MASS .1302 // kilograms
+#define MOMENT_OF_INERTIA 0.00015 //kg -m^2
+#define MM_BETWEEN_WHEELS 74.5 // millimeters
 #define NUMBER_OF_MOTORS 4
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
-#define MAX_COEFFICIENT_FRICTION 0.75
+#define MAX_COEFFICIENT_FRICTION 1
 #define MAX_ACCEL_STRAIGHT 10 // m/s/s
 #define MAX_DECEL_STRAIGHT -7.6 // m/s/s
 #define MAX_ACCEL_ROTATE 3 // m/s/s  
@@ -171,13 +171,13 @@
 #define SWEPT_TURN_45_FORWARD_SPEED 0.8
 #define SWEPT_TURN_45_ANGLE 45.0
 
-#define SWEPT_TURN_90_FORWARD_SPEED 0.8
+#define SWEPT_TURN_90_FORWARD_SPEED 0.84
 #define SWEPT_TURN_90_ANGLE 90.0
 
-#define SWEPT_TURN_135_FORWARD_SPEED 0.8
+#define SWEPT_TURN_135_FORWARD_SPEED 0.8975
 #define SWEPT_TURN_135_ANGLE 135.0
 
-#define SWEPT_TURN_180_FORWARD_SPEED 0.8
+#define SWEPT_TURN_180_FORWARD_SPEED 0.935
 #define SWEPT_TURN_180_ANGLE 180.0
 
 #endif
