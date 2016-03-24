@@ -48,8 +48,10 @@ void loop()
   while (digitalRead(BUTTON1_PIN) == HIGH);
   delay(1000);
   
-  enc_left_write(0);
-  enc_right_write(0);
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 
   navigator.runDevelopmentCode();
 }

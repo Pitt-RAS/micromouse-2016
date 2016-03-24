@@ -65,36 +65,38 @@ void Menu::begin() {
 int Menu::getInt(int min, int max, int initial, int d) {
   float distance_between_options = MENU_STEP_ANGLE * DEG_TO_RAD * WHEEL_RADIUS;
   int result = initial;
-  enc_right_write(0);
+  enc_left_back_write(0);
   showInt(result, d);
 
-  motor_l.Set(0, 0);
+  motor_lf.Set(0, 0);
+  motor_rf.Set(0, 0);
+  motor_rb.Set(0, 0);
 
   bool okPressed = false;
   bool backPressed = false;
   while (!okPressed && !backPressed) {
-    float distance_from_center = enc_right_extrapolate();
+    float distance_from_center = enc_left_back_extrapolate();
 
     if (distance_from_center > distance_between_options / 2) {
       if (result < max && result + 1 < pow(10, d)) {
-        enc_right_write(-distance_between_options / 2);
+        enc_left_back_write(-distance_between_options / 2);
         result++;
         showInt(result, d);
       }
     } else if (distance_from_center < -distance_between_options / 2) {
       if (result > min && result - 1 > -pow(10, d - 1)) {
-        enc_right_write(distance_between_options / 2);
+        enc_left_back_write(distance_between_options / 2);
         result--;
         showInt(result, d);
       }
     }
 
-    if (abs(enc_right_extrapolate()) < MENU_DEAD_ZONE) {
-        motor_r.Set(0, enc_right_velocity());
-    } else if (enc_right_extrapolate() < 0) {
-        motor_r.Set(MENU_RESTORING_FORCE, enc_right_velocity());
+    if (abs(enc_left_back_extrapolate()) < MENU_DEAD_ZONE) {
+        motor_lb.Set(0, enc_left_back_velocity());
+    } else if (enc_left_back_extrapolate() < 0) {
+        motor_lb.Set(MENU_RESTORING_FORCE, enc_left_back_velocity());
     } else {
-        motor_r.Set(-MENU_RESTORING_FORCE, enc_right_velocity());
+        motor_lb.Set(-MENU_RESTORING_FORCE, enc_left_back_velocity());
     }
 
     okPressed = buttonOkPressed();
@@ -111,36 +113,38 @@ int Menu::getInt(int min, int max, int initial, int d) {
 size_t Menu::getString(char* strings[], size_t strings_len, size_t chars, size_t initial, bool left_align) {
   float distance_between_options = MENU_STEP_ANGLE * DEG_TO_RAD * WHEEL_RADIUS;
   size_t result = initial;
-  enc_right_write(0);
+  enc_left_back_write(0);
   showString(strings[result], chars, left_align);
 
-  motor_l.Set(0, 0);
+  motor_lf.Set(0, 0);
+  motor_rf.Set(0, 0);
+  motor_rb.Set(0, 0);
 
   bool okPressed = false;
   bool backPressed = false;
   while (!okPressed && !backPressed) {
-    float distance_from_center = enc_right_extrapolate();
+    float distance_from_center = enc_left_back_extrapolate();
 
     if (distance_from_center > distance_between_options / 2) {
       if (result < strings_len - 1) {
-        enc_right_write(-distance_between_options / 2);
+        enc_left_back_write(-distance_between_options / 2);
         result++;
         showString(strings[result], chars, left_align);
       }
     } else if (distance_from_center < -distance_between_options / 2) {
       if (result > 0) {
-        enc_right_write(distance_between_options / 2);
+        enc_left_back_write(distance_between_options / 2);
         result--;
         showString(strings[result], chars, left_align);
       }
     }
 
-    if (abs(enc_right_extrapolate()) < MENU_DEAD_ZONE) {
-        motor_r.Set(0, enc_right_velocity());
-    } else if (enc_right_extrapolate() < 0) {
-        motor_r.Set(MENU_RESTORING_FORCE, enc_right_velocity());
+    if (abs(enc_left_back_extrapolate()) < MENU_DEAD_ZONE) {
+        motor_lb.Set(0, enc_left_back_velocity());
+    } else if (enc_left_back_extrapolate() < 0) {
+        motor_lb.Set(MENU_RESTORING_FORCE, enc_left_back_velocity());
     } else {
-        motor_r.Set(-MENU_RESTORING_FORCE, enc_right_velocity());
+        motor_lb.Set(-MENU_RESTORING_FORCE, enc_left_back_velocity());
     }
 
     okPressed = buttonOkPressed();
