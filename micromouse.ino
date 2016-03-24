@@ -10,8 +10,7 @@
 #include "motors.h"
 #include "sensors_encoders.h"
 #include "EncoderMod.h"
-#include "SweptTurnTable.h"
-//#include "IdealSweptTurns.h"
+#include "IdealSweptTurns.h"
 
 #define BAUD 9600
 

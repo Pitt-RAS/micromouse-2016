@@ -26,9 +26,15 @@ static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
 
-// instantiate the 90 degree turn table
+// instantiate the turn lookup tables
+//IdealSweptTurns turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
+//                              SWEPT_TURN_45_ANGLE, 0.001);
 IdealSweptTurns turn_90_table(SWEPT_TURN_90_FORWARD_SPEED,
-                                                SWEPT_TURN_90_ANGLE, 0.001);
+                              SWEPT_TURN_90_ANGLE, 0.001);
+IdealSweptTurns turn_135_table(SWEPT_TURN_135_FORWARD_SPEED,
+                              SWEPT_TURN_135_ANGLE, 0.001);
+IdealSweptTurns turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
+                              SWEPT_TURN_180_ANGLE, 0.001);
 
 void motion_forward(float distance, float exit_speed) {
   float errorFrontRight, errorBackRight, errorFrontLeft, errorBackLeft, rotationOffset;
@@ -326,35 +332,61 @@ void motion_rotate(float angle) {
   enc_right_back_write(0);
 }
 
-void motion_corner(float angle, float speed) {
-  float sign = 1;
-  if (angle < 0) {
-    angle = -angle;
-    sign = -1;
-  }
-
-// SOME SORT OF SWITCH IS NEEDED TO DETERMINE WHICH LOOKUP TABLE TO USE
-//  switch (angle) {
-//    case 45:
-//      
-//      break;
-//    case 90:
-//      
-//      break;
-//    case 135:
-//      
-//      break;
-//    case 180;
-//      
-//      break;
-//  }
+void motion_corner(SweptTurnType turn_type, float speed) {
+  float sign;
   float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
   float idealDistance;
   float rotation_offset;
-  float time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED;
+  float time_scaling;
   int move_time_scaled = 0;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
-  float total_time = turn_90_table.getTotalTime();
+  float total_time;
+  IdealSweptTurns* turn_table;
+
+  switch (turn_type) {
+    //case kLeftTurn45:
+    //  turn_table = &turn_45_table;
+    //  time_scaling = speed / SWEPT_TURN_45_FORWARD_SPEED;
+    //  sign = -1;
+    //  break;
+    case kLeftTurn90:
+      turn_table = &turn_90_table;
+      time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED;
+      sign = -1;
+      break;
+    case kLeftTurn135:
+      turn_table = &turn_135_table;
+      time_scaling = speed / SWEPT_TURN_135_FORWARD_SPEED;
+      sign = -1;
+      break;
+    case kLeftTurn180:
+      turn_table = &turn_180_table;
+      time_scaling = speed / SWEPT_TURN_180_FORWARD_SPEED;
+      sign = -1;
+      break;
+    //case kRightTurn45:
+    //  turn_table = &turn_45_table;
+    //  time_scaling = speed / SWEPT_TURN_45_FORWARD_SPEED;
+    //  sign = 1;
+    //  break;
+    case kRightTurn90:
+      turn_table = &turn_90_table;
+      time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED;
+      sign = 1;
+      break;
+    case kRightTurn135:
+      turn_table = &turn_135_table;
+      time_scaling = speed / SWEPT_TURN_135_FORWARD_SPEED;
+      sign = 1;
+      break;
+    case kRightTurn180:
+      turn_table = &turn_180_table;
+      time_scaling = speed / SWEPT_TURN_180_FORWARD_SPEED;
+      sign = 1;
+      break;
+  }
+
+  total_time = turn_table->getTotalTime();
 
   elapsedMicros move_time;
 
@@ -365,7 +397,6 @@ void motion_corner(float angle, float speed) {
 
   // zero clock before move
   move_time = 0;
-  
 
   // execute motion
   while (move_time_scaled < total_time) {
@@ -374,8 +405,7 @@ void motion_corner(float angle, float speed) {
     
     idealDistance = move_time_scaled * speed / 1000;
 
-    rotation_offset = turn_90_table.getOffsetAtMicros(move_time_scaled);
-    
+    rotation_offset = turn_table->getOffsetAtMicros(move_time_scaled);
 
     errorFrontLeft = enc_left_front_extrapolate() - idealDistance - sign * rotation_offset;
     errorFrontRight = enc_right_front_extrapolate() - idealDistance + sign * rotation_offset;

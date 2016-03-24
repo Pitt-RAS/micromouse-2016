@@ -3,6 +3,11 @@
 
 #include "conf.h"
 
+enum SweptTurnType {
+  kLeftTurn45, kLeftTurn90, kLeftTurn135, kLeftTurn180,
+  kRightTurn45, kRightTurn90, kRightTurn135, kRightTurn180
+};
+
 class IdealSweptTurns {
  private:
   float tangential_velocity;
