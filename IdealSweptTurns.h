@@ -13,7 +13,7 @@ class IdealSweptTurns {
   float time_step;
   float frict_force;
   float inside_trigs;
-  float mm_per_degree;
+  float mm_per_radian;
   
   float getAngleAtTime(float t, bool build_time_table);
   float getVelocityAtTime(float t);

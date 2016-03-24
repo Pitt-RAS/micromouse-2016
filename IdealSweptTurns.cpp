@@ -10,7 +10,7 @@ IdealSweptTurns::IdealSweptTurns(float temp_tangential_velocity, float temp_turn
   time_step = temp_time_step;
   frict_force = ROBOT_MASS * MAX_COEFFICIENT_FRICTION * 9.81;
   inside_trigs = (ROBOT_MASS * (MM_BETWEEN_WHEELS / 1000) * tangential_velocity) / (2 * MOMENT_OF_INERTIA);
-  mm_per_degree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+  mm_per_radian = MM_BETWEEN_WHEELS / 2;
 
   float j = 0;
   //get the max acceleration duration by finding the time that the angle begins to get smaller
@@ -29,7 +29,7 @@ IdealSweptTurns::IdealSweptTurns(float temp_tangential_velocity, float temp_turn
   
   turn_duration = 2 * acceleration_duration + const_velocity_duration;
 
-  Serial.println((turn_duration/time_step) + 1);
+  //Serial.println((turn_duration/time_step) + 1);
 
   //offset_table = new float[getTotalTurnSteps()];
 
@@ -37,20 +37,20 @@ IdealSweptTurns::IdealSweptTurns(float temp_tangential_velocity, float temp_turn
   for (i = 0; i <= getTotalTurnSteps(); i++) {
     if(i <= (int)((turn_duration / 2) / time_step + 1)){
       if (i * time_step <= acceleration_duration) {
-        Serial.println("acceleration step");
+        //Serial.println("acceleration step");
         offset_table[i] = getTurnOffset(getAngleAtTime(i * time_step, false));
       }
       else {
-        Serial.println("constant step1");
+        //Serial.println("constant step1");
         offset_table[i] = getTurnOffset(theta_accel + max_velocity * (i * time_step - acceleration_duration));
       }    
     }else{
       //reverse order for second half of turn
       if(i* time_step <= (acceleration_duration + const_velocity_duration)){
-        Serial.println("constant step2");
+        //Serial.println("constant step2");
         offset_table[i] = getTurnOffset(theta_accel + max_velocity * (i * time_step - acceleration_duration));
       }else{
-        Serial.println("dceleration step");
+        //Serial.println("dceleration step");
         offset_table[i] = getTurnOffset(getAngleAtTime(i * time_step, false));
       }
     }  
@@ -91,9 +91,9 @@ float IdealSweptTurns::getVelocityAtTime(float t)
 
 float IdealSweptTurns::getTurnOffset(float angle)
 {
-  Serial.print("angle");
-  Serial.println(angle,5);
-  return mm_per_degree * angle;
+  //Serial.print("angle");
+  //Serial.println(angle,5);
+  return mm_per_radian * angle;
 }
 
 unsigned long IdealSweptTurns::getTotalTime()

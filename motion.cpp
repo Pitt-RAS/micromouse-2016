@@ -27,7 +27,8 @@ static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
 
 // instantiate the 90 degree turn table
-//IdealSweptTurns turn_90_table(0.8, 90.0, 0.001);
+IdealSweptTurns turn_90_table(SWEPT_TURN_90_FORWARD_SPEED,
+                                                SWEPT_TURN_90_ANGLE, 0.001);
 
 void motion_forward(float distance, float exit_speed) {
   float errorFrontRight, errorBackRight, errorFrontLeft, errorBackLeft, rotationOffset;
@@ -326,87 +327,87 @@ void motion_rotate(float angle) {
 }
 
 void motion_corner(float angle, float speed) {
-//  float sign = 1;
-//  if (angle < 0) {
-//    angle = -angle;
-//    sign = -1;
+  float sign = 1;
+  if (angle < 0) {
+    angle = -angle;
+    sign = -1;
+  }
+
+// SOME SORT OF SWITCH IS NEEDED TO DETERMINE WHICH LOOKUP TABLE TO USE
+//  switch (angle) {
+//    case 45:
+//      
+//      break;
+//    case 90:
+//      
+//      break;
+//    case 135:
+//      
+//      break;
+//    case 180;
+//      
+//      break;
 //  }
-//
-//// SOME SORT OF SWITCH IS NEEDED TO DETERMINE WHICH LOOKUP TABLE TO USE
-////  switch (angle) {
-////    case 45:
-////      
-////      break;
-////    case 90:
-////      
-////      break;
-////    case 135:
-////      
-////      break;
-////    case 180;
-////      
-////      break;
-////  }
-//  float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
-//  float idealDistance;
-//  float rotation_offset;
-//  float time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED * 1000;
-//  int move_time_scaled = 0;
-//  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
-//  float total_time = turn_90_table.getTotalTime();
-//
-//  elapsedMicros move_time;
-//
-//  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-//  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-//  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-//  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-//
-//  // zero clock before move
-//  move_time = 0;
-//  
-//
-//  // execute motion
-//  while (move_time_scaled < total_time) {
-//    //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
-//    move_time_scaled = move_time * time_scaling;
-//    
-//    idealDistance = move_time_scaled * speed / 1000;
-//
-//    rotation_offset = turn_90_table.getOffsetAtMicros(move_time_scaled);
-//    
-//
-//    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - rotation_offset;
-//    errorFrontRight = enc_right_front_extrapolate() - idealDistance + rotation_offset;
-//    errorBackLeft = enc_left_back_extrapolate() - idealDistance - rotation_offset;
-//    errorBackRight = enc_right_back_extrapolate() - idealDistance + rotation_offset;
-//
-////    motor_l.Set(distancePerDegree
-////        * time_scaling
-////        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
-////        + left_PID.Calculate(errorFrontLeft),
-////        enc_left_velocity());
-////    motor_r.Set(- distancePerDegree
-////        * time_scaling
-////        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
-////        + right_PID.Calculate(errorFrontRight),
-////        enc_right_velocity());
-//   
-//       motor_lf.Set(left_front_PID.Calculate(errorFrontLeft),
-//        enc_left_front_velocity());
-//       motor_rf.Set(right_front_PID.Calculate(errorFrontRight),
-//        enc_right_front_velocity());
-//       motor_lb.Set(left_back_PID.Calculate(errorBackLeft),
-//        enc_left_back_velocity());
-//       motor_rb.Set(right_back_PID.Calculate(errorBackRight),
-//        enc_right_back_velocity());
-//
-//   }
-//
-//  enc_left_front_write(0);
-//  enc_right_front_write(0);
-//  enc_left_back_write(0);
-//  enc_right_back_write(0);
+  float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
+  float idealDistance;
+  float rotation_offset;
+  float time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED;
+  int move_time_scaled = 0;
+  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+  float total_time = turn_90_table.getTotalTime();
+
+  elapsedMicros move_time;
+
+  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+
+  // zero clock before move
+  move_time = 0;
+  
+
+  // execute motion
+  while (move_time_scaled < total_time) {
+    //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
+    move_time_scaled = move_time * time_scaling;
+    
+    idealDistance = move_time_scaled * speed / 1000;
+
+    rotation_offset = turn_90_table.getOffsetAtMicros(move_time_scaled);
+    
+
+    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - sign * rotation_offset;
+    errorFrontRight = enc_right_front_extrapolate() - idealDistance + sign * rotation_offset;
+    errorBackLeft = enc_left_back_extrapolate() - idealDistance - sign * rotation_offset;
+    errorBackRight = enc_right_back_extrapolate() - idealDistance + sign * rotation_offset;
+
+//    motor_l.Set(distancePerDegree
+//        * time_scaling
+//        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
+//        + left_PID.Calculate(errorFrontLeft),
+//        enc_left_velocity());
+//    motor_r.Set(- distancePerDegree
+//        * time_scaling
+//        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
+//        + right_PID.Calculate(errorFrontRight),
+//        enc_right_velocity());
+   
+       motor_lf.Set(left_front_PID.Calculate(errorFrontLeft),
+        enc_left_front_velocity());
+       motor_rf.Set(right_front_PID.Calculate(errorFrontRight),
+        enc_right_front_velocity());
+       motor_lb.Set(left_back_PID.Calculate(errorBackLeft),
+        enc_left_back_velocity());
+       motor_rb.Set(right_back_PID.Calculate(errorBackRight),
+        enc_right_back_velocity());
+
+   }
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 }
 
 
