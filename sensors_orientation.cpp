@@ -146,7 +146,7 @@ bool Orientation::update() {
     fifo_count_ -= packet_size_;
 
     float dt = (next_update_time_ - last_update_time_) / 1000000.0;
-    raw_heading_ += last_gyro_reading_ / GYRO_LSB_PER_DEG_PER_S * dt;
+    raw_heading_ -= last_gyro_reading_ / GYRO_LSB_PER_DEG_PER_S * dt;
 
     last_gyro_reading_ = (uint16_t)fifo_buffer[0] << 8 | fifo_buffer[1];
     last_gyro_reading_ -= secondary_gyro_offset_;
