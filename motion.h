@@ -1,13 +1,15 @@
 #ifndef MICROMOUSE_MOTION_H_
 #define MICROMOUSE_MOTION_H_
 
+#include "IdealSweptTurns.h"
+
 void motion_set_max_speed(float new_max_speed);
 void motion_set_max_accel(float new_max_accel);
 
 void motion_forward(float distance, float exit_speed);
 void motion_collect(float distance, float exit_speed);
 void motion_rotate(float angle);
-void motion_corner(float angle, float speed);
+void motion_corner(SweptTurnType turn_type, float speed);
 
 void motion_hold(unsigned int time);
 void motion_hold_range(int setpoint, unsigned int time);

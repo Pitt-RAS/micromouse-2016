@@ -22,8 +22,8 @@
 #define MOTOR_LB_PWM_PIN 21
 #define MOTOR_LB_FORWARD_STATE LOW
 
-#define ENCODER_RB1_PIN 10
-#define ENCODER_RB2_PIN 9
+#define ENCODER_RB1_PIN 9
+#define ENCODER_RB2_PIN 10
 #define MOTOR_RB_DIRECTION_PIN 19
 #define MOTOR_RB_PWM_PIN 23
 #define MOTOR_RB_FORWARD_STATE HIGH
@@ -125,13 +125,15 @@
 #define KD_HOLD_RANGE 0
 
 // Robot characteristics
-#define ROBOT_MASS .226 // kilograms
-#define MM_BETWEEN_WHEELS 73.5 // millimeters
-#define NUMBER_OF_MOTORS 2
+#define ROBOT_MASS .1302 // kilograms
+#define MOMENT_OF_INERTIA 0.00015 //kg -m^2
+#define MM_BETWEEN_WHEELS 74.5 // millimeters
+#define NUMBER_OF_MOTORS 4
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
-#define MAX_ACCEL_STRAIGHT 4 // m/s/s
-#define MAX_DECEL_STRAIGHT -4 // m/s/s
+#define MAX_COEFFICIENT_FRICTION 1
+#define MAX_ACCEL_STRAIGHT 10 // m/s/s
+#define MAX_DECEL_STRAIGHT -7.6 // m/s/s
 #define MAX_ACCEL_ROTATE 3 // m/s/s  
 #define MAX_DECEL_ROTATE -3 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
@@ -139,7 +141,7 @@
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT 0.2 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 3.5 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
@@ -166,24 +168,16 @@
 // highest reliable max angular accel is most accurate turn
 //  max angular accel can be calculated with below equation
 //  max angular accel = (max linear accel) * 90000 * ROBOT_MASS * MM_BETWEEN_WHEELS / (robot rot. inertia)
-#define SWEPT_TURN_45_FORWARD_SPEED 700.0
+#define SWEPT_TURN_45_FORWARD_SPEED 0.8
 #define SWEPT_TURN_45_ANGLE 45.0
-#define SWEPT_TURN_45_MAX_ANGULAR_ACCELERATION 20000.0
-#define SWEPT_TURN_45_MAX_ANGULAR_VELOCITY 620.0
 
-#define SWEPT_TURN_90_FORWARD_SPEED 700.0
+#define SWEPT_TURN_90_FORWARD_SPEED 0.84
 #define SWEPT_TURN_90_ANGLE 90.0
-#define SWEPT_TURN_90_MAX_ANGULAR_ACCELERATION 20000.0
-#define SWEPT_TURN_90_MAX_ANGULAR_VELOCITY 490.0
 
-#define SWEPT_TURN_135_FORWARD_SPEED 700.0
+#define SWEPT_TURN_135_FORWARD_SPEED 0.8975
 #define SWEPT_TURN_135_ANGLE 135.0
-#define SWEPT_TURN_135_MAX_ANGULAR_ACCELERATION 20000.0
-#define SWEPT_TURN_135_MAX_ANGULAR_VELOCITY 463.0
 
-#define SWEPT_TURN_180_FORWARD_SPEED 700.0
+#define SWEPT_TURN_180_FORWARD_SPEED 0.935
 #define SWEPT_TURN_180_ANGLE 180.0
-#define SWEPT_TURN_180_MAX_ANGULAR_ACCELERATION 20000.0
-#define SWEPT_TURN_180_MAX_ANGULAR_VELOCITY 445.0
 
 #endif

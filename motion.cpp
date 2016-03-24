@@ -9,7 +9,7 @@
 #include "RangeSensorContainer.h"
 #include "RangeSensor.h"
 #include "motion.h"
-#include "SweptTurnTable.h"
+#include "IdealSweptTurns.h"
 
 static float max_accel_straight = MAX_ACCEL_STRAIGHT;
 static float max_decel_straight = MAX_DECEL_STRAIGHT;
@@ -26,41 +26,30 @@ static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
 
-SweptTurnTable turn_45_table(
-    SWEPT_TURN_45_FORWARD_SPEED,
-    SWEPT_TURN_45_ANGLE,
-    SWEPT_TURN_45_MAX_ANGULAR_ACCELERATION,
-    SWEPT_TURN_45_MAX_ANGULAR_VELOCITY);
-
-SweptTurnTable turn_90_table(
-    SWEPT_TURN_90_FORWARD_SPEED,
-    SWEPT_TURN_90_ANGLE,
-    SWEPT_TURN_90_MAX_ANGULAR_ACCELERATION,
-    SWEPT_TURN_90_MAX_ANGULAR_VELOCITY);
-
-SweptTurnTable turn_135_table(
-    SWEPT_TURN_135_FORWARD_SPEED,
-    SWEPT_TURN_135_ANGLE,
-    SWEPT_TURN_135_MAX_ANGULAR_ACCELERATION,
-    SWEPT_TURN_135_MAX_ANGULAR_VELOCITY);
-
-SweptTurnTable turn_180_table(
-    SWEPT_TURN_180_FORWARD_SPEED,
-    SWEPT_TURN_180_ANGLE,
-    SWEPT_TURN_180_MAX_ANGULAR_ACCELERATION,
-    SWEPT_TURN_180_MAX_ANGULAR_VELOCITY);
+// instantiate the turn lookup tables
+//IdealSweptTurns turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
+//                              SWEPT_TURN_45_ANGLE, 0.001);
+IdealSweptTurns turn_90_table(SWEPT_TURN_90_FORWARD_SPEED,
+                              SWEPT_TURN_90_ANGLE, 0.001);
+IdealSweptTurns turn_135_table(SWEPT_TURN_135_FORWARD_SPEED,
+                              SWEPT_TURN_135_ANGLE, 0.001);
+IdealSweptTurns turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
+                              SWEPT_TURN_180_ANGLE, 0.001);
 
 void motion_forward(float distance, float exit_speed) {
-  float errorRight, errorLeft, rotationOffset;
+  float errorFrontRight, errorBackRight, errorFrontLeft, errorBackLeft, rotationOffset;
   float idealDistance, idealVelocity;
   elapsedMicros moveTime;
 
-  float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
+  // float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
+  float current_speed = (enc_left_front_velocity() + enc_left_back_velocity() + enc_right_front_velocity() + enc_right_back_velocity())/4;
   MotionCalc motionCalc (distance, max_vel_straight, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
 
-  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
 
@@ -78,31 +67,39 @@ void motion_forward(float distance, float exit_speed) {
     //rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
     rotationOffset = 0;
 
-    errorLeft = enc_left_extrapolate() - idealDistance - rotationOffset;
-    errorRight = enc_right_extrapolate() - idealDistance + rotationOffset;
+    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - rotationOffset;
+    errorFrontRight = enc_right_front_extrapolate() - idealDistance + rotationOffset;
+    errorBackLeft = enc_left_back_extrapolate() - idealDistance - rotationOffset;
+    errorBackRight = enc_right_back_extrapolate() - idealDistance + rotationOffset;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
-    // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
+    // the offsets that are less than an encoder tick need to be added/subtracted from errorFrontLeft and errorFrontRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
 
-    motor_l.Set(motionCalc.idealAccel(moveTime) + left_PID.Calculate(errorLeft), idealVelocity);
-    motor_r.Set(motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight), idealVelocity);
+    motor_lf.Set(motionCalc.idealAccel(moveTime) + left_front_PID.Calculate(errorFrontLeft), idealVelocity);
+    motor_rf.Set(motionCalc.idealAccel(moveTime) + right_front_PID.Calculate(errorFrontRight), idealVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + left_back_PID.Calculate(errorBackLeft), idealVelocity);
+    motor_rb.Set(motionCalc.idealAccel(moveTime) + right_back_PID.Calculate(errorBackRight), idealVelocity);
   }
 
-  enc_left_write(0);
-  enc_right_write(0);
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 }
 
 void motion_collect(float distance, float exit_speed){
-    float errorRight, errorLeft;
+  float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
   float idealDistance, idealVelocity;
   elapsedMicros moveTime;
 
-  float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
+  float current_speed = (enc_left_front_velocity() + enc_left_back_velocity() + enc_right_front_velocity() + enc_right_back_velocity())/4;
   MotionCalc motionCalc (distance, max_vel_straight, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
 
-  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
 
@@ -135,7 +132,7 @@ void motion_collect(float distance, float exit_speed){
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
-    int_distance = (int) ((enc_left_extrapolate() + enc_right_extrapolate()) / 2);
+    int_distance = (int) ((enc_left_front_extrapolate() + enc_right_front_extrapolate() + enc_left_back_extrapolate() + enc_right_back_extrapolate())/4);
 
     // takes a reading every 5mm
     if (int_distance % 5 == 0 && int_distance > last_reading_distance) {
@@ -234,18 +231,24 @@ void motion_collect(float distance, float exit_speed){
       reading_counter++;
     }
 
-    errorLeft = enc_left_extrapolate() - idealDistance;
-    errorRight = enc_right_extrapolate() - idealDistance;
+    errorFrontLeft = enc_left_front_extrapolate() - idealDistance;
+    errorFrontRight = enc_right_front_extrapolate() - idealDistance;
+    errorBackLeft = enc_left_back_extrapolate() - idealDistance;
+    errorBackRight = enc_right_back_extrapolate() - idealDistance;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
-    // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
+    // the offsets that are less than an encoder tick need to be added/subtracted from errorFrontLeft and errorFrontRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
 
-    motor_l.Set(motionCalc.idealAccel(moveTime) + left_PID.Calculate(errorLeft), idealVelocity);
-    motor_r.Set(motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight), idealVelocity);
+    motor_lf.Set(motionCalc.idealAccel(moveTime) + left_front_PID.Calculate(errorFrontLeft), idealVelocity);
+    motor_rf.Set(motionCalc.idealAccel(moveTime) + right_front_PID.Calculate(errorFrontRight), idealVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + left_back_PID.Calculate(errorBackLeft), idealVelocity);
+    motor_rb.Set(motionCalc.idealAccel(moveTime) + right_back_PID.Calculate(errorBackRight), idealVelocity);
   }
 
-  enc_left_write(0);
-  enc_right_write(0);
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 
   motion_hold(100);
 
@@ -283,16 +286,18 @@ void motion_collect(float distance, float exit_speed){
 void motion_rotate(float angle) {
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealLinearDistance, idealLinearVelocity;
-  float errorLeft, errorRight;
+  float errorFrontRight, errorBackRight, errorFrontLeft, errorBackLeft;
   float linearDistance = distancePerDegree * angle;
   elapsedMicros moveTime;
 
-  float current_speed = (enc_left_velocity() - enc_right_velocity()) / 2;
+  float current_speed = ((enc_left_front_velocity() + enc_left_back_velocity()) - (enc_right_front_velocity() + enc_right_back_velocity()))/4;
   MotionCalc motionCalc (linearDistance, max_vel_rotate, current_speed, 0, max_accel_rotate,
                          max_decel_rotate);
 
-  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   // zero encoders and clock before move
   moveTime = 0;
@@ -303,88 +308,136 @@ void motion_rotate(float angle) {
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
-    errorLeft = enc_left_extrapolate() - idealLinearDistance;
-    errorRight = enc_right_extrapolate() + idealLinearDistance;
+    errorFrontLeft = enc_left_front_extrapolate() - idealLinearDistance;
+    errorBackLeft = enc_left_back_extrapolate() - idealLinearDistance;
+    errorFrontRight = enc_right_front_extrapolate() + idealLinearDistance;
+    errorBackRight = enc_right_back_extrapolate() + idealLinearDistance;
 
-    motor_l.Set(motionCalc.idealAccel(moveTime) + left_PID.Calculate(errorLeft),
+    motor_lf.Set(motionCalc.idealAccel(moveTime) + left_front_PID.Calculate(errorFrontLeft),
                 idealLinearVelocity);
-    motor_r.Set(-motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight),
+    motor_rf.Set(-motionCalc.idealAccel(moveTime) + right_front_PID.Calculate(errorFrontRight),
+                idealLinearVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + left_back_PID.Calculate(errorBackLeft),
+                idealLinearVelocity);
+    motor_rb.Set(-motionCalc.idealAccel(moveTime) + right_back_PID.Calculate(errorBackRight),
                 idealLinearVelocity);
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
 
   }
 
-  enc_left_write(0);
-  enc_right_write(0);
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 }
 
-void motion_corner(float angle, float speed) {
-  float sign = 1;
-  if (angle < 0) {
-    angle = -angle;
-    sign = -1;
-  }
-
-// SOME SORT OF SWITCH IS NEEDED TO DETERMINE WHICH LOOKUP TABLE TO USE
-//  switch (angle) {
-//    case 45:
-//      
-//      break;
-//    case 90:
-//      
-//      break;
-//    case 135:
-//      
-//      break;
-//    case 180;
-//      
-//      break;
-//  }
-  float errorRight, errorLeft;
+void motion_corner(SweptTurnType turn_type, float speed) {
+  float sign;
+  float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
   float idealDistance;
   float rotation_offset;
-  float time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED * 1000;
+  float time_scaling;
   int move_time_scaled = 0;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
-  float total_time = turn_90_table.getTotalTime();
+  float total_time;
+  IdealSweptTurns* turn_table;
+
+  switch (turn_type) {
+    //case kLeftTurn45:
+    //  turn_table = &turn_45_table;
+    //  time_scaling = speed / SWEPT_TURN_45_FORWARD_SPEED;
+    //  sign = -1;
+    //  break;
+    case kLeftTurn90:
+      turn_table = &turn_90_table;
+      time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED;
+      sign = -1;
+      break;
+    case kLeftTurn135:
+      turn_table = &turn_135_table;
+      time_scaling = speed / SWEPT_TURN_135_FORWARD_SPEED;
+      sign = -1;
+      break;
+    case kLeftTurn180:
+      turn_table = &turn_180_table;
+      time_scaling = speed / SWEPT_TURN_180_FORWARD_SPEED;
+      sign = -1;
+      break;
+    //case kRightTurn45:
+    //  turn_table = &turn_45_table;
+    //  time_scaling = speed / SWEPT_TURN_45_FORWARD_SPEED;
+    //  sign = 1;
+    //  break;
+    case kRightTurn90:
+      turn_table = &turn_90_table;
+      time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED;
+      sign = 1;
+      break;
+    case kRightTurn135:
+      turn_table = &turn_135_table;
+      time_scaling = speed / SWEPT_TURN_135_FORWARD_SPEED;
+      sign = 1;
+      break;
+    case kRightTurn180:
+      turn_table = &turn_180_table;
+      time_scaling = speed / SWEPT_TURN_180_FORWARD_SPEED;
+      sign = 1;
+      break;
+  }
+
+  total_time = turn_table->getTotalTime();
 
   elapsedMicros move_time;
 
-  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   // zero clock before move
   move_time = 0;
-  
 
   // execute motion
-  while (move_time_scaled / 1000 < total_time) {
+  while (move_time_scaled < total_time) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     move_time_scaled = move_time * time_scaling;
     
     idealDistance = move_time_scaled * speed / 1000;
 
-    rotation_offset = sign * distancePerDegree
-      * turn_90_table.getAngleAtIndex(move_time_scaled / 1000);
+    rotation_offset = turn_table->getOffsetAtMicros(move_time_scaled);
 
-    errorLeft = enc_left_extrapolate() - idealDistance - rotation_offset;
-    errorRight = enc_right_extrapolate() - idealDistance + rotation_offset;
+    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - sign * rotation_offset;
+    errorFrontRight = enc_right_front_extrapolate() - idealDistance + sign * rotation_offset;
+    errorBackLeft = enc_left_back_extrapolate() - idealDistance - sign * rotation_offset;
+    errorBackRight = enc_right_back_extrapolate() - idealDistance + sign * rotation_offset;
 
-    motor_l.Set(distancePerDegree
-        * time_scaling
-        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
-        + left_PID.Calculate(errorLeft),
-        enc_left_velocity());
-    motor_r.Set(- distancePerDegree
-        * time_scaling
-        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
-        + right_PID.Calculate(errorRight),
-        enc_right_velocity());
-  }
+//    motor_l.Set(distancePerDegree
+//        * time_scaling
+//        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
+//        + left_PID.Calculate(errorFrontLeft),
+//        enc_left_velocity());
+//    motor_r.Set(- distancePerDegree
+//        * time_scaling
+//        * turn_90_table.getAngularAcceleration(move_time_scaled / 1000) / 1000
+//        + right_PID.Calculate(errorFrontRight),
+//        enc_right_velocity());
+   
+       motor_lf.Set(left_front_PID.Calculate(errorFrontLeft),
+        enc_left_front_velocity());
+       motor_rf.Set(right_front_PID.Calculate(errorFrontRight),
+        enc_right_front_velocity());
+       motor_lb.Set(left_back_PID.Calculate(errorBackLeft),
+        enc_left_back_velocity());
+       motor_rb.Set(right_back_PID.Calculate(errorBackRight),
+        enc_right_back_velocity());
 
-  enc_left_write(0);
-  enc_right_write(0);
+   }
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 }
 
 
@@ -414,39 +467,51 @@ void motion_corner(float angle, float speed) {
 
 
 void motion_hold(unsigned int time) {
-  float errorRight, errorLeft;
-  float rightOutput, leftOutput;
+  float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
+  float rightFrontOutput, leftFrontOutput, rightBackOutput, leftBackOutput;
   elapsedMicros currentTime;
 
-  PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   currentTime = 0;
 
   while (currentTime / 1000 < time) {
-    errorLeft = enc_left_extrapolate();
-    errorRight = enc_right_extrapolate();
+    errorFrontLeft = enc_left_front_extrapolate();
+    errorFrontRight = enc_right_front_extrapolate();
+    errorBackLeft = enc_left_back_extrapolate();
+    errorBackRight = enc_right_back_extrapolate();
 
-    leftOutput = left_PID.Calculate(errorLeft);
-    rightOutput = right_PID.Calculate(errorRight);
+    leftFrontOutput = left_front_PID.Calculate(errorFrontLeft);
+    rightFrontOutput = right_front_PID.Calculate(errorFrontRight);
+    leftBackOutput = left_back_PID.Calculate(errorBackLeft);
+    rightBackOutput = right_back_PID.Calculate(errorBackRight);
 
-    motor_l.Set(leftOutput, 0);
-    motor_r.Set(rightOutput, 0);
+    motor_lf.Set(leftFrontOutput, 0);
+    motor_rf.Set(rightFrontOutput, 0);
+    motor_lb.Set(leftBackOutput,0);
+    motor_rb.Set(rightBackOutput,0);
   }
 
-  motor_l.Set(0, 0);
-  motor_r.Set(0, 0);
+  motor_lf.Set(0, 0);
+  motor_rf.Set(0, 0);
+  motor_lb.Set(0, 0);
+  motor_rb.Set(0, 0);
 }
 
 void motion_hold_range(int setpoint, unsigned int time) {
-  float errorRight, errorLeft;
-  float rightOutput, leftOutput;
+  float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
+  float rightFrontOutput, leftFrontOutput, rightBackOutput, leftBackOutput;
   elapsedMicros currentTime;
 
   digitalWrite(13, HIGH);
 
-  PIDController left_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
-  PIDController right_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
+  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   currentTime = 0;
 
@@ -455,18 +520,26 @@ void motion_hold_range(int setpoint, unsigned int time) {
     RangeSensors.leftSensor.updateRange();
     RangeSensors.rightSensor.updateRange();
     
-    errorLeft = RangeSensors.leftSensor.getRange();
-    errorRight = RangeSensors.rightSensor.getRange();
+    errorFrontLeft = RangeSensors.leftSensor.getRange();
+    errorFrontRight = RangeSensors.rightSensor.getRange();
+    errorBackLeft = errorFrontLeft;
+    errorBackRight = errorFrontRight;
 
-    leftOutput = left_PID.Calculate(errorLeft);
-    rightOutput = right_PID.Calculate(errorRight);
+    leftFrontOutput = left_front_PID.Calculate(errorFrontLeft);
+    rightFrontOutput = right_front_PID.Calculate(errorFrontRight);
+    leftBackOutput = left_back_PID.Calculate(errorBackLeft);
+    rightBackOutput = right_back_PID.Calculate(errorBackRight);
 
-    motor_l.Set(leftOutput, 0);
-    motor_r.Set(rightOutput, 0);
+    motor_lf.Set(leftFrontOutput, 0);
+    motor_rf.Set(rightFrontOutput, 0);
+    motor_lb.Set(leftBackOutput, 0);
+    motor_rb.Set(rightBackOutput, 0);
   }
 
-  motor_l.Set(0, 0);
-  motor_r.Set(0, 0);
+  motor_lf.Set(0, 0);
+  motor_rf.Set(0, 0);
+  motor_lb.Set(0, 0);
+  motor_rb.Set(0, 0);
 }
 
 // functions to set max velocity variables
