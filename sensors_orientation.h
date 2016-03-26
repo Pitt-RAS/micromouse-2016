@@ -41,6 +41,10 @@ class Orientation {
     // designates the current heading as 0 degrees
     void resetHeading();
 
+    // shifts the current heading by the given offset
+    // new heading = old heading + offset
+    void incrementHeading(float offset);
+
     // Returns the current heading in degrees
     // Clockwise is positive
     // This does not wrap around, so it will continue increasing past 360

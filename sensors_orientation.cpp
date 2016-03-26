@@ -164,6 +164,10 @@ void Orientation::resetHeading() {
   last_update_time_ = micros();
 }
 
+void Orientation::incrementHeading(float offset) {
+  raw_heading_ += offset;
+}
+
 float Orientation::getHeading() {
   float elapsed_time = (micros() - last_update_time_) / 1000000.0;
   return raw_heading_ + last_gyro_reading_ * elapsed_time;
