@@ -139,8 +139,8 @@
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
 #define MAX_COEFFICIENT_FRICTION 1
-#define MAX_ACCEL_STRAIGHT 10 // m/s/s
-#define MAX_DECEL_STRAIGHT -7.6 // m/s/s
+#define MAX_ACCEL_STRAIGHT 7 // m/s/s
+#define MAX_DECEL_STRAIGHT -6 // m/s/s
 #define MAX_ACCEL_ROTATE 3 // m/s/s  
 #define MAX_DECEL_ROTATE -3 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
@@ -148,7 +148,7 @@
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT 3.5 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 1.5 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters

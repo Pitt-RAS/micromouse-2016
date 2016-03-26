@@ -51,6 +51,10 @@ void motion_forward(float distance, float exit_speed) {
   MotionCalc motionCalc (distance, max_vel_straight, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
 
+  if (orientation == NULL) {
+    orientation = Orientation::getInstance();
+  }
+
   PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
@@ -60,9 +64,6 @@ void motion_forward(float distance, float exit_speed) {
 
   // zero clock before move
   moveTime = 0;
-  if (orientation == NULL) {
-    orientation = Orientation::getInstance();
-  }
 
   // execute motion
   while (idealDistance != distance) {
@@ -74,12 +75,11 @@ void motion_forward(float distance, float exit_speed) {
     // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.
     //RangeSensors.updateReadings();
     //rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
-    errorRotation = orientation->getHeading()*distancePerDegree;
-    rotationOffset = rotation_PID.Calculate(errorRotation);
+    rotationOffset += rotation_PID.Calculate(orientation->getHeading()*distancePerDegree);
 
     errorFrontLeft = enc_left_front_extrapolate() - idealDistance - rotationOffset;
-    errorFrontRight = enc_right_front_extrapolate() - idealDistance + rotationOffset;
     errorBackLeft = enc_left_back_extrapolate() - idealDistance - rotationOffset;
+    errorFrontRight = enc_right_front_extrapolate() - idealDistance + rotationOffset;
     errorBackRight = enc_right_back_extrapolate() - idealDistance + rotationOffset;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
@@ -90,11 +90,12 @@ void motion_forward(float distance, float exit_speed) {
     motor_lb.Set(motionCalc.idealAccel(moveTime) + left_back_PID.Calculate(errorBackLeft), idealVelocity);
     motor_rb.Set(motionCalc.idealAccel(moveTime) + right_back_PID.Calculate(errorBackRight), idealVelocity);
   }
-
+  orientation->update();
   enc_left_front_write(0);
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
+  menu.showInt((int)orientation->getHeading(),4);
   orientation->resetHeading();
 }
 
@@ -350,7 +351,7 @@ void motion_rotate(float angle) {
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
 
   }
-
+  orientation->update();
   enc_left_front_write(0);
   enc_right_front_write(0);
   enc_left_back_write(0);
@@ -418,6 +419,7 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   float idealDistance;
   float rotation_offset;
   float time_scaling;
+  float gyro_offset;
   int move_time_scaled = 0;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float total_time;
@@ -484,16 +486,23 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   // execute motion
   while (move_time_scaled < total_time) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
+    update gyro
     move_time_scaled = move_time * time_scaling;
     
     idealDistance = move_time_scaled * speed / 1000;
 
     rotation_offset = turn_table->getOffsetAtMicros(move_time_scaled);
 
-    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - sign * rotation_offset;
-    errorFrontRight = enc_right_front_extrapolate() - idealDistance + sign * rotation_offset;
-    errorBackLeft = enc_left_back_extrapolate() - idealDistance - sign * rotation_offset;
-    errorBackRight = enc_right_back_extrapolate() - idealDistance + sign * rotation_offset;
+
+
+    errorRotation = orientation->getHeading() - rotation_offset;
+    rotation_correction += rotation_PID.Calculate(errorRotation);
+    
+
+    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - sign * rotation_offset - rotation_correction;
+    errorFrontRight = enc_right_front_extrapolate() - idealDistance + sign * rotation_offset - rotation_correction;
+    errorBackLeft = enc_left_back_extrapolate() - idealDistance - sign * rotation_offset + rotation_correction;
+    errorBackRight = enc_right_back_extrapolate() - idealDistance + sign * rotation_offset + rotation_correction;
 
 //    motor_l.Set(distancePerDegree
 //        * time_scaling
