@@ -118,6 +118,14 @@ class Turnable
     // in degrees. Values less than 0.0 or greater 360.0 are allowed.
     void setDir(float dir);
 
+    // Returns the relative direction from the stored robot direction to the
+    // given Compass8 direction.
+    Compass8 relativeDir(Compass8 absolute_dir);
+
+    // Returns the relative direction from the stored robot direction to the
+    // given floating poing compass direction in degrees.
+    float relativeDirF(float absolute_dir);
+
     // The next method must be implemented in a derived class.
 
     // Turns the robot to the given direction. This method is responsible for

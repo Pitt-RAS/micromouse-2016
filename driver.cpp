@@ -118,6 +118,35 @@ void Turnable::setDir(float dir)
   dir_ = dir;
 }
 
+Compass8 Turnable::relativeDir(Compass8 absolute_dir)
+{
+  int arc;
+
+  arc = (int) absolute_dir - (int) getDir();
+
+  if (arc < 0)
+    arc += 8;
+
+  return (Compass8) arc;
+}
+
+float Turnable::relativeDirF(float absolute_dir)
+{
+  float arc;
+
+  absolute_dir = (int) absolute_dir % 360 + absolute_dir - (int) absolute_dir;
+
+  if (absolute_dir < 0.0)
+    absolute_dir += 360.0;
+
+  arc = absolute_dir - getDirF();
+
+  if (arc < 0.0)
+    arc += 360.0;
+
+  return arc;
+}
+
 Turnable::Turnable() : kInitialDirection(0.0)
 {
   dir_ = kInitialDirection;
