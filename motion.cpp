@@ -26,7 +26,6 @@ static float max_decel_corner = MAX_DECEL_CORNER;
 
 static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
-static float max_vel_corner = MAX_VEL_CORNER;
 
 static Orientation* orientation = NULL;
 
@@ -636,7 +635,4 @@ void motion_set_maxVel_straight(float temp_max_vel_straight) {
 }
 void motion_set_maxVel_rotate(float temp_max_vel_rotate) {
   max_vel_rotate = temp_max_vel_rotate;
-}
-void motion_set_maxVel_corner(float temp_max_vel_corner) {
-  max_vel_corner = temp_max_vel_corner;
 }

@@ -167,7 +167,6 @@
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
 #define MAX_VEL_ROTATE .3 // m/s
-#define MAX_VEL_CORNER 0.5 // m/s
 
 
 // Zll forward speeds should be the same, and should be the maximum turn speed.  
