@@ -123,9 +123,9 @@
 #define KI_POSITION 0
 #define KD_POSITION 0
 
-#define KP_ROTATION 1
+#define KP_ROTATION 0.0026//0.0026
 #define KI_ROTATION 0
-#define KD_ROTATION 0
+#define KD_ROTATION 8.5//10
 
 #define KP_HOLD_RANGE 0.5
 #define KI_HOLD_RANGE 0
@@ -134,7 +134,7 @@
 // Robot characteristics
 #define ROBOT_MASS .1302 // kilograms
 #define MOMENT_OF_INERTIA 0.00015 //kg -m^2
-#define MM_BETWEEN_WHEELS 74.5 // millimeters
+#define MM_BETWEEN_WHEELS 77//74.5 // millimeters
 #define NUMBER_OF_MOTORS 4
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
@@ -166,7 +166,7 @@
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
-#define MAX_VEL_ROTATE 0.1 // m/s
+#define MAX_VEL_ROTATE .3 // m/s
 #define MAX_VEL_CORNER 0.5 // m/s
 
 
