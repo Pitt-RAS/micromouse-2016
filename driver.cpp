@@ -359,74 +359,36 @@ RobotDriver::RobotDriver()
 
 void RobotDriver::turn(Compass8 dir)
 {
-  int arc_to_turn;
-  int current;
-  int desired;
+  float arc_to_turn;
 
-  current = (int) getDir();
-  desired = (int) dir;
+  arc_to_turn = 45.0 * (int) relativeDir(dir);
 
-  arc_to_turn = desired - current;
+  if (arc_to_turn > 180.0)
+    arc_to_turn -= 360.0;
 
-  if (arc_to_turn < 0)
-    arc_to_turn += 8;
-
-  if (arc_to_turn != 0) {
-    if (arc_to_turn <= 4) {
-      motion_rotate(45.0 * arc_to_turn);
-    }
-    else {
-      arc_to_turn -= 8;
-      motion_rotate(45.0 * arc_to_turn);
-    }
-  }
+  motion_rotate(arc_to_turn);
 
   setDir(dir);
 }
 
 bool RobotDriver::isWall(Compass8 dir)
 {
-  int arc_to_turn;
-  int current;
-  int desired;
-
-  current = (int) getDir();
-  desired = (int) dir;
-
-  arc_to_turn = desired - current;
-
-  if (arc_to_turn < 0)
-    arc_to_turn += 8;
-
-  if (arc_to_turn != 0) {
-    if (arc_to_turn <= 4) {
-      arc_to_turn = arc_to_turn;
-    }
-    else {
-      arc_to_turn -= 8;
-    }
-  }
-
   RangeSensors.updateReadings();
 
-  switch (arc_to_turn) {
-    case 0:
+  switch (relativeDir(dir)) {
+    case kNorth:
       return RangeSensors.savedIsWall(front);
       break;
-    case 2:
-      return RangeSensors.savedIsWall(right);
-      break;
-    case 4:
+    case kSouth:
       return RangeSensors.savedIsWall(back);
       break;
-    case -2:
+    case kEast:
+      return RangeSensors.savedIsWall(right);
+      break;
+    case kWest:
       return RangeSensors.savedIsWall(left);
       break;
     default:
-      // This is unacceptable as a long term solution.
-      //
-      // TODO: Implement a utility method for conversion from absolute
-      //       direction to relative direction
       return true;
       break;
   }
