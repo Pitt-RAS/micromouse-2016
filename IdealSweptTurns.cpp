@@ -101,3 +101,7 @@ unsigned long IdealSweptTurns::getTotalTime()
   return turn_duration * 1000000;
 }
 
+float IdealSweptTurns::getTotalAngle()
+{
+  return turn_angle * RAD_TO_DEG;
+}
