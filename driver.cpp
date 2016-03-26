@@ -396,60 +396,27 @@ bool RobotDriver::isWall(Compass8 dir)
 
 void RobotDriver::move(Compass8 dir, int distance)
 {
-  float destination_x, destination_y;
-  float distance_to_move;
-
   turn(dir);
-
-  destination_x = getX();
-  destination_y = getY();
 
   switch (dir) {
     case kNorth:
-      destination_y += distance;
-      break;
-
-    case kNorthEast:
-      destination_x += distance;
-      destination_y += distance;
-      break;
-
-    case kEast:
-      destination_x += distance;
-      break;
-
-    case kSouthEast:
-      destination_x += distance;
-      destination_y -= distance;
+      setY(getY() + distance);
       break;
 
     case kSouth:
-      destination_y -= distance;
+      setY(getY() - distance);
       break;
 
-    case kSouthWest:
-      destination_x -= distance;
-      destination_y -= distance;
+    case kEast:
+      setX(getX() + distance);
       break;
 
     case kWest:
-      destination_x -= distance;
-      break;
-
-    case kNorthWest:
-      destination_x -= distance;
-      destination_y += distance;
+      setX(getX() - distance);
       break;
   }
 
-  distance_to_move = hypot(destination_x - getXFloat(),
-                            destination_y - getYFloat());
-
-  motion_forward(MM_PER_BLOCK * distance_to_move, 0);
-  motion_hold(10);
-
-  setX(destination_x);
-  setY(destination_y);
+  motion_forward(MM_PER_BLOCK, 0);
 }
 
 
