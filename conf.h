@@ -98,10 +98,10 @@
 
 // Gyro parameters
 #define GYRO_LSB_PER_DEG_PER_S 16.295
-#define GYRO_CALIBRATION_SAMPLES 1000
-#define GYRO_CALIBRATION_ROUNDS 2
-#define GYRO_OFFSET_SETTING -44
-#define GYRO_SECONDARY_OFFSET 7.741
+#define GYRO_CALIBRATION_SAMPLES 2000
+#define GYRO_CALIBRATION_ROUNDS 3
+#define GYRO_OFFSET_SETTING -43
+#define GYRO_SECONDARY_OFFSET 10.5065
 
 // Display control parameters
 #define DISPLAY_SIZE 4
@@ -123,9 +123,9 @@
 #define KI_POSITION 0
 #define KD_POSITION 0
 
-#define KP_ROTATION 0.0026//0.0026
-#define KI_ROTATION 0
-#define KD_ROTATION 8.5//10
+#define KP_ROTATION 0.001//0.003
+#define KI_ROTATION 0.00000000//85
+#define KD_ROTATION 5//9
 
 #define KP_HOLD_RANGE 0.5
 #define KI_HOLD_RANGE 0
@@ -134,13 +134,13 @@
 // Robot characteristics
 #define ROBOT_MASS .1302 // kilograms
 #define MOMENT_OF_INERTIA 0.00015 //kg -m^2
-#define MM_BETWEEN_WHEELS 77//74.5 // millimeters
+#define MM_BETWEEN_WHEELS 77.0//74.5 // millimeters
 #define NUMBER_OF_MOTORS 4
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
 #define MAX_COEFFICIENT_FRICTION 1
 #define MAX_ACCEL_STRAIGHT 7 // m/s/s
-#define MAX_DECEL_STRAIGHT -6 // m/s/s
+#define MAX_DECEL_STRAIGHT -4 // m/s/s
 #define MAX_ACCEL_ROTATE 3 // m/s/s  
 #define MAX_DECEL_ROTATE -3 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
@@ -148,7 +148,7 @@
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT 1.5 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 0.1 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
