@@ -100,7 +100,9 @@ void motion_forward(float distance, float exit_speed) {
 
 void motion_collect(float distance, float exit_speed){
   float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
+  float rotationOffset;
   float idealDistance, idealVelocity;
+  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   elapsedMicros moveTime;
 
   float current_speed = (enc_left_front_velocity() + enc_left_back_velocity() + enc_right_front_velocity() + enc_right_back_velocity())/4;
@@ -113,6 +115,11 @@ void motion_collect(float distance, float exit_speed){
   PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
+
+  if (orientation == NULL) {
+    orientation = Orientation::getInstance();
+  }
+  rotationOffset = 0;
 
   //RangeSensor front_left_sensor(RANGE_FRONT_LEFT_PIN, 0, 0);
   //RangeSensor front_right_sensor(RANGE_FRONT_RIGHT_PIN, 0, 0);
@@ -140,6 +147,7 @@ void motion_collect(float distance, float exit_speed){
   // execute motion
   while (idealDistance != distance) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
+    orientation->update();
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
@@ -242,10 +250,12 @@ void motion_collect(float distance, float exit_speed){
       reading_counter++;
     }
 
-    errorFrontLeft = enc_left_front_extrapolate() - idealDistance;
-    errorFrontRight = enc_right_front_extrapolate() - idealDistance;
-    errorBackLeft = enc_left_back_extrapolate() - idealDistance;
-    errorBackRight = enc_right_back_extrapolate() - idealDistance;
+    rotationOffset += rotation_PID.Calculate(orientation->getHeading() * distancePerDegree);
+
+    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - rotationOffset;
+    errorFrontRight = enc_right_front_extrapolate() - idealDistance - rotationOffset;
+    errorBackLeft = enc_left_back_extrapolate() - idealDistance + rotationOffset;
+    errorBackRight = enc_right_back_extrapolate() - idealDistance + rotationOffset;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorFrontLeft and errorFrontRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
@@ -327,11 +337,8 @@ void motion_rotate(float angle) {
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
-    errorRotation = orientation->getHeading() - idealLinearDistance / distancePerDegree;
+    errorRotation = orientation->getHeading() * distancePerDegree - idealLinearDistance;
     rotation_correction += rotation_PID.Calculate(errorRotation);
-    //rotation_correction = 0;
-    //menu.showInt((int)rotation_correction,4);
-    
 
     errorFrontLeft = enc_left_front_extrapolate() - idealLinearDistance - rotation_correction;
     errorBackLeft = enc_left_back_extrapolate() - idealLinearDistance - rotation_correction;
