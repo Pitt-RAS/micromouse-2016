@@ -5,6 +5,7 @@
 #include "motors.h"
 #include "sensors_encoders.h"
 #include "sensors_orientation.h"
+#include "Menu.h"
 #include "MotionCalc.h"
 #include "PIDController.h"
 #include "RangeSensorContainer.h"
