@@ -1,18 +1,54 @@
 #ifndef MICROMOUSE_SENSORS_ORIENTATION_H_
 #define MICROMOUSE_SENSORS_ORIENTATION_H_
 
+#include <Arduino.h>
+
+#include <MPU9150.h>
+
+#include "conf.h"
+
 class Orientation {
   private:
     Orientation();
     static void interruptHandler();
 
-//    Orientation* _instance = NULL;
+    static volatile bool mpu_interrupt_;
+
+    static Orientation* instance_;
+
+    MPU9150 mpu_;
+    uint16_t packet_size_ = 2;
+    uint16_t fifo_count_ = 0;
+
+    float secondary_gyro_offset_ = GYRO_SECONDARY_OFFSET;
+
+    float raw_heading_ = 0;
+    int16_t last_gyro_reading_ = 0;
+    unsigned long last_update_time_ = 0;
+    volatile unsigned long next_update_time_ = 0;
+    
+    float max_forward_accel_ = 0;
+    float max_radial_accel_ = 0;
   public:
-    Orientation* getInstance();
+    static Orientation* getInstance();
 
-    void update();
+    // determine the right offset for the gyro
+    void calibrate();
 
+    // get the latest data from the IMU
+    bool update();
+
+    // designates the current heading as 0 degrees
     void resetHeading();
+
+    // shifts the current heading by the given offset
+    // new heading = old heading + offset
+    void incrementHeading(float offset);
+
+    // Returns the current heading in degrees
+    // Clockwise is positive
+    // This does not wrap around, so it will continue increasing past 360
+    //   or decreasing past -360
     float getHeading();
     
     void resetMaxForwardAccel();
