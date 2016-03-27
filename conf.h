@@ -118,6 +118,7 @@
 // Motion control paremeters
 #define MM_PER_BLOCK 180
 #define MM_PER_STEP 0.6444
+#define MOTION_COLLECT_MM_PER_READING 1
 
 // PID tuning parameters
 #define KP_POSITION 5.69

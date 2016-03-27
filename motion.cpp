@@ -143,14 +143,8 @@ void motion_collect(float distance, float exit_speed){
   }
   rotationOffset = 0;
 
-  //RangeSensor front_left_sensor(RANGE_FRONT_LEFT_PIN, 0, 0);
-  //RangeSensor front_right_sensor(RANGE_FRONT_RIGHT_PIN, 0, 0);
-
-  float off_reading_L, off_reading_R, off_reading_DL, off_reading_DR;
-  float on_reading_L, on_reading_R, on_reading_DL, on_reading_DR;
   float value_L, value_R, value_DL, value_DR;
-  int delayTime = 45;
-  int num_range_value = distance/5;
+  int num_range_value = distance/MOTION_COLLECT_MM_PER_READING;
   int num_readings = 1;
   int i;
   int last_reading_distance = -1;
@@ -160,6 +154,10 @@ void motion_collect(float distance, float exit_speed){
   int reading_output_R[num_range_value];
   int reading_output_DL[num_range_value];
   int reading_output_DR[num_range_value];
+  memset(reading_output_L, 0, num_range_value * sizeof(int));
+  memset(reading_output_R, 0, num_range_value * sizeof(int));
+  memset(reading_output_DL, 0, num_range_value * sizeof(int));
+  memset(reading_output_DR, 0, num_range_value * sizeof(int));
 
   int reading_counter = 0;
 
@@ -176,98 +174,32 @@ void motion_collect(float distance, float exit_speed){
     int_distance = (int) ((enc_left_front_extrapolate() + enc_right_front_extrapolate() + enc_left_back_extrapolate() + enc_right_back_extrapolate())/4);
 
     // takes a reading every 5mm
-    if (int_distance % 5 == 0 && int_distance > last_reading_distance) {
+    if (int_distance % MOTION_COLLECT_MM_PER_READING == 0 && int_distance > last_reading_distance) {
       last_reading_distance = int_distance;
 
-      on_reading_L = 0;
-      off_reading_L = 0;
-      on_reading_R = 0;
-      off_reading_R = 0;
-      on_reading_DL = 0;
-      off_reading_DL = 0;
-      on_reading_DR = 0;
-      off_reading_DR = 0;
-
-
-      for(i = 0; i<num_readings; i++)
+      for (i = 0; i < num_readings; i++)
       {
         // Front left
-
-        digitalWrite(EMITTER3_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_L += analogRead(RANGE3_PIN);
-
-        digitalWrite(EMITTER3_PIN, LOW);
-
-        delayMicroseconds(delayTime);
-
-        off_reading_L += analogRead(RANGE3_PIN);
+        RangeSensors.frontLeftSensor.updateRange();
+        reading_output_L[reading_counter] += RangeSensors.frontLeftSensor.getRawReading();
 
         // Front right
-
-        digitalWrite(EMITTER4_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_R += analogRead(RANGE4_PIN);
-
-        digitalWrite(EMITTER4_PIN, LOW);
-
-        delayMicroseconds(delayTime);
-
-        off_reading_R += analogRead(RANGE4_PIN);
-
-        delayMicroseconds(delayTime);
+        RangeSensors.frontRightSensor.updateRange();
+        reading_output_R[reading_counter] += RangeSensors.frontRightSensor.getRawReading();
 
         // Diag left
-
-        digitalWrite(EMITTER1_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_DL += analogRead(RANGE1_PIN);
-
-        digitalWrite(EMITTER1_PIN, LOW);
-
-        delayMicroseconds(delayTime);
-
-        off_reading_DL += analogRead(RANGE1_PIN);
-
-        delayMicroseconds(delayTime);
+        RangeSensors.diagLeftSensor.updateRange();
+        reading_output_DL[reading_counter] += RangeSensors.diagLeftSensor.getRawReading();
 
         // Diag right
-
-        digitalWrite(EMITTER2_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_DR += analogRead(RANGE2_PIN);
-
-        digitalWrite(EMITTER2_PIN, LOW);
-
-        delayMicroseconds(delayTime);
-
-        off_reading_DR += analogRead(RANGE2_PIN);
-
-        delayMicroseconds(delayTime);
+        RangeSensors.diagRightSensor.updateRange();
+        reading_output_DR[reading_counter] += RangeSensors.diagRightSensor.getRawReading();
       }
 
-      on_reading_L /= num_readings;
-      off_reading_L /= num_readings;
-      on_reading_R /= num_readings;
-      off_reading_R /= num_readings;
-      on_reading_DL /= num_readings;
-      off_reading_DL /= num_readings;
-      on_reading_DR /= num_readings;
-      off_reading_DR /= num_readings;
-
-      value_L = on_reading_L - off_reading_L;
-      value_R = on_reading_R - off_reading_R;
-      value_DL = on_reading_DL - off_reading_DL;
-      value_DR = on_reading_DR - off_reading_DR;
-
-      reading_output_L[reading_counter] = value_L;
-      reading_output_R[reading_counter] = value_R;
-      reading_output_DL[reading_counter] = value_DL;
-      reading_output_DR[reading_counter] = value_DR;
+      reading_output_L[reading_counter] /= num_readings;
+      reading_output_R[reading_counter] /= num_readings;
+      reading_output_DL[reading_counter] /= num_readings;
+      reading_output_DR[reading_counter] /= num_readings;
 
       reading_counter++;
     }
@@ -300,28 +232,28 @@ void motion_collect(float distance, float exit_speed){
   for(i = 0; i<num_range_value; i++){
     Serial.print(reading_output_L[i]);
     Serial.print(" ");
-    Serial.print((int) distance - 5 * i);
+    Serial.print((int) distance - MOTION_COLLECT_MM_PER_READING * i);
     Serial.println();
   }
   Serial.println("=== Front Right ===");
   for(i = 0; i<num_range_value; i++){
     Serial.print(reading_output_R[i]);
     Serial.print(" ");
-    Serial.print((int) distance - 5 * i);
+    Serial.print((int) distance - MOTION_COLLECT_MM_PER_READING * i);
     Serial.println();
   }
   Serial.println("=== Diag Left ===");
   for(i = 0; i<num_range_value; i++){
     Serial.print(reading_output_DL[i]);
     Serial.print(" ");
-    Serial.print((int) distance - 5 * i);
+    Serial.print((int) distance - MOTION_COLLECT_MM_PER_READING * i);
     Serial.println();
   }
   Serial.println("=== Diag Right ===");
   for(i = 0; i<num_range_value; i++){
     Serial.print(reading_output_DR[i]);
     Serial.print(" ");
-    Serial.print((int) distance - 5 * i);
+    Serial.print((int) distance - MOTION_COLLECT_MM_PER_READING * i);
     Serial.println();
   }
 }
