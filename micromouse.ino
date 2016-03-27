@@ -59,8 +59,5 @@ void loop()
   enc_right_back_write(0);
   orientation->resetHeading();
 
-  motion_forward(180.0*6,0.0);
-  motion_hold(10); 
-
-  //navigator.runDevelopmentCode();
+  navigator.runDevelopmentCode();
 }
