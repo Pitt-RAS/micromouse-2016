@@ -129,6 +129,14 @@
 #define KI_ROTATION 0.00000000//85
 #define KD_ROTATION 5//9
 
+#define KP_RANGE 0
+#define KI_RANGE 0
+#define KD_RANGE 0
+
+#define KP_GYRO 0.001//0.003
+#define KI_GYRO 0.00000000//85
+#define KD_GYRO 5//9
+
 #define KP_HOLD_RANGE 2
 #define KI_HOLD_RANGE 0
 #define KD_HOLD_RANGE 0

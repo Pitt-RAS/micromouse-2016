@@ -41,7 +41,8 @@ IdealSweptTurns turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
                               SWEPT_TURN_180_ANGLE, 0.001);
 
 void motion_forward(float distance, float exit_speed) {
-  float errorFrontRight, errorBackRight, errorFrontLeft, errorBackLeft, rotationOffset;
+  float errorFrontRight, errorBackRight, errorFrontLeft, errorBackLeft;
+  float rangeOffset, gyroOffset;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealDistance, idealVelocity;
   elapsedMicros moveTime;
@@ -60,7 +61,8 @@ void motion_forward(float distance, float exit_speed) {
   PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
-  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
+  PIDController range_PID (KP_RANGE, KI_RANGE, KD_RANGE);
+  PIDController gyro_PID (KP_GYRO, KI_GYRO, KD_GYRO);
 
   // zero clock before move
   moveTime = 0;
@@ -87,12 +89,13 @@ void motion_forward(float distance, float exit_speed) {
     // Add error from rangefinder data. Positive error is when it is too close
     // to the left wall, requiring a positive angle to fix it.
     RangeSensors.updateReadings();
-    rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
+    rangeOffset = range_PID.Calculate(RangeSensors.errorFromCenter());
+    gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree - rangeOffset);
 
-    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - rotationOffset;
-    errorBackLeft = enc_left_back_extrapolate() - idealDistance - rotationOffset;
-    errorFrontRight = enc_right_front_extrapolate() - idealDistance + rotationOffset;
-    errorBackRight = enc_right_back_extrapolate() - idealDistance + rotationOffset;
+    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - gyroOffset;
+    errorBackLeft = enc_left_back_extrapolate() - idealDistance - gyroOffset;
+    errorFrontRight = enc_right_front_extrapolate() - idealDistance + gyroOffset;
+    errorBackRight = enc_right_back_extrapolate() - idealDistance + gyroOffset;
 
     // Save isWall state for use by high-level code.
     if (!passedMiddle && position > distance / MM_PER_BLOCK - 0.5) {
@@ -101,9 +104,9 @@ void motion_forward(float distance, float exit_speed) {
     }
 
     if (-0.25 < difference && difference < 0.25)
-      rotationOffset = savedError;
+      rangeOffset = savedError;
     else
-      savedError = rotationOffset;
+      savedError = rangeOffset;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorFrontLeft and errorFrontRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
