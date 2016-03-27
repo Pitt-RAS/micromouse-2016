@@ -374,7 +374,7 @@ void motion_gyro_rotate(float angle) {
   elapsedMicros moveTime;
 
   float current_speed = (enc_left_front_velocity() + enc_left_back_velocity()
-                         - enc_right_front_velocity() - enc_right_back_velocity()) / 2;
+                         - enc_right_front_velocity() - enc_right_back_velocity()) / 4;
   MotionCalc motionCalc (linearDistance, max_vel_rotate, current_speed, 0, max_accel_rotate,
                          max_decel_rotate);
 
@@ -414,7 +414,6 @@ void motion_gyro_rotate(float angle) {
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
-  menu.showInt((int)orientation->getHeading(),4);
   orientation->resetHeading();
 }
 
