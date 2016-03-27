@@ -50,7 +50,9 @@ void loop()
   Orientation* orientation = Orientation::getInstance();
 
   // Wait for button press.
-  while (digitalRead(BUTTON1_PIN) == HIGH);
+  while (digitalRead(BUTTON1_PIN) == HIGH)
+    menu.checkBattery();
+
   delay(1000);
   
   enc_left_front_write(0);

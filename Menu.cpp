@@ -165,3 +165,37 @@ bool Menu::buttonOkPressed() {
 bool Menu::buttonBackPressed() {
   return (digitalRead(BUTTON_BACK_PIN) == LOW);
 }
+
+void Menu::soundBuzzer(int frequency)
+{
+  if (frequency == 0) {
+    analogWrite(BUZZER_PIN, 0);
+    return;
+  }
+
+  analogWriteFrequency(BUZZER_PIN, frequency);
+  analogWrite(BUZZER_PIN, PWM_SPEED_STEPS / 2);
+}
+
+void Menu::checkBattery()
+{
+  char buf[5];
+  int whole;
+  int decimal;
+
+  float voltage = (8.225 / 6.330) * (26 / 10) * (3.3 / 1023) * analogRead(BATTERY_PIN);
+
+  if (voltage < BATTERY_VOLTAGE_WARNING)
+    soundBuzzer(2000);
+
+  whole = (int) voltage;
+  decimal = (int) ((voltage - whole) * 100);
+
+  if (whole > 9 || decimal > 99) {
+    whole = 0;
+    decimal = 0;
+  }
+
+  sprintf(buf, "%0d.%02d", whole, decimal);
+  menu.showString(buf);
+}

@@ -138,6 +138,7 @@
 #define NUMBER_OF_MOTORS 4
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
+#define BATTERY_VOLTAGE_WARNING 7.7 // Volts
 #define MAX_COEFFICIENT_FRICTION 1
 #define MAX_ACCEL_STRAIGHT 7 // m/s/s
 #define MAX_DECEL_STRAIGHT -4 // m/s/s
