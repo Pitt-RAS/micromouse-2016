@@ -94,7 +94,6 @@ void motion_forward(float distance, float exit_speed) {
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
-  menu.showInt((int)orientation->getHeading(),4);
   orientation->resetHeading();
 }
 
@@ -362,7 +361,6 @@ void motion_rotate(float angle) {
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
-  menu.showInt((int)orientation->getHeading(),4);
   orientation->resetHeading();
 }
 
