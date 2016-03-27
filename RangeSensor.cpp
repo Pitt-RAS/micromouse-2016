@@ -36,18 +36,27 @@ void RangeSensor::updateRange() {
   float off_reading, on_reading;
   float sensed_distance;
 
+  while (micros() - last_reading_time_ < RANGE_SENSOR_OFF_TIME) {
+    // wait until this sensor has been off for long enough to turn it on again
+  }
+
   off_reading = analogRead(pin_);
   digitalWrite(emitter_pin_, HIGH);
 
-  delayMicroseconds(45);
+  delayMicroseconds(RANGE_SENSOR_ON_TIME);
 
   on_reading = analogRead(pin_);
   digitalWrite(emitter_pin_, LOW);
+  last_raw_reading_ = on_reading - off_reading;
+  last_reading_time_ = micros();
 
-  delayMicroseconds(45);
-
-  sensed_distance = (constants_.a * pow((on_reading - off_reading
-          + constants_.b), constants_.c) + constants_.d) + constants_.e;
+  if (sensed_distance < constants_.v0) {
+    sensed_distance = (constants_.a1 * pow((on_reading - off_reading
+            - constants_.b1), constants_.c1) + constants_.d1) + constants_.e;
+  } else {
+    sensed_distance = (constants_.a2 * pow((on_reading - off_reading
+            - constants_.b2), constants_.c2) + constants_.d2) + constants_.e;
+  }
 
   last_reading_ = sensed_distance;
 }
@@ -65,6 +74,10 @@ int RangeSensor::getRange() {
 
 int RangeSensor::getRange(int index) {
 	return last_reading_;
+}
+
+int RangeSensor::getRawReading() {
+    return last_raw_reading_;
 }
 
 bool RangeSensor::isWall() {
