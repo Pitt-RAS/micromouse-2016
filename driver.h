@@ -228,8 +228,19 @@ class SerialDriver : public SimulationDriver
 // Driver for our Micromouse robot
 class RobotDriver : public Driver, public Turnable
 {
+  private:
+    float exit_velocity_;
+    Compass8 last_direction_;
+    bool turn_advanced_;
+
+    bool onEdge();
+    void freakOut(int error_number);
+
   public:
     RobotDriver();
+
+    int getX();
+    int getY();
 
     void turn(Compass8 dir);
 

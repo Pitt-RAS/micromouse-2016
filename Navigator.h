@@ -144,7 +144,10 @@ void Navigator<driver_type>::findBox(int x, int y)
 template <typename driver_type>
 void Navigator<driver_type>::runDevelopmentCode()
 {
-  nod();
+  driver.move(kNorth, 1);
+  driver.move(kNorth, 1);
+  driver.move(kNorth, 1);
+  driver.move(kNorth, 0);
 }
 
 
