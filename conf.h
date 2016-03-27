@@ -72,19 +72,18 @@
 // Range sensor distance offsets
 #define RANGE_DIAG_LEFT_OFFSET -35
 #define RANGE_DIAG_RIGHT_OFFSET -35
-#define RANGE_LEFT_OFFSET 15
-#define RANGE_RIGHT_OFFSET 15
-#define RANGE_FRONT_OFFSET 30
+#define RANGE_FRONT_LEFT_OFFSET 30
+#define RANGE_FRONT_RIGHT_OFFSET 30
 
 // Range sensor wall thresholds
-#define DIAG_LEFT_LOW_THRESHOLD 100
-#define DIAG_LEFT_HIGH_THRESHOLD 100
-#define DIAG_RIGHT_LOW_THRESHOLD 100
-#define DIAG_RIGHT_HIGH_THRESHOLD 100
-#define FRONT_LEFT_LOW_THRESHOLD 90
-#define FRONT_LEFT_HIGH_THRESHOLD 90
-#define FRONT_RIGHT_LOW_THRESHOLD 90
-#define FRONT_RIGHT_HIGH_THRESHOLD 90
+#define DIAG_LEFT_LOW_THRESHOLD 190
+#define DIAG_LEFT_HIGH_THRESHOLD 190
+#define DIAG_RIGHT_LOW_THRESHOLD 190
+#define DIAG_RIGHT_HIGH_THRESHOLD 190
+#define FRONT_LEFT_LOW_THRESHOLD 150
+#define FRONT_LEFT_HIGH_THRESHOLD 150
+#define FRONT_RIGHT_LOW_THRESHOLD 150
+#define FRONT_RIGHT_HIGH_THRESHOLD 150
 
 // Range sensor middle readings
 #define RANGE_DIAG_LEFT_MIDDLE 68
@@ -92,7 +91,10 @@
 #define RANGE_LEFT_MIDDLE 100
 #define RANGE_RIGHT_MIDDLE 100
 #define RANGE_FRONT_MIDDLE 100
-#define RANGE_MIDDLE 68
+#define RANGE_MIDDLE 100
+
+// Range sensor front value at which we stop using diagonal sensors
+#define RANGE_DIAG_CUTOFF_FRONT_DISTANCE 50
 
 // Gyro parameters
 #define GYRO_LSB_PER_DEG_PER_S 16.295
@@ -128,13 +130,13 @@
 
 #define KP_ROTATION 0.001//0.003
 #define KI_ROTATION 0.00000000//85
-#define KD_ROTATION 5//9
+#define KD_ROTATION 0//5//9
 
-#define KP_RANGE 0
+#define KP_RANGE 1.7
 #define KI_RANGE 0
-#define KD_RANGE 0
+#define KD_RANGE 38000
 
-#define KP_GYRO 0.001//0.003
+#define KP_GYRO 0.002//0.003
 #define KI_GYRO 0.00000000//85
 #define KD_GYRO 5//9
 
@@ -145,22 +147,22 @@
 // Robot characteristics
 #define ROBOT_MASS .1302 // kilograms
 #define MOMENT_OF_INERTIA 0.00015 //kg -m^2
-#define MM_BETWEEN_WHEELS 77.0//74.5 // millimeters
+#define MM_BETWEEN_WHEELS 74.5 // millimeters
 #define NUMBER_OF_MOTORS 4
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
 #define BATTERY_VOLTAGE_WARNING 7.7 // Volts
 #define MAX_COEFFICIENT_FRICTION 1
-#define MAX_ACCEL_STRAIGHT 7 // m/s/s
-#define MAX_DECEL_STRAIGHT -4 // m/s/s
-#define MAX_ACCEL_ROTATE 3 // m/s/s  
-#define MAX_DECEL_ROTATE -3 // m/s/s
+#define MAX_ACCEL_STRAIGHT 5 // m/s/s
+#define MAX_DECEL_STRAIGHT -3 // m/s/s
+#define MAX_ACCEL_ROTATE 2 // m/s/s  
+#define MAX_DECEL_ROTATE -2 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
 #define MAX_DECEL_CORNER -3 // m/s/s
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT 0.1 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 0.5 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
@@ -178,7 +180,7 @@
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
-#define MAX_VEL_ROTATE .3 // m/s
+#define MAX_VEL_ROTATE .2 // m/s
 
 
 // Zll forward speeds should be the same, and should be the maximum turn speed.  
