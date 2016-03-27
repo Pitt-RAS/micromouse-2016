@@ -139,6 +139,8 @@ void Navigator<driver_type>::findBox(int x, int y)
       driver.move(known_path);
     }
   }
+
+  driver.move(kNorth, 0);
 }
 
 template <typename driver_type>
