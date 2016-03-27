@@ -535,22 +535,20 @@ void motion_hold_range(int setpoint, unsigned int time) {
   float rightFrontOutput, leftFrontOutput, rightBackOutput, leftBackOutput;
   elapsedMicros currentTime;
 
-  digitalWrite(13, HIGH);
-
-  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_front_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
+  PIDController right_front_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
+  PIDController left_back_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
+  PIDController right_back_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
 
   currentTime = 0;
 
   while (currentTime / 1000 < time) {
 
-    RangeSensors.diagLeftSensor.updateRange();
-    RangeSensors.diagRightSensor.updateRange();
+    RangeSensors.frontLeftSensor.updateRange();
+    RangeSensors.frontRightSensor.updateRange();
     
-    errorFrontLeft = RangeSensors.diagLeftSensor.getRange();
-    errorFrontRight = RangeSensors.diagRightSensor.getRange();
+    errorFrontLeft = setpoint - RangeSensors.frontLeftSensor.getRange();
+    errorFrontRight = setpoint - RangeSensors.frontRightSensor.getRange();
     errorBackLeft = errorFrontLeft;
     errorBackRight = errorFrontRight;
 
