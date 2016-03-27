@@ -420,14 +420,17 @@ void motion_gyro_rotate(float angle) {
 void motion_corner(SweptTurnType turn_type, float speed) {
   float sign;
   float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
+  float errorRotation;
   float idealDistance;
   float rotation_offset;
+  float rotation_correction;
   float time_scaling;
   float gyro_offset;
   int move_time_scaled = 0;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float total_time;
   IdealSweptTurns* turn_table;
+
   if (orientation == NULL) {
     orientation = Orientation::getInstance();
   }
@@ -483,6 +486,7 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
 
   // zero clock before move
   move_time = 0;
@@ -490,23 +494,21 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   // execute motion
   while (move_time_scaled < total_time) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
-    update gyro
+    orientation->update();
+
     move_time_scaled = move_time * time_scaling;
     
-    idealDistance = move_time_scaled * speed / 1000;
+    idealDistance = move_time * speed / 1000;
 
-    rotation_offset = turn_table->getOffsetAtMicros(move_time_scaled);
+    rotation_offset = sign * turn_table->getOffsetAtMicros(move_time_scaled);
 
-
-
-    errorRotation = orientation->getHeading() - rotation_offset;
+    errorRotation = orientation->getHeading() * distancePerDegree - rotation_offset;
     rotation_correction += rotation_PID.Calculate(errorRotation);
-    
 
-    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - sign * rotation_offset - rotation_correction;
-    errorFrontRight = enc_right_front_extrapolate() - idealDistance + sign * rotation_offset - rotation_correction;
-    errorBackLeft = enc_left_back_extrapolate() - idealDistance - sign * rotation_offset + rotation_correction;
-    errorBackRight = enc_right_back_extrapolate() - idealDistance + sign * rotation_offset + rotation_correction;
+    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - rotation_offset - rotation_correction;
+    errorBackLeft = enc_left_back_extrapolate() - idealDistance - rotation_offset - rotation_correction;
+    errorFrontRight = enc_right_front_extrapolate() - idealDistance + rotation_offset + rotation_correction;
+    errorBackRight = enc_right_back_extrapolate() - idealDistance + rotation_offset + rotation_correction;
 
 //    motor_l.Set(distancePerDegree
 //        * time_scaling
@@ -534,7 +536,7 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
-  orientation->resetHeading();
+  orientation->incrementHeading(-sign * turn_table->getTotalAngle());
 }
 
 void motion_hold(unsigned int time) {
