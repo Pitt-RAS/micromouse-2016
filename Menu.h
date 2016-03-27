@@ -25,6 +25,9 @@ class Menu {
 
   bool buttonOkPressed();
   bool buttonBackPressed();
+
+  void soundBuzzer(int frequency);
+  void checkBattery();
 };
 
 extern Menu menu;
