@@ -42,6 +42,11 @@ T LogQueue<T, capacity>::dequeue() {
   return result;
 }
 
+template<typename T, size_t capacity>
+size_t LogQueue<T, capacity>::size() {
+  return size_;
+}
+
 class Logger {
  private:
   LogQueue<float, LOG_SIZE> gyro_log_;
