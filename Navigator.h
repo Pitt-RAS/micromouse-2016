@@ -153,7 +153,7 @@ void Navigator<driver_type>::runDevelopmentCode()
   //driver.move(kEast,1);
   //driver.move(kNorth,3);
   //driver.move(kNorth,0);
-  findBox(3,0);
+  findBox(4,4);
 }
 
 
