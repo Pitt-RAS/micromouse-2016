@@ -502,6 +502,7 @@ void RobotDriver::turn(Compass8 dir)
 
 bool RobotDriver::isWall(Compass8 dir)
 {
+  RangeSensors.updateReadings();
   if (getX() == 0 && getY() == 0) {
     switch (relativeDir(dir)) {
       case kNorth:

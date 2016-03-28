@@ -3,6 +3,7 @@
 
 #include "data.h"
 #include "driver.h"
+#include "Menu.h"
 
 // Everything in this file MUST be portable code.
 //
@@ -146,10 +147,13 @@ void Navigator<driver_type>::findBox(int x, int y)
 template <typename driver_type>
 void Navigator<driver_type>::runDevelopmentCode()
 {
-  driver.move(kNorth, 1);
-  driver.move(kNorth, 1);
-  driver.move(kNorth, 1);
-  driver.move(kNorth, 0);
+  //driver.move(kNorth, 3);
+  //driver.move(kEast, 1);
+  //driver.move(kSouth,3);
+  //driver.move(kEast,1);
+  //driver.move(kNorth,3);
+  //driver.move(kNorth,0);
+  findBox(3,0);
 }
 
 

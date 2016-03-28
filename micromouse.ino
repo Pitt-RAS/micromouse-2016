@@ -42,6 +42,8 @@ void setup()
   pinMode(BUTTON1_PIN, INPUT_PULLUP);
   pinMode(BUTTON2_PIN, INPUT_PULLUP);
   menu.begin();
+  menu.checkBattery();
+
 }
 
 void loop()
@@ -50,9 +52,7 @@ void loop()
   Orientation* orientation = Orientation::getInstance();
 
   // Wait for button press.
-  while (digitalRead(BUTTON1_PIN) == HIGH)
-    menu.checkBattery();
-
+  while (digitalRead(BUTTON1_PIN) == HIGH);
   delay(1000);
   
   enc_left_front_write(0);
