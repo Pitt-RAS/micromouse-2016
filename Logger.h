@@ -49,8 +49,10 @@ size_t LogQueue<T, capacity>::size() {
 
 class Logger {
  private:
+  LogQueue<float, LOG_SIZE> forward_accel_log_;
+  LogQueue<float, LOG_SIZE> radial_accel_log_;
   LogQueue<float, LOG_SIZE> gyro_log_;
-  LogQueue<float, LOG_SIZE> accel_log_;
+  LogQueue<float, LOG_SIZE> heading_log_;
   LogQueue<char, LOG_SIZE> motion_type_log_;
   LogQueue<float, LOG_SIZE> primary_pid_log_;
   LogQueue<float, LOG_SIZE> secondary_pid_log_;
@@ -60,8 +62,10 @@ class Logger {
  public:
   Logger();
 
+  void logForwardAccel(float value);
+  void logRadialAccel(float value);
   void logGyro(float value);
-  void logAccel(float value);
+  void logHeading(float value);
   void logMotionType(char value);
   void logPrimaryPID(float value);
   void logSecondaryPID(float value);
