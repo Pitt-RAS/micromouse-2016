@@ -118,6 +118,9 @@
 #define MENU_DEAD_ZONE 1
 #define MENU_RESTORING_FORCE 2
 
+// Logging configuration
+#define LOG_SIZE 500
+
 // Motion control paremeters
 #define MM_PER_BLOCK 180
 #define MM_PER_STEP 0.653868
