@@ -2,12 +2,36 @@
 
 Logger::Logger() : cycles_(0) {}
 
+void Logger::logForwardAccel(float value) {
+  forward_accel_log_.enqueue(value);
+}
+
+void Logger::logRadialAccel(float value) {
+  radial_accel_log_.enqueue(value);
+}
+
 void Logger::logGyro(float value) {
   gyro_log_.enqueue(value);
 }
 
-void Logger::logAccel(float value) {
-  accel_log_.enqueue(value);
+void Logger::logHeading(float value) {
+  heading_log_.enqueue(value);
+}
+
+void Logger::logMotionType(char value) {
+  motion_type_log_.enqueue(value);
+}
+
+void Logger::logPrimaryPID(char value) {
+  primary_pid_log_.enqueue(value);
+}
+
+void Logger::logSecondaryPID(char value) {
+  secondary_pid_log_.enqueue(value);
+}
+
+void Logger::logTertiaryPID(char value) {
+  tertiary_pid_log_.enqueue(value);
 }
 
 void Logger::nextCycle() {
