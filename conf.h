@@ -57,6 +57,12 @@
 
 // RANGE SENSOR OPTIONS
 
+// Translation formula constants. distance = a * (reading - b)^c + d
+#define RANGE1_TRANSLATION { 994.826429322, 83.3221810758, -0.388831125077, -46.3836640345, -1.89043388124e-307, -4925.1855819, 81.8210698189, 35.6570927035, 760.662460695, 0 }
+#define RANGE2_TRANSLATION { 994.826429322, 83.3221810758, -0.388831125077, -46.3836640345, -1.89043388124e-307, -4925.1855819, 81.8210698189, 35.6570927035, 760.662460695, 0 }
+#define RANGE3_TRANSLATION { 931.451379287, 27.0728820886, -0.296932163326, -84.89798742, -2.20803389227e-307, -3082.76278937, 85.4472982988, 44.9908354769, 832.325325608, 0 }
+#define RANGE4_TRANSLATION { 1184.70304319, 0.422585327611, -0.363408897551, -57.4731580317, -2.37592562318e-307, -2365.97981638, 87.4792518754, 46.2057278589, 851.029192427, 0 }
+
 // Range sensor directions
 #define RANGE_DIAG_LEFT_PIN RANGE1_PIN
 #define RANGE_DIAG_RIGHT_PIN RANGE2_PIN
@@ -66,35 +72,29 @@
 // Range sensor distance offsets
 #define RANGE_DIAG_LEFT_OFFSET -35
 #define RANGE_DIAG_RIGHT_OFFSET -35
-#define RANGE_LEFT_OFFSET 15
-#define RANGE_RIGHT_OFFSET 15
-#define RANGE_FRONT_OFFSET 30
+#define RANGE_FRONT_LEFT_OFFSET 30
+#define RANGE_FRONT_RIGHT_OFFSET 30
 
 // Range sensor wall thresholds
-#define RANGE_DIAG_LEFT_WALL_THRESHOLD 75
-#define RANGE_DIAG_RIGHT_WALL_THRESHOLD 75
-#define RANGE_LEFT_WALL_THRESHOLD 70
-#define RANGE_RIGHT_WALL_THRESHOLD 70
-#define RANGE_FRONT_WALL_THRESHOLD 125
-
-#define LEFT_LOW_THRESHOLD 50
-#define LEFT_HIGH_THRESHOLD 100
-#define RIGHT_LOW_THRESHOLD 50
-#define RIGHT_HIGH_THRESHOLD 100
+#define DIAG_LEFT_LOW_THRESHOLD 190
+#define DIAG_LEFT_HIGH_THRESHOLD 190
+#define DIAG_RIGHT_LOW_THRESHOLD 190
+#define DIAG_RIGHT_HIGH_THRESHOLD 190
+#define FRONT_LEFT_LOW_THRESHOLD 150
+#define FRONT_LEFT_HIGH_THRESHOLD 150
+#define FRONT_RIGHT_LOW_THRESHOLD 150
+#define FRONT_RIGHT_HIGH_THRESHOLD 150
 
 // Range sensor middle readings
-#define RANGE_DIAG_LEFT_MIDDLE 80
-#define RANGE_DIAG_RIGHT_MIDDLE 80
+#define RANGE_DIAG_LEFT_MIDDLE 68
+#define RANGE_DIAG_RIGHT_MIDDLE 68
 #define RANGE_LEFT_MIDDLE 100
 #define RANGE_RIGHT_MIDDLE 100
 #define RANGE_FRONT_MIDDLE 100
+#define RANGE_MIDDLE 100
 
-// Number of samples in moving average
-#define RANGE_QUEUE_MAX_LENGTH 10
-#define HISTORY_QUEUE_MAX_LENGTH 100
-
-// Number of old samples to clear when wall status changes
-#define RANGE_QUEUE_NUM_TO_CLEAR 5
+// Range sensor front value at which we stop using diagonal sensors
+#define RANGE_DIAG_CUTOFF_FRONT_DISTANCE 50
 
 // Gyro parameters
 #define GYRO_LSB_PER_DEG_PER_S 16.295
@@ -102,6 +102,10 @@
 #define GYRO_CALIBRATION_ROUNDS 3
 #define GYRO_OFFSET_SETTING -43
 #define GYRO_SECONDARY_OFFSET 10.5065
+
+// Range sensor delays in us
+#define RANGE_SENSOR_ON_TIME 50 // length of LED pulse
+#define RANGE_SENSOR_OFF_TIME 250 // time between pulses
 
 // Display control parameters
 #define DISPLAY_SIZE 4
@@ -117,6 +121,7 @@
 // Motion control paremeters
 #define MM_PER_BLOCK 180
 #define MM_PER_STEP 0.6444
+#define MOTION_COLLECT_MM_PER_READING 1
 
 // PID tuning parameters
 #define KP_POSITION 5.69
@@ -125,31 +130,39 @@
 
 #define KP_ROTATION 0.001//0.003
 #define KI_ROTATION 0.00000000//85
-#define KD_ROTATION 5//9
+#define KD_ROTATION 0//5//9
 
-#define KP_HOLD_RANGE 0.5
+#define KP_RANGE 1.7
+#define KI_RANGE 0
+#define KD_RANGE 38000
+
+#define KP_GYRO 0.002//0.003
+#define KI_GYRO 0.00000000//85
+#define KD_GYRO 5//9
+
+#define KP_HOLD_RANGE 2
 #define KI_HOLD_RANGE 0
 #define KD_HOLD_RANGE 0
 
 // Robot characteristics
 #define ROBOT_MASS .1302 // kilograms
 #define MOMENT_OF_INERTIA 0.00015 //kg -m^2
-#define MM_BETWEEN_WHEELS 77.0//74.5 // millimeters
+#define MM_BETWEEN_WHEELS 74.5 // millimeters
 #define NUMBER_OF_MOTORS 4
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
 #define BATTERY_VOLTAGE_WARNING 7.7 // Volts
 #define MAX_COEFFICIENT_FRICTION 1
-#define MAX_ACCEL_STRAIGHT 7 // m/s/s
-#define MAX_DECEL_STRAIGHT -4 // m/s/s
-#define MAX_ACCEL_ROTATE 3 // m/s/s  
-#define MAX_DECEL_ROTATE -3 // m/s/s
+#define MAX_ACCEL_STRAIGHT 5 // m/s/s
+#define MAX_DECEL_STRAIGHT -3 // m/s/s
+#define MAX_ACCEL_ROTATE 2 // m/s/s  
+#define MAX_DECEL_ROTATE -2 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
 #define MAX_DECEL_CORNER -3 // m/s/s
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT 0.1 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 0.5 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
@@ -167,7 +180,7 @@
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
-#define MAX_VEL_ROTATE .3 // m/s
+#define MAX_VEL_ROTATE .2 // m/s
 
 
 // Zll forward speeds should be the same, and should be the maximum turn speed.  

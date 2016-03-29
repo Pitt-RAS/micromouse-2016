@@ -10,6 +10,7 @@
 #include "data.h"
 #include "motion.h"
 #include "conf.h"
+#include "RangeSensorContainer.h"
 #endif
 
 
@@ -67,6 +68,9 @@ void Driver::move(Path<16, 16> path)
   int movement_distance;
 
   next_direction = path.nextDirection();
+
+  if (path.isEmpty())
+    move(next_direction, 1);
 
   while (!path.isEmpty())
   {
@@ -353,11 +357,50 @@ void RobotDriver::turn(Compass8 dir)
 
 bool RobotDriver::isWall(Compass8 dir)
 {
-  // Knowing what our current direction is, use the rangefinder routines to
-  // find out if there is a wall, and return the result.
+  int arc_to_turn;
+  int current;
+  int desired;
 
-  // For now, just return true.
-  return true;
+  current = (int) getDir();
+  desired = (int) dir;
+
+  arc_to_turn = desired - current;
+
+  if (arc_to_turn < 0)
+    arc_to_turn += 8;
+
+  if (arc_to_turn != 0) {
+    if (arc_to_turn <= 4) {
+      arc_to_turn = arc_to_turn;
+    }
+    else {
+      arc_to_turn -= 8;
+    }
+  }
+
+  RangeSensors.updateReadings();
+
+  switch (arc_to_turn) {
+    case 0:
+      return RangeSensors.savedIsWall(front);
+      break;
+    case 2:
+      return RangeSensors.savedIsWall(right);
+      break;
+    case 4:
+      return RangeSensors.savedIsWall(back);
+      break;
+    case -2:
+      return RangeSensors.savedIsWall(left);
+      break;
+    default:
+      // This is unacceptable as a long term solution.
+      //
+      // TODO: Implement a utility method for conversion from absolute
+      //       direction to relative direction
+      return true;
+      break;
+  }
 }
 
 void RobotDriver::move(Compass8 dir, int distance)
@@ -412,7 +455,7 @@ void RobotDriver::move(Compass8 dir, int distance)
                             destination_y - getYFloat());
 
   motion_forward(MM_PER_BLOCK * distance_to_move, 0);
-  motion_hold(100);
+  motion_hold(10);
 
   setX(destination_x);
   setY(destination_y);

@@ -5,6 +5,7 @@
 #include "motors.h"
 #include "sensors_encoders.h"
 #include "sensors_orientation.h"
+#include "Menu.h"
 #include "MotionCalc.h"
 #include "PIDController.h"
 #include "RangeSensorContainer.h"
@@ -40,7 +41,10 @@ IdealSweptTurns turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
                               SWEPT_TURN_180_ANGLE, 0.001);
 
 void motion_forward(float distance, float exit_speed) {
-  float errorFrontRight, errorBackRight, errorFrontLeft, errorBackLeft, rotationOffset;
+  float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
+  float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
+  float correctionFrontRight, correctionBackRight, correctionFrontLeft, correctionBackLeft;
+  float rangeOffset, gyroOffset;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealDistance, idealVelocity;
   elapsedMicros moveTime;
@@ -59,10 +63,15 @@ void motion_forward(float distance, float exit_speed) {
   PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
-  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
+  PIDController range_PID (KP_RANGE, KI_RANGE, KD_RANGE);
+  PIDController gyro_PID (KP_GYRO, KI_GYRO, KD_GYRO);
 
   // zero clock before move
   moveTime = 0;
+
+  RangeSensors.updateReadings();
+  float savedError = 0;
+  bool passedMiddle = false;
 
   // execute motion
   while (idealDistance != distance) {
@@ -71,23 +80,61 @@ void motion_forward(float distance, float exit_speed) {
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
-    // Add error from rangefinder data.  Positive error is when it is too close to the left wall, requiring a positive angle to fix it.
-    //RangeSensors.updateReadings();
-    //rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
-    rotationOffset += rotation_PID.Calculate(orientation->getHeading()*distancePerDegree);
+    float leftReading, rightReading, position, nearestWhole, difference;
 
-    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - rotationOffset;
-    errorBackLeft = enc_left_back_extrapolate() - idealDistance - rotationOffset;
-    errorFrontRight = enc_right_front_extrapolate() - idealDistance + rotationOffset;
-    errorBackRight = enc_right_back_extrapolate() - idealDistance + rotationOffset;
+    leftReading = enc_left_front_extrapolate();
+    rightReading = enc_right_front_extrapolate();
+    position = (leftReading + rightReading) / 2 / MM_PER_BLOCK;
+    nearestWhole = (int) (position + 0.5);
+    difference = position - nearestWhole;
+
+    // Add error from rangefinder data. Positive error is when it is too close
+    // to the left wall, requiring a positive angle to fix it.
+    RangeSensors.updateReadings();
+    rangeOffset = range_PID.Calculate(RangeSensors.errorFromCenter(), 0);
+    gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
+
+    currentFrontLeft = enc_left_front_extrapolate();
+    currentBackLeft = enc_left_back_extrapolate();
+    currentFrontRight = enc_right_front_extrapolate();
+    currentBackRight = enc_right_back_extrapolate();
+
+    setpointFrontLeft = idealDistance + gyroOffset;
+    setpointBackLeft = idealDistance + gyroOffset;
+    setpointFrontRight = idealDistance - gyroOffset;
+    setpointBackRight = idealDistance - gyroOffset;
+
+    correctionFrontLeft = left_front_PID.Calculate(currentFrontLeft,
+                                                   setpointFrontLeft);
+    correctionBackLeft = left_back_PID.Calculate(currentBackLeft,
+                                                   setpointBackLeft);
+    correctionFrontRight = right_front_PID.Calculate(currentFrontRight,
+                                                   setpointFrontRight);
+    correctionBackRight = right_back_PID.Calculate(currentBackRight,
+                                                   setpointBackRight);
+
+    // Save isWall state for use by high-level code.
+    if (!passedMiddle && position > distance / MM_PER_BLOCK - 0.5) {
+	    RangeSensors.saveIsWall();
+	    passedMiddle = true;
+    }
+
+    //if (-0.25 < difference && difference < 0.25)
+    //  rangeOffset = savedError;
+    //else
+    //  savedError = rangeOffset;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorFrontLeft and errorFrontRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
 
-    motor_lf.Set(motionCalc.idealAccel(moveTime) + left_front_PID.Calculate(errorFrontLeft), idealVelocity);
-    motor_rf.Set(motionCalc.idealAccel(moveTime) + right_front_PID.Calculate(errorFrontRight), idealVelocity);
-    motor_lb.Set(motionCalc.idealAccel(moveTime) + left_back_PID.Calculate(errorBackLeft), idealVelocity);
-    motor_rb.Set(motionCalc.idealAccel(moveTime) + right_back_PID.Calculate(errorBackRight), idealVelocity);
+    motor_lf.Set(motionCalc.idealAccel(moveTime) + correctionFrontLeft,
+                 idealVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
+                 idealVelocity);
+    motor_rf.Set(motionCalc.idealAccel(moveTime) + correctionFrontRight,
+                 idealVelocity);
+    motor_rb.Set(motionCalc.idealAccel(moveTime) + correctionBackRight,
+                 idealVelocity);
   }
   orientation->update();
   enc_left_front_write(0);
@@ -99,6 +146,9 @@ void motion_forward(float distance, float exit_speed) {
 
 void motion_collect(float distance, float exit_speed){
   float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
+  float currentFrontRight, currentFrontLeft, currentBackRight, currentBackLeft;
+  float setpointFrontRight, setpointFrontLeft, setpointBackRight, setpointBackLeft;
+  float correctionFrontRight, correctionFrontLeft, correctionBackRight, correctionBackLeft;
   float rotationOffset;
   float idealDistance, idealVelocity;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
@@ -120,14 +170,8 @@ void motion_collect(float distance, float exit_speed){
   }
   rotationOffset = 0;
 
-  //RangeSensor front_left_sensor(RANGE_FRONT_LEFT_PIN, 0, 0);
-  //RangeSensor front_right_sensor(RANGE_FRONT_RIGHT_PIN, 0, 0);
-
-  float off_reading_L, off_reading_R, off_reading_DL, off_reading_DR;
-  float on_reading_L, on_reading_R, on_reading_DL, on_reading_DR;
   float value_L, value_R, value_DL, value_DR;
-  int delayTime = 45;
-  int num_range_value = distance/5;
+  int num_range_value = distance/MOTION_COLLECT_MM_PER_READING;
   int num_readings = 1;
   int i;
   int last_reading_distance = -1;
@@ -137,6 +181,10 @@ void motion_collect(float distance, float exit_speed){
   int reading_output_R[num_range_value];
   int reading_output_DL[num_range_value];
   int reading_output_DR[num_range_value];
+  memset(reading_output_L, 0, num_range_value * sizeof(int));
+  memset(reading_output_R, 0, num_range_value * sizeof(int));
+  memset(reading_output_DL, 0, num_range_value * sizeof(int));
+  memset(reading_output_DR, 0, num_range_value * sizeof(int));
 
   int reading_counter = 0;
 
@@ -153,116 +201,68 @@ void motion_collect(float distance, float exit_speed){
     int_distance = (int) ((enc_left_front_extrapolate() + enc_right_front_extrapolate() + enc_left_back_extrapolate() + enc_right_back_extrapolate())/4);
 
     // takes a reading every 5mm
-    if (int_distance % 5 == 0 && int_distance > last_reading_distance) {
+    if (int_distance % MOTION_COLLECT_MM_PER_READING == 0 && int_distance > last_reading_distance) {
       last_reading_distance = int_distance;
 
-      on_reading_L = 0;
-      off_reading_L = 0;
-      on_reading_R = 0;
-      off_reading_R = 0;
-      on_reading_DL = 0;
-      off_reading_DL = 0;
-      on_reading_DR = 0;
-      off_reading_DR = 0;
-
-
-      for(i = 0; i<num_readings; i++)
+      for (i = 0; i < num_readings; i++)
       {
         // Front left
-
-        digitalWrite(EMITTER3_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_L += analogRead(RANGE3_PIN);
-
-        digitalWrite(EMITTER3_PIN, LOW);
-
-        delayMicroseconds(delayTime);
-
-        off_reading_L += analogRead(RANGE3_PIN);
+        RangeSensors.frontLeftSensor.updateRange();
+        reading_output_L[reading_counter] += RangeSensors.frontLeftSensor.getRawReading();
 
         // Front right
-
-        digitalWrite(EMITTER4_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_R += analogRead(RANGE4_PIN);
-
-        digitalWrite(EMITTER4_PIN, LOW);
-
-        delayMicroseconds(delayTime);
-
-        off_reading_R += analogRead(RANGE4_PIN);
-
-        delayMicroseconds(delayTime);
+        RangeSensors.frontRightSensor.updateRange();
+        reading_output_R[reading_counter] += RangeSensors.frontRightSensor.getRawReading();
 
         // Diag left
-
-        digitalWrite(EMITTER1_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_DL += analogRead(RANGE1_PIN);
-
-        digitalWrite(EMITTER1_PIN, LOW);
-
-        delayMicroseconds(delayTime);
-
-        off_reading_DL += analogRead(RANGE1_PIN);
-
-        delayMicroseconds(delayTime);
+        RangeSensors.diagLeftSensor.updateRange();
+        reading_output_DL[reading_counter] += RangeSensors.diagLeftSensor.getRawReading();
 
         // Diag right
-
-        digitalWrite(EMITTER2_PIN, HIGH);
-        delayMicroseconds(delayTime);
-
-        on_reading_DR += analogRead(RANGE2_PIN);
-
-        digitalWrite(EMITTER2_PIN, LOW);
-
-        delayMicroseconds(delayTime);
-
-        off_reading_DR += analogRead(RANGE2_PIN);
-
-        delayMicroseconds(delayTime);
+        RangeSensors.diagRightSensor.updateRange();
+        reading_output_DR[reading_counter] += RangeSensors.diagRightSensor.getRawReading();
       }
 
-      on_reading_L /= num_readings;
-      off_reading_L /= num_readings;
-      on_reading_R /= num_readings;
-      off_reading_R /= num_readings;
-      on_reading_DL /= num_readings;
-      off_reading_DL /= num_readings;
-      on_reading_DR /= num_readings;
-      off_reading_DR /= num_readings;
-
-      value_L = on_reading_L - off_reading_L;
-      value_R = on_reading_R - off_reading_R;
-      value_DL = on_reading_DL - off_reading_DL;
-      value_DR = on_reading_DR - off_reading_DR;
-
-      reading_output_L[reading_counter] = value_L;
-      reading_output_R[reading_counter] = value_R;
-      reading_output_DL[reading_counter] = value_DL;
-      reading_output_DR[reading_counter] = value_DR;
+      reading_output_L[reading_counter] /= num_readings;
+      reading_output_R[reading_counter] /= num_readings;
+      reading_output_DL[reading_counter] /= num_readings;
+      reading_output_DR[reading_counter] /= num_readings;
 
       reading_counter++;
     }
 
-    rotationOffset += rotation_PID.Calculate(orientation->getHeading() * distancePerDegree);
+    rotationOffset += rotation_PID.Calculate(orientation->getHeading() * distancePerDegree, 0);
 
-    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - rotationOffset;
-    errorFrontRight = enc_right_front_extrapolate() - idealDistance - rotationOffset;
-    errorBackLeft = enc_left_back_extrapolate() - idealDistance + rotationOffset;
-    errorBackRight = enc_right_back_extrapolate() - idealDistance + rotationOffset;
+    currentFrontLeft = enc_left_front_extrapolate();
+    currentBackLeft = enc_left_back_extrapolate();
+    currentFrontRight = enc_right_front_extrapolate();
+    currentBackRight = enc_right_back_extrapolate();
+
+    setpointFrontLeft = idealDistance + rotationOffset;
+    setpointBackLeft = idealDistance + rotationOffset;
+    setpointFrontRight = idealDistance - rotationOffset;
+    setpointBackRight = idealDistance - rotationOffset;
+
+    correctionFrontLeft = left_front_PID.Calculate(currentFrontLeft,
+                                                   setpointFrontLeft);
+    correctionBackLeft = left_back_PID.Calculate(currentBackLeft,
+                                                   setpointBackLeft);
+    correctionFrontRight = right_front_PID.Calculate(currentFrontRight,
+                                                   setpointFrontRight);
+    correctionBackRight = right_back_PID.Calculate(currentBackRight,
+                                                   setpointBackRight);
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorFrontLeft and errorFrontRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
 
-    motor_lf.Set(motionCalc.idealAccel(moveTime) + left_front_PID.Calculate(errorFrontLeft), idealVelocity);
-    motor_rf.Set(motionCalc.idealAccel(moveTime) + right_front_PID.Calculate(errorFrontRight), idealVelocity);
-    motor_lb.Set(motionCalc.idealAccel(moveTime) + left_back_PID.Calculate(errorBackLeft), idealVelocity);
-    motor_rb.Set(motionCalc.idealAccel(moveTime) + right_back_PID.Calculate(errorBackRight), idealVelocity);
+    motor_lf.Set(motionCalc.idealAccel(moveTime) + correctionFrontLeft,
+                 idealVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
+                 idealVelocity);
+    motor_rf.Set(motionCalc.idealAccel(moveTime) + correctionFrontRight,
+                 idealVelocity);
+    motor_rb.Set(motionCalc.idealAccel(moveTime) + correctionBackRight,
+                 idealVelocity);
   }
 
   enc_left_front_write(0);
@@ -277,28 +277,28 @@ void motion_collect(float distance, float exit_speed){
   for(i = 0; i<num_range_value; i++){
     Serial.print(reading_output_L[i]);
     Serial.print(" ");
-    Serial.print((int) distance - 5 * i);
+    Serial.print((int) distance - MOTION_COLLECT_MM_PER_READING * i);
     Serial.println();
   }
   Serial.println("=== Front Right ===");
   for(i = 0; i<num_range_value; i++){
     Serial.print(reading_output_R[i]);
     Serial.print(" ");
-    Serial.print((int) distance - 5 * i);
+    Serial.print((int) distance - MOTION_COLLECT_MM_PER_READING * i);
     Serial.println();
   }
   Serial.println("=== Diag Left ===");
   for(i = 0; i<num_range_value; i++){
     Serial.print(reading_output_DL[i]);
     Serial.print(" ");
-    Serial.print((int) distance - 5 * i);
+    Serial.print((int) distance - MOTION_COLLECT_MM_PER_READING * i);
     Serial.println();
   }
   Serial.println("=== Diag Right ===");
   for(i = 0; i<num_range_value; i++){
     Serial.print(reading_output_DR[i]);
     Serial.print(" ");
-    Serial.print((int) distance - 5 * i);
+    Serial.print((int) distance - MOTION_COLLECT_MM_PER_READING * i);
     Serial.println();
   }
 }
@@ -307,7 +307,9 @@ void motion_collect(float distance, float exit_speed){
 void motion_rotate(float angle) {
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealLinearDistance, idealLinearVelocity;
-  float errorFrontRight, errorBackRight, errorFrontLeft, errorBackLeft, errorRotation;
+  float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
+  float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
+  float correctionFrontRight, correctionBackRight, correctionFrontLeft, correctionBackLeft;
   float rotation_correction;
   float linearDistance = distancePerDegree * angle;
   elapsedMicros moveTime;
@@ -337,22 +339,37 @@ void motion_rotate(float angle) {
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
-    errorRotation = orientation->getHeading() * distancePerDegree - idealLinearDistance;
-    rotation_correction += rotation_PID.Calculate(errorRotation);
+    rotation_correction += rotation_PID.Calculate(
+        orientation->getHeading() * distancePerDegree,
+        idealLinearDistance);
 
-    errorFrontLeft = enc_left_front_extrapolate() - idealLinearDistance - rotation_correction;
-    errorBackLeft = enc_left_back_extrapolate() - idealLinearDistance - rotation_correction;
-    errorFrontRight = enc_right_front_extrapolate() + idealLinearDistance + rotation_correction;
-    errorBackRight = enc_right_back_extrapolate() + idealLinearDistance + rotation_correction;
+    currentFrontLeft = enc_left_front_extrapolate();
+    currentBackLeft = enc_left_back_extrapolate();
+    currentFrontRight = enc_right_front_extrapolate();
+    currentBackRight = enc_right_back_extrapolate();
 
-    motor_lf.Set(motionCalc.idealAccel(moveTime) + left_front_PID.Calculate(errorFrontLeft),
-                idealLinearVelocity);
-    motor_rf.Set(-motionCalc.idealAccel(moveTime) + right_front_PID.Calculate(errorFrontRight),
-                idealLinearVelocity);
-    motor_lb.Set(motionCalc.idealAccel(moveTime) + left_back_PID.Calculate(errorBackLeft),
-                idealLinearVelocity);
-    motor_rb.Set(-motionCalc.idealAccel(moveTime) + right_back_PID.Calculate(errorBackRight),
-                idealLinearVelocity);
+    setpointFrontLeft = idealLinearDistance + rotation_correction;
+    setpointBackLeft = idealLinearDistance + rotation_correction;
+    setpointFrontRight = -idealLinearDistance - rotation_correction;
+    setpointBackRight = -idealLinearDistance - rotation_correction;
+
+    correctionFrontLeft = left_front_PID.Calculate(currentFrontLeft,
+                                                   setpointFrontLeft);
+    correctionBackLeft = left_back_PID.Calculate(currentBackLeft,
+                                                 setpointBackLeft);
+    correctionFrontRight = right_front_PID.Calculate(currentFrontRight,
+                                                     setpointFrontRight);
+    correctionBackRight = right_back_PID.Calculate(currentBackRight,
+                                                   setpointBackRight);
+
+    motor_lf.Set(motionCalc.idealAccel(moveTime) + correctionFrontLeft,
+                 idealLinearVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
+                 idealLinearVelocity);
+    motor_rf.Set(-motionCalc.idealAccel(moveTime) + correctionFrontRight,
+                 -idealLinearVelocity);
+    motor_rb.Set(-motionCalc.idealAccel(moveTime) + correctionBackRight,
+                 -idealLinearVelocity);
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
 
@@ -368,7 +385,6 @@ void motion_rotate(float angle) {
 void motion_gyro_rotate(float angle) {
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealLinearDistance, idealLinearVelocity;
-  float errorLeft, errorRight, errorRotation;
   float rotation_correction;
   float linearDistance = distancePerDegree * angle;
   elapsedMicros moveTime;
@@ -388,6 +404,7 @@ void motion_gyro_rotate(float angle) {
   moveTime = 0;
 
   // the right will always be the negative of the left in order to rotate on a point.
+  idealLinearDistance = 0;
   while (idealLinearDistance != linearDistance) {
     orientation->update();
 
@@ -395,19 +412,21 @@ void motion_gyro_rotate(float angle) {
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
-    errorRotation = orientation->getHeading() * distancePerDegree - idealLinearDistance;
-    rotation_correction = rotation_PID.Calculate(errorRotation);
+    rotation_correction = rotation_PID.Calculate(
+        orientation->getHeading() * distancePerDegree,
+        idealLinearDistance);
+    Serial.println(rotation_correction);
 
     // run PID loop here.  new PID loop will add or subtract from a predetermined
     //   PWM value that was calculated with the motor curve and current ideal speed
     motor_lf.Set(motionCalc.idealAccel(moveTime) + rotation_correction,
-                idealLinearVelocity);
+                 idealLinearVelocity);
     motor_rf.Set(-motionCalc.idealAccel(moveTime) - rotation_correction,
-                idealLinearVelocity);
+                 -idealLinearVelocity);
     motor_lb.Set(motionCalc.idealAccel(moveTime) + rotation_correction,
-                idealLinearVelocity);
+                 idealLinearVelocity);
     motor_rb.Set(-motionCalc.idealAccel(moveTime) - rotation_correction,
-                idealLinearVelocity);
+                 -idealLinearVelocity);
   }
 
   enc_left_front_write(0);
@@ -419,8 +438,8 @@ void motion_gyro_rotate(float angle) {
 
 void motion_corner(SweptTurnType turn_type, float speed) {
   float sign;
-  float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
-  float errorRotation;
+  float currentFrontRight, currentFrontLeft, currentBackRight, currentBackLeft;
+  float setpointFrontRight, setpointFrontLeft, setpointBackRight, setpointBackLeft;
   float idealDistance;
   float rotation_offset;
   float rotation_correction;
@@ -502,13 +521,19 @@ void motion_corner(SweptTurnType turn_type, float speed) {
 
     rotation_offset = sign * turn_table->getOffsetAtMicros(move_time_scaled);
 
-    errorRotation = orientation->getHeading() * distancePerDegree - rotation_offset;
-    rotation_correction += rotation_PID.Calculate(errorRotation);
+    rotation_correction += rotation_PID.Calculate(
+        orientation->getHeading() * distancePerDegree,
+        rotation_offset);
 
-    errorFrontLeft = enc_left_front_extrapolate() - idealDistance - rotation_offset - rotation_correction;
-    errorBackLeft = enc_left_back_extrapolate() - idealDistance - rotation_offset - rotation_correction;
-    errorFrontRight = enc_right_front_extrapolate() - idealDistance + rotation_offset + rotation_correction;
-    errorBackRight = enc_right_back_extrapolate() - idealDistance + rotation_offset + rotation_correction;
+    currentFrontLeft = enc_left_front_extrapolate();
+    currentBackLeft = enc_left_back_extrapolate();
+    currentFrontRight = enc_right_front_extrapolate();
+    currentBackRight = enc_right_back_extrapolate();
+
+    setpointFrontLeft = idealDistance + rotation_offset + rotation_correction;
+    setpointBackLeft = idealDistance + rotation_offset + rotation_correction;
+    setpointFrontRight = idealDistance - rotation_offset - rotation_correction;
+    setpointBackRight = idealDistance - rotation_offset - rotation_correction;
 
 //    motor_l.Set(distancePerDegree
 //        * time_scaling
@@ -521,16 +546,15 @@ void motion_corner(SweptTurnType turn_type, float speed) {
 //        + right_PID.Calculate(errorFrontRight),
 //        enc_right_velocity());
    
-       motor_lf.Set(left_front_PID.Calculate(errorFrontLeft),
-        enc_left_front_velocity());
-       motor_rf.Set(right_front_PID.Calculate(errorFrontRight),
-        enc_right_front_velocity());
-       motor_lb.Set(left_back_PID.Calculate(errorBackLeft),
-        enc_left_back_velocity());
-       motor_rb.Set(right_back_PID.Calculate(errorBackRight),
-        enc_right_back_velocity());
-
-   }
+    motor_lf.Set(left_front_PID.Calculate(currentFrontLeft, setpointFrontLeft),
+                 enc_left_front_velocity());
+    motor_rf.Set(right_front_PID.Calculate(currentFrontRight, setpointFrontRight),
+                 enc_right_front_velocity());
+    motor_lb.Set(left_back_PID.Calculate(currentBackLeft, setpointBackLeft),
+                 enc_left_back_velocity());
+    motor_rb.Set(right_back_PID.Calculate(currentBackRight, setpointBackRight),
+                 enc_right_back_velocity());
+  }
 
   enc_left_front_write(0);
   enc_right_front_write(0);
@@ -557,10 +581,10 @@ void motion_hold(unsigned int time) {
     errorBackLeft = enc_left_back_extrapolate();
     errorBackRight = enc_right_back_extrapolate();
 
-    leftFrontOutput = left_front_PID.Calculate(errorFrontLeft);
-    rightFrontOutput = right_front_PID.Calculate(errorFrontRight);
-    leftBackOutput = left_back_PID.Calculate(errorBackLeft);
-    rightBackOutput = right_back_PID.Calculate(errorBackRight);
+    leftFrontOutput = left_front_PID.Calculate(errorFrontLeft, 0);
+    rightFrontOutput = right_front_PID.Calculate(errorFrontRight, 0);
+    leftBackOutput = left_back_PID.Calculate(errorBackLeft, 0);
+    rightBackOutput = right_back_PID.Calculate(errorBackRight, 0);
 
     motor_lf.Set(leftFrontOutput, 0);
     motor_rf.Set(rightFrontOutput, 0);
@@ -575,33 +599,33 @@ void motion_hold(unsigned int time) {
 }
 
 void motion_hold_range(int setpoint, unsigned int time) {
-  float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
   float rightFrontOutput, leftFrontOutput, rightBackOutput, leftBackOutput;
   elapsedMicros currentTime;
 
-  digitalWrite(13, HIGH);
-
-  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_front_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
+  PIDController right_front_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
+  PIDController left_back_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
+  PIDController right_back_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
 
   currentTime = 0;
 
   while (currentTime / 1000 < time) {
 
-    RangeSensors.leftSensor.updateRange();
-    RangeSensors.rightSensor.updateRange();
+    RangeSensors.frontLeftSensor.updateRange();
+    RangeSensors.frontRightSensor.updateRange();
     
-    errorFrontLeft = RangeSensors.leftSensor.getRange();
-    errorFrontRight = RangeSensors.rightSensor.getRange();
-    errorBackLeft = errorFrontLeft;
-    errorBackRight = errorFrontRight;
-
-    leftFrontOutput = left_front_PID.Calculate(errorFrontLeft);
-    rightFrontOutput = right_front_PID.Calculate(errorFrontRight);
-    leftBackOutput = left_back_PID.Calculate(errorBackLeft);
-    rightBackOutput = right_back_PID.Calculate(errorBackRight);
+    leftFrontOutput = left_front_PID.Calculate(
+        -RangeSensors.frontLeftSensor.getRange(),
+        -setpoint);
+    leftBackOutput = left_back_PID.Calculate(
+        -RangeSensors.frontLeftSensor.getRange(),
+        -setpoint);
+    rightFrontOutput = right_front_PID.Calculate(
+        -RangeSensors.frontRightSensor.getRange(),
+        -setpoint);
+    rightBackOutput = right_back_PID.Calculate(
+        -RangeSensors.frontRightSensor.getRange(),
+        -setpoint);
 
     motor_lf.Set(leftFrontOutput, 0);
     motor_rf.Set(rightFrontOutput, 0);

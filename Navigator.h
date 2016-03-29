@@ -46,7 +46,7 @@ class Navigator
 
     void driveCardboardMaze();
 
-    void findFinish();
+    void findBox(int x, int y);
 
     // For development. Fill this method in with whatever you're working on.
     // This method is what will be called by mazesim-rewrite.
@@ -109,9 +109,9 @@ void Navigator<driver_type>::driveCardboardMaze()
 }
 
 template <typename driver_type>
-void Navigator<driver_type>::findFinish()
+void Navigator<driver_type>::findBox(int x, int y)
 {
-  while (driver.getX() != 8 || driver.getY() != 8) {
+  while (driver.getX() != x || driver.getY() != y) {
     if (driver.isWall(kNorth))
       maze.addWall(driver.getX(), driver.getY(), kNorth);
 
@@ -124,14 +124,19 @@ void Navigator<driver_type>::findFinish()
     if (driver.isWall(kWest))
       maze.addWall(driver.getX(), driver.getY(), kWest);
 
+    maze.visit(driver.getX(), driver.getY());
+
     {
       FloodFillPath<16, 16>
-        path(maze, driver.getX(), driver.getY(), 8, 8);
+        flood_path(maze, driver.getX(), driver.getY(), x, y);
 
-      if (path.isEmpty())
+      KnownPath<16, 16>
+        known_path(maze, driver.getX(), driver.getY(), x, y, flood_path);
+
+      if (known_path.isEmpty())
         break;
 
-      driver.move(path.nextDirection(), 1);
+      driver.move(known_path);
     }
   }
 }
