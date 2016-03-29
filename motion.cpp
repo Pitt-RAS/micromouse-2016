@@ -6,6 +6,7 @@
 #include "sensors_encoders.h"
 #include "sensors_orientation.h"
 #include "Menu.h"
+#include "Logger.h"
 #include "MotionCalc.h"
 #include "PIDController.h"
 #include "RangeSensorContainer.h"
@@ -150,6 +151,9 @@ void motion_forward(float distance, float exit_speed) {
                  idealVelocity);
     motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
                  idealVelocity);
+
+    logger.logMotionType('f');
+    logger.nextCycle();
   }
   motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
   //orientation->update();
@@ -241,6 +245,9 @@ void motion_collect(float distance, float exit_speed){
       reading_output_DR[reading_counter] /= num_readings;
 
       reading_counter++;
+
+      logger.logMotionType('c');
+      logger.nextCycle();
     }
 
     rotationOffset += rotation_PID.Calculate(orientation->getHeading() * distancePerDegree, 0);
@@ -397,6 +404,8 @@ void motion_rotate(float angle) {
                  idealLinearVelocity);
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
 
+    logger.logMotionType('p');
+    logger.nextCycle();
   }
   //menu.showInt(orientation->getHeading(),4);
   orientation->update();
@@ -449,6 +458,9 @@ void motion_gyro_rotate(float angle) {
                  -idealLinearVelocity);
     motor_lb.Set(motionCalc.idealAccel(moveTime) + rotation_correction,
                  idealLinearVelocity);
+
+    logger.logMotionType('g');
+    logger.nextCycle();
   }
 
   enc_left_front_write(0);
@@ -587,6 +599,9 @@ void motion_corner(SweptTurnType turn_type, float speed) {
                  enc_right_back_velocity());
     motor_lb.Set(left_back_PID.Calculate(currentBackLeft, setpointBackLeft),
                  enc_left_back_velocity());
+
+    logger.logMotionType('s');
+    logger.nextCycle();
   }
 
   motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
@@ -620,6 +635,9 @@ void motion_hold(unsigned int time) {
     motor_rf.Set(rightFrontOutput, 0);
     motor_rb.Set(rightBackOutput,0);
     motor_lb.Set(leftBackOutput,0);
+
+    logger.logMotionType('h');
+    logger.nextCycle();
   }
 
   motor_lf.Set(0, 0);
@@ -661,6 +679,9 @@ void motion_hold_range(int setpoint, unsigned int time) {
     motor_rf.Set(rightFrontOutput, 0);
     motor_rb.Set(rightBackOutput, 0);
     motor_lb.Set(leftBackOutput, 0);
+
+    logger.logMotionType('r');
+    logger.nextCycle();
   }
 
   motor_lf.Set(0, 0);
