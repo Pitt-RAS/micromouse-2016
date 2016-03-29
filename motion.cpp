@@ -5,6 +5,7 @@
 #include "motors.h"
 #include "sensors_encoders.h"
 #include "sensors_orientation.h"
+#include "FreakOut.h"
 #include "Menu.h"
 #include "Logger.h"
 #include "MotionCalc.h"
@@ -109,6 +110,10 @@ void motion_forward(float distance, float exit_speed) {
     RangeSensors.updateReadings();
     rangeOffset = range_PID.Calculate(RangeSensors.errorFromCenter(), 0);
     gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
+
+    if (abs(orientation->getHeading()) > 60) {
+      freakOut("FUCK");
+    }
 
     currentFrontLeft = enc_left_front_extrapolate();
     currentBackLeft = enc_left_back_extrapolate();
@@ -375,6 +380,10 @@ void motion_rotate(float angle) {
         orientation->getHeading() * distancePerDegree,
         idealLinearDistance);
 
+    if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
+      freakOut("FUCK");
+    }
+
     currentFrontLeft = enc_left_front_extrapolate();
     currentBackLeft = enc_left_back_extrapolate();
     currentFrontRight = enc_right_front_extrapolate();
@@ -447,6 +456,10 @@ void motion_gyro_rotate(float angle) {
         orientation->getHeading() * distancePerDegree,
         idealLinearDistance);
     Serial.println(rotation_correction);
+
+    if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
+      freakOut("FUCK");
+    }
 
     // run PID loop here.  new PID loop will add or subtract from a predetermined
     //   PWM value that was calculated with the motor curve and current ideal speed
@@ -569,6 +582,10 @@ void motion_corner(SweptTurnType turn_type, float speed) {
     gyro_correction += gyro_PID.Calculate(
         orientation->getHeading() * distancePerDegree,
         rotation_offset);
+
+    if (abs(orientation->getHeading() - rotation_offset / distancePerDegree) > 60) {
+      freakOut("FUCK");
+    }
 
     currentFrontLeft = enc_left_front_extrapolate();
     currentBackLeft = enc_left_back_extrapolate();
