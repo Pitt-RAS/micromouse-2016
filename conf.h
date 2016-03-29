@@ -107,6 +107,14 @@
 #define RANGE_SENSOR_ON_TIME 50 // length of LED pulse
 #define RANGE_SENSOR_OFF_TIME 250 // time between pulses
 
+// Accelerometer parameters
+#define ACCEL_LSB_PER_G 2048
+
+// Motor stop failsafe parameters
+#define FAILSAFE_GYRO_THRESHOLD 100 // in deg/s
+#define FAILSAFE_GYRO_ANGLE 20 // in deg
+#define FAILSAFE_ACCEL_THRESHOLD 10// in mg
+
 // Display control parameters
 #define DISPLAY_SIZE 4
 #define DISPLAY_BRIGHTNESS 10 // between 0 and 15 inclusive

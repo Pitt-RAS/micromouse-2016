@@ -17,7 +17,7 @@ class Orientation {
     static Orientation* instance_;
 
     MPU9150 mpu_;
-    uint16_t packet_size_ = 2;
+    uint16_t packet_size_ = 8;
     uint16_t fifo_count_ = 0;
 
     float secondary_gyro_offset_ = GYRO_SECONDARY_OFFSET;
@@ -29,6 +29,13 @@ class Orientation {
     
     float max_forward_accel_ = 0;
     float max_radial_accel_ = 0;
+
+    // true if we're currently over the gyro threshold
+    bool over_gyro_threshold_ = false;
+
+    // angle we've covered since we went over the threshold
+    bool angle_past_gyro_threshold_ = 0;
+
   public:
     static Orientation* getInstance();
 

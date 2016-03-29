@@ -1,5 +1,7 @@
 #include "sensors_orientation.h"
 #include "conf.h"
+#include "FreakOut.h"
+#include "Logger.h"
 
 #include <Arduino.h>
 
@@ -21,6 +23,7 @@ Orientation::Orientation() {
   Serial.println(mpu_.testConnection() ? F("MPU9150 connection successful") : F("MPU9150 connection failed"));
 
   mpu_.setFullScaleGyroRange(MPU9150_GYRO_FS_2000);
+  mpu_.setFullScaleAccelRange(MPU9150_ACCEL_FS_16);
   mpu_.setZGyroOffset(GYRO_OFFSET_SETTING);
   mpu_.setZAccelOffset(1788); // 1688 factory default for my test chip
 
@@ -37,6 +40,7 @@ Orientation::Orientation() {
   mpu_.setRate(1); // Sample rate of 500Hz (assuming LPF is enabled)
   mpu_.setDLPFMode(MPU9150_DLPF_BW_188); // Enable DLPF
   mpu_.setFIFOEnabled(true);
+  mpu_.setAccelFIFOEnabled(true);
   mpu_.setZGyroFIFOEnabled(true);
 
   mpu_.setIntFIFOBufferOverflowEnabled(true);
@@ -117,6 +121,8 @@ bool Orientation::update() {
 
   uint8_t mpu_int_status;
   uint8_t fifo_buffer[64];
+  float dt;
+  uint16_t accel_x, accel_y;
 
   // reset interrupt flag and get INT_STATUS byte
   mpu_interrupt_ = false;
@@ -145,11 +151,48 @@ bool Orientation::update() {
     // track FIFO count here in case there is > 1 packet available
     fifo_count_ -= packet_size_;
 
-    float dt = (next_update_time_ - last_update_time_) / 1000000.0;
+    // Accelerometer update
+    accel_x = (uint16_t)fifo_buffer[0] << 8 | fifo_buffer[1];
+    accel_y = (uint16_t)fifo_buffer[2] << 8 | fifo_buffer[3];
+
+    accel_x /= ACCEL_LSB_PER_G;
+    accel_y /= ACCEL_LSB_PER_G;
+
+    if (abs(accel_x) > FAILSAFE_ACCEL_THRESHOLD
+            || abs(accel_y) > FAILSAFE_ACCEL_THRESHOLD) {
+      //freakOut("OUCH");
+    }
+
+    if (abs(accel_x) > max_radial_accel_) {
+      max_radial_accel_ = accel_x;
+    }
+
+    if (abs(accel_y) > max_forward_accel_) {
+      max_forward_accel_ = accel_y;
+    }
+
+    // Gyro update
+    dt = (next_update_time_ - last_update_time_) / 1000000.0;
     raw_heading_ -= last_gyro_reading_ / GYRO_LSB_PER_DEG_PER_S * dt;
 
-    last_gyro_reading_ = (uint16_t)fifo_buffer[0] << 8 | fifo_buffer[1];
+    if (abs(last_gyro_reading_) > FAILSAFE_GYRO_THRESHOLD) {
+      over_gyro_threshold_ = true;
+      angle_past_gyro_threshold_ -= last_gyro_reading_ / GYRO_LSB_PER_DEG_PER_S * dt;
+      if (abs(angle_past_gyro_threshold_) > FAILSAFE_GYRO_ANGLE) {
+        //freakOut("FUCK");
+      }
+    } else {
+      over_gyro_threshold_ = false;
+      angle_past_gyro_threshold_ = 0;
+    }
+
+    last_gyro_reading_ = (uint16_t)fifo_buffer[6] << 8 | fifo_buffer[7];
     last_gyro_reading_ -= secondary_gyro_offset_;
+
+    logger.logForwardAccel(accel_y);
+    logger.logRadialAccel(accel_x);
+    logger.logGyro(last_gyro_reading_);
+    logger.logHeading(raw_heading_);
 
     last_update_time_ = next_update_time_;
 
