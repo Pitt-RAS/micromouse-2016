@@ -29,6 +29,8 @@ static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 
 static Orientation* orientation = NULL;
+//variable to store encoder position at the end of motion functions 
+static float motion_end_extrapolation = 0;
 
 // instantiate the turn lookup tables
 //IdealSweptTurns turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
@@ -51,7 +53,20 @@ void motion_forward(float distance, float exit_speed) {
 
   // float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
   float current_speed = (enc_left_front_velocity() + enc_left_back_velocity() + enc_right_front_velocity() + enc_right_back_velocity())/4;
-  MotionCalc motionCalc (distance, max_vel_straight, current_speed, exit_speed, max_accel_straight,
+
+  float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
+  if(motion_end_extrapolation != 0)
+    motion_end_extrapolation = currentExtrapolation;
+
+  float drift = currentExtrapolation - motion_end_extrapolation;
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
+
+  //instantiate with distance - the amount of drift between motion commands
+  MotionCalc motionCalc (distance-drift, max_vel_straight, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
 
   if (orientation == NULL) {
@@ -129,19 +144,16 @@ void motion_forward(float distance, float exit_speed) {
 
     motor_lf.Set(motionCalc.idealAccel(moveTime) + correctionFrontLeft,
                  idealVelocity);
-    motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
-                 idealVelocity);
     motor_rf.Set(motionCalc.idealAccel(moveTime) + correctionFrontRight,
                  idealVelocity);
     motor_rb.Set(motionCalc.idealAccel(moveTime) + correctionBackRight,
                  idealVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
+                 idealVelocity);
   }
-  orientation->update();
-  enc_left_front_write(0);
-  enc_right_front_write(0);
-  enc_left_back_write(0);
-  enc_right_back_write(0);
-  orientation->resetHeading();
+  motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
+  //orientation->update();
+  //orientation->resetHeading();
 }
 
 void motion_collect(float distance, float exit_speed){
@@ -257,11 +269,11 @@ void motion_collect(float distance, float exit_speed){
 
     motor_lf.Set(motionCalc.idealAccel(moveTime) + correctionFrontLeft,
                  idealVelocity);
-    motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
-                 idealVelocity);
     motor_rf.Set(motionCalc.idealAccel(moveTime) + correctionFrontRight,
                  idealVelocity);
     motor_rb.Set(motionCalc.idealAccel(moveTime) + correctionBackRight,
+                 idealVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
                  idealVelocity);
   }
 
@@ -310,11 +322,24 @@ void motion_rotate(float angle) {
   float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
   float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
   float correctionFrontRight, correctionBackRight, correctionFrontLeft, correctionBackLeft;
-  float rotation_correction;
+  float gyro_correction;
   float linearDistance = distancePerDegree * angle;
   elapsedMicros moveTime;
 
   float current_speed = ((enc_left_front_velocity() + enc_left_back_velocity()) - (enc_right_front_velocity() + enc_right_back_velocity()))/4;
+  
+  float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
+  if(motion_end_extrapolation != 0)
+    motion_end_extrapolation = currentExtrapolation;
+
+  float drift = currentExtrapolation - motion_end_extrapolation;
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
+
+  //instantiate with distance - the amount of drift between motion commands 
   MotionCalc motionCalc (linearDistance, max_vel_rotate, current_speed, 0, max_accel_rotate,
                          max_decel_rotate);
 
@@ -326,7 +351,7 @@ void motion_rotate(float angle) {
   PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
+  PIDController gyro_PID (KP_GYRO, KI_GYRO, KD_GYRO);
 
   // zero encoders and clock before move
   moveTime = 0;
@@ -339,7 +364,7 @@ void motion_rotate(float angle) {
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
-    rotation_correction += rotation_PID.Calculate(
+    gyro_correction += gyro_PID.Calculate(
         orientation->getHeading() * distancePerDegree,
         idealLinearDistance);
 
@@ -348,10 +373,10 @@ void motion_rotate(float angle) {
     currentFrontRight = enc_right_front_extrapolate();
     currentBackRight = enc_right_back_extrapolate();
 
-    setpointFrontLeft = idealLinearDistance + rotation_correction;
-    setpointBackLeft = idealLinearDistance + rotation_correction;
-    setpointFrontRight = -idealLinearDistance - rotation_correction;
-    setpointBackRight = -idealLinearDistance - rotation_correction;
+    setpointFrontLeft = idealLinearDistance + gyro_correction;
+    setpointBackLeft = idealLinearDistance + gyro_correction;
+    setpointFrontRight = -idealLinearDistance - gyro_correction;
+    setpointBackRight = -idealLinearDistance - gyro_correction;
 
     correctionFrontLeft = left_front_PID.Calculate(currentFrontLeft,
                                                    setpointFrontLeft);
@@ -364,22 +389,19 @@ void motion_rotate(float angle) {
 
     motor_lf.Set(motionCalc.idealAccel(moveTime) + correctionFrontLeft,
                  idealLinearVelocity);
-    motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
-                 idealLinearVelocity);
     motor_rf.Set(-motionCalc.idealAccel(moveTime) + correctionFrontRight,
                  -idealLinearVelocity);
     motor_rb.Set(-motionCalc.idealAccel(moveTime) + correctionBackRight,
                  -idealLinearVelocity);
-
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
+                 idealLinearVelocity);
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
 
   }
+  //menu.showInt(orientation->getHeading(),4);
   orientation->update();
-  enc_left_front_write(0);
-  enc_right_front_write(0);
-  enc_left_back_write(0);
-  enc_right_back_write(0);
   orientation->resetHeading();
+  motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
 }
 
 void motion_gyro_rotate(float angle) {
@@ -423,10 +445,10 @@ void motion_gyro_rotate(float angle) {
                  idealLinearVelocity);
     motor_rf.Set(-motionCalc.idealAccel(moveTime) - rotation_correction,
                  -idealLinearVelocity);
-    motor_lb.Set(motionCalc.idealAccel(moveTime) + rotation_correction,
-                 idealLinearVelocity);
     motor_rb.Set(-motionCalc.idealAccel(moveTime) - rotation_correction,
                  -idealLinearVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + rotation_correction,
+                 idealLinearVelocity);
   }
 
   enc_left_front_write(0);
@@ -442,7 +464,7 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   float setpointFrontRight, setpointFrontLeft, setpointBackRight, setpointBackLeft;
   float idealDistance;
   float rotation_offset;
-  float rotation_correction;
+  float gyro_correction;
   float time_scaling;
   float gyro_offset;
   int move_time_scaled = 0;
@@ -453,6 +475,17 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   if (orientation == NULL) {
     orientation = Orientation::getInstance();
   }
+
+  float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
+  if(motion_end_extrapolation != 0)
+    motion_end_extrapolation = currentExtrapolation;
+
+  float drift = currentExtrapolation - motion_end_extrapolation;
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 
   switch (turn_type) {
     //case kLeftTurn45:
@@ -505,7 +538,7 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
-  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
+  PIDController gyro_PID (KP_GYRO, KI_GYRO, KD_GYRO);
 
   // zero clock before move
   move_time = 0;
@@ -521,7 +554,7 @@ void motion_corner(SweptTurnType turn_type, float speed) {
 
     rotation_offset = sign * turn_table->getOffsetAtMicros(move_time_scaled);
 
-    rotation_correction += rotation_PID.Calculate(
+    gyro_correction += gyro_PID.Calculate(
         orientation->getHeading() * distancePerDegree,
         rotation_offset);
 
@@ -530,10 +563,10 @@ void motion_corner(SweptTurnType turn_type, float speed) {
     currentFrontRight = enc_right_front_extrapolate();
     currentBackRight = enc_right_back_extrapolate();
 
-    setpointFrontLeft = idealDistance + rotation_offset + rotation_correction;
-    setpointBackLeft = idealDistance + rotation_offset + rotation_correction;
-    setpointFrontRight = idealDistance - rotation_offset - rotation_correction;
-    setpointBackRight = idealDistance - rotation_offset - rotation_correction;
+    setpointFrontLeft = idealDistance + rotation_offset + gyro_correction;
+    setpointBackLeft = idealDistance + rotation_offset + gyro_correction;
+    setpointFrontRight = idealDistance - rotation_offset - gyro_correction;
+    setpointBackRight = idealDistance - rotation_offset - gyro_correction;
 
 //    motor_l.Set(distancePerDegree
 //        * time_scaling
@@ -550,16 +583,13 @@ void motion_corner(SweptTurnType turn_type, float speed) {
                  enc_left_front_velocity());
     motor_rf.Set(right_front_PID.Calculate(currentFrontRight, setpointFrontRight),
                  enc_right_front_velocity());
-    motor_lb.Set(left_back_PID.Calculate(currentBackLeft, setpointBackLeft),
-                 enc_left_back_velocity());
     motor_rb.Set(right_back_PID.Calculate(currentBackRight, setpointBackRight),
                  enc_right_back_velocity());
+    motor_lb.Set(left_back_PID.Calculate(currentBackLeft, setpointBackLeft),
+                 enc_left_back_velocity());
   }
 
-  enc_left_front_write(0);
-  enc_right_front_write(0);
-  enc_left_back_write(0);
-  enc_right_back_write(0);
+  motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
   orientation->incrementHeading(-sign * turn_table->getTotalAngle());
 }
 
@@ -588,14 +618,14 @@ void motion_hold(unsigned int time) {
 
     motor_lf.Set(leftFrontOutput, 0);
     motor_rf.Set(rightFrontOutput, 0);
-    motor_lb.Set(leftBackOutput,0);
     motor_rb.Set(rightBackOutput,0);
+    motor_lb.Set(leftBackOutput,0);
   }
 
   motor_lf.Set(0, 0);
   motor_rf.Set(0, 0);
-  motor_lb.Set(0, 0);
   motor_rb.Set(0, 0);
+  motor_lb.Set(0, 0);
 }
 
 void motion_hold_range(int setpoint, unsigned int time) {
@@ -629,14 +659,14 @@ void motion_hold_range(int setpoint, unsigned int time) {
 
     motor_lf.Set(leftFrontOutput, 0);
     motor_rf.Set(rightFrontOutput, 0);
-    motor_lb.Set(leftBackOutput, 0);
     motor_rb.Set(rightBackOutput, 0);
+    motor_lb.Set(leftBackOutput, 0);
   }
 
   motor_lf.Set(0, 0);
   motor_rf.Set(0, 0);
-  motor_lb.Set(0, 0);
   motor_rb.Set(0, 0);
+  motor_lb.Set(0, 0);
 }
 
 // functions to set max velocity variables

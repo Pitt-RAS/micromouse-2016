@@ -76,25 +76,25 @@
 #define RANGE_FRONT_RIGHT_OFFSET 30
 
 // Range sensor wall thresholds
-#define DIAG_LEFT_LOW_THRESHOLD 190
-#define DIAG_LEFT_HIGH_THRESHOLD 190
-#define DIAG_RIGHT_LOW_THRESHOLD 190
-#define DIAG_RIGHT_HIGH_THRESHOLD 190
-#define FRONT_LEFT_LOW_THRESHOLD 150
-#define FRONT_LEFT_HIGH_THRESHOLD 150
-#define FRONT_RIGHT_LOW_THRESHOLD 150
-#define FRONT_RIGHT_HIGH_THRESHOLD 150
+#define DIAG_LEFT_LOW_THRESHOLD 340
+#define DIAG_LEFT_HIGH_THRESHOLD 340
+#define DIAG_RIGHT_LOW_THRESHOLD 360
+#define DIAG_RIGHT_HIGH_THRESHOLD 360
+#define FRONT_LEFT_LOW_THRESHOLD 212
+#define FRONT_LEFT_HIGH_THRESHOLD 212
+#define FRONT_RIGHT_LOW_THRESHOLD 187
+#define FRONT_RIGHT_HIGH_THRESHOLD 187
 
 // Range sensor middle readings
-#define RANGE_DIAG_LEFT_MIDDLE 68
-#define RANGE_DIAG_RIGHT_MIDDLE 68
+#define RANGE_DIAG_LEFT_MIDDLE 94
+#define RANGE_DIAG_RIGHT_MIDDLE 94
 #define RANGE_LEFT_MIDDLE 100
 #define RANGE_RIGHT_MIDDLE 100
-#define RANGE_FRONT_MIDDLE 100
-#define RANGE_MIDDLE 100
+#define RANGE_FRONT_MIDDLE 78
+#define RANGE_MIDDLE 68
 
 // Range sensor front value at which we stop using diagonal sensors
-#define RANGE_DIAG_CUTOFF_FRONT_DISTANCE 50
+#define RANGE_DIAG_CUTOFF_FRONT_DISTANCE 78
 
 // Gyro parameters
 #define GYRO_LSB_PER_DEG_PER_S 16.295
@@ -120,25 +120,25 @@
 
 // Motion control paremeters
 #define MM_PER_BLOCK 180
-#define MM_PER_STEP 0.6444
+#define MM_PER_STEP 0.653868
 #define MOTION_COLLECT_MM_PER_READING 1
 
 // PID tuning parameters
-#define KP_POSITION 5.69
+#define KP_POSITION 35//5.69
 #define KI_POSITION 0
-#define KD_POSITION 0
+#define KD_POSITION 20000
 
-#define KP_ROTATION 0.001//0.003
+#define KP_ROTATION 0.0005//0.003
 #define KI_ROTATION 0.00000000//85
-#define KD_ROTATION 0//5//9
+#define KD_ROTATION 05//9
 
-#define KP_RANGE 1.7
+#define KP_RANGE 6//1.7
 #define KI_RANGE 0
-#define KD_RANGE 38000
+#define KD_RANGE 10000//10000
 
-#define KP_GYRO 0.002//0.003
-#define KI_GYRO 0.00000000//85
-#define KD_GYRO 5//9
+#define KP_GYRO .003
+#define KI_GYRO 0.00000000
+#define KD_GYRO .01//52
 
 #define KP_HOLD_RANGE 2
 #define KI_HOLD_RANGE 0
@@ -155,14 +155,14 @@
 #define MAX_COEFFICIENT_FRICTION 1
 #define MAX_ACCEL_STRAIGHT 5 // m/s/s
 #define MAX_DECEL_STRAIGHT -3 // m/s/s
-#define MAX_ACCEL_ROTATE 2 // m/s/s  
-#define MAX_DECEL_ROTATE -2 // m/s/s
+#define MAX_ACCEL_ROTATE 5 // m/s/s  
+#define MAX_DECEL_ROTATE -3 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
 #define MAX_DECEL_CORNER -3 // m/s/s
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT 0.5 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 0.2 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
@@ -199,5 +199,7 @@
 
 #define SWEPT_TURN_180_FORWARD_SPEED 0.935
 #define SWEPT_TURN_180_ANGLE 180.0
+
+#define SEARCH_VELOCITY 0.2
 
 #endif

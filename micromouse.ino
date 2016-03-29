@@ -42,17 +42,19 @@ void setup()
   pinMode(BUTTON1_PIN, INPUT_PULLUP);
   pinMode(BUTTON2_PIN, INPUT_PULLUP);
   menu.begin();
+  menu.checkBattery();
+
 }
 
 void loop()
 {
   Navigator<RobotDriver> navigator;
   Orientation* orientation = Orientation::getInstance();
+  
 
   // Wait for button press.
   while (digitalRead(BUTTON1_PIN) == HIGH)
     menu.checkBattery();
-
   delay(1000);
   
   enc_left_front_write(0);
@@ -61,5 +63,15 @@ void loop()
   enc_right_back_write(0);
   orientation->resetHeading();
 
+  motion_forward(30.0,0.0);
+  motion_hold(1000);
+  
+  //motion_forward(180.0*1.5,0.2);
+  //motion_corner(kLeftTurn90, 0.2);
+  //motion_forward(180.0*4+30,0.0);
+  //motion_rotate(360);
+  //motion_hold(10);
+  
   navigator.runDevelopmentCode();
+  motion_hold(10);
 }

@@ -11,6 +11,7 @@
 #include "motion.h"
 #include "conf.h"
 #include "RangeSensorContainer.h"
+#include "Menu.h"
 #endif
 
 
@@ -116,6 +117,35 @@ void Turnable::setDir(float dir)
     dir += 360.0;
 
   dir_ = dir;
+}
+
+Compass8 Turnable::relativeDir(Compass8 absolute_dir)
+{
+  int arc;
+
+  arc = (int) absolute_dir - (int) getDir();
+
+  if (arc < 0)
+    arc += 8;
+
+  return (Compass8) arc;
+}
+
+float Turnable::relativeDirF(float absolute_dir)
+{
+  float arc;
+
+  absolute_dir = (int) absolute_dir % 360 + absolute_dir - (int) absolute_dir;
+
+  if (absolute_dir < 0.0)
+    absolute_dir += 360.0;
+
+  arc = absolute_dir - getDirF();
+
+  if (arc < 0.0)
+    arc += 360.0;
+
+  return arc;
 }
 
 Turnable::Turnable() : kInitialDirection(0.0)
@@ -323,33 +353,148 @@ SerialDriver::SerialDriver()
 
 
 
-RobotDriver::RobotDriver()
+bool RobotDriver::onEdge()
+{
+  float x_offset, y_offset;
+
+  x_offset = getXFloat() - getX();
+  y_offset = getYFloat() - getX();
+
+  if (x_offset < -0.25 || x_offset > 0.25)
+    return true;
+  if (y_offset < -0.25 || y_offset > 0.25)
+    return true;
+
+  return false;
+}
+
+void RobotDriver::freakOut(int error_number)
+{
+  char buf[10];
+
+  sprintf(buf, "BAD%d", error_number);
+
+  motion_forward(MM_PER_BLOCK / 4, 0.0);
+  motion_hold(1000);
+
+  menu.showString(buf);
+
+  delay(1000000);
+}
+
+RobotDriver::RobotDriver() :
+    exit_velocity_(0.0), last_direction_(kNorth), turn_advanced_(false)
 {
   // Initialize whatever we need to.
 }
 
+int RobotDriver::getX()
+{
+  float x;
+
+  x = getXFloat();
+
+  if ((x + 0.5) - (int) (x + 0.5) == 0.0) {
+    switch(getDir()) {
+      case kEast:
+        return (int) (x + 0.5);
+        break;
+      case kWest:
+        return (int) (x - 0.5);
+        break;
+      default:
+        break;
+    }
+  }
+
+  return Driver::getX();
+}
+
+int RobotDriver::getY()
+{
+  float y;
+
+  y = getYFloat();
+
+  if ((y + 0.5) - (int) (y + 0.5) == 0.0) {
+    switch(getDir()) {
+      case kNorth:
+        return (int) (y + 0.5);
+        break;
+      case kSouth:
+        return (int) (y - 0.5);
+        break;
+      default:
+        break;
+    }
+  }
+
+  return Driver::getY();
+}
+
 void RobotDriver::turn(Compass8 dir)
 {
-  int arc_to_turn;
-  int current;
-  int desired;
+  float arc_to_turn;
+  float distance_to_add;
 
-  current = (int) getDir();
-  desired = (int) dir;
+  arc_to_turn = 45.0 * (int) relativeDir(dir);
 
-  arc_to_turn = desired - current;
+  if (arc_to_turn > 180.0)
+    arc_to_turn -= 360.0;
 
-  if (arc_to_turn < 0)
-    arc_to_turn += 8;
+  turn_advanced_ = false;
+  distance_to_add = 0.0;
 
-  if (arc_to_turn != 0) {
-    if (arc_to_turn <= 4) {
-      motion_rotate(45.0 * arc_to_turn);
+  if (onEdge() && exit_velocity_ > 0.0) {
+    switch(relativeDir(dir)) {
+      case kNorth:
+        break;
+      case kSouth:
+        motion_forward(MM_PER_BLOCK / 2, 0.0);
+        motion_rotate(180.0);
+        motion_forward(MM_PER_BLOCK / 2, exit_velocity_);
+        turn_advanced_ = true;
+        distance_to_add = 1.0;
+        break;
+      case kEast:
+        motion_corner(kRightTurn90, exit_velocity_);
+        turn_advanced_ = true;
+        distance_to_add = 1.0;
+        break;
+      case kWest:
+        motion_corner(kLeftTurn90, exit_velocity_);
+        turn_advanced_ = true;
+        distance_to_add = 1.0;
+        break;
+      default:
+        freakOut(4);
+        break;
     }
-    else {
-      arc_to_turn -= 8;
-      motion_rotate(45.0 * arc_to_turn);
-    }
+  }
+  else if (!onEdge() && exit_velocity_ == 0.0) {
+    motion_rotate(arc_to_turn);
+    exit_velocity_ = 0.0;
+  }
+  else {
+    freakOut(1);
+  }
+
+  switch (dir) {
+    case kNorth:
+      setY(getYFloat() + distance_to_add);
+      break;
+
+    case kSouth:
+      setY(getYFloat() - distance_to_add);
+      break;
+
+    case kEast:
+      setX(getXFloat() + distance_to_add);
+      break;
+
+    case kWest:
+      setX(getXFloat() - distance_to_add);
+      break;
   }
 
   setDir(dir);
@@ -357,47 +502,43 @@ void RobotDriver::turn(Compass8 dir)
 
 bool RobotDriver::isWall(Compass8 dir)
 {
-  int arc_to_turn;
-  int current;
-  int desired;
-
-  current = (int) getDir();
-  desired = (int) dir;
-
-  arc_to_turn = desired - current;
-
-  if (arc_to_turn < 0)
-    arc_to_turn += 8;
-
-  if (arc_to_turn != 0) {
-    if (arc_to_turn <= 4) {
-      arc_to_turn = arc_to_turn;
-    }
-    else {
-      arc_to_turn -= 8;
+  RangeSensors.updateReadings();
+  if (getX() == 0 && getY() == 0) {
+    switch (relativeDir(dir)) {
+      case kNorth:
+        return RangeSensors.isWall(front);
+        break;
+      case kSouth:
+        return RangeSensors.isWall(back);
+        break;
+      case kEast:
+        return true;
+        break;
+      case kWest:
+        return true;
+        break;
+      default:
+        return true;
+        break;
     }
   }
 
   RangeSensors.updateReadings();
 
-  switch (arc_to_turn) {
-    case 0:
-      return RangeSensors.savedIsWall(front);
+  switch (relativeDir(dir)) {
+    case kNorth:
+      return RangeSensors.isWall(front);
       break;
-    case 2:
-      return RangeSensors.savedIsWall(right);
+    case kSouth:
+      return RangeSensors.isWall(back);
       break;
-    case 4:
-      return RangeSensors.savedIsWall(back);
+    case kEast:
+      return RangeSensors.isWall(right);
       break;
-    case -2:
-      return RangeSensors.savedIsWall(left);
+    case kWest:
+      return RangeSensors.isWall(left);
       break;
     default:
-      // This is unacceptable as a long term solution.
-      //
-      // TODO: Implement a utility method for conversion from absolute
-      //       direction to relative direction
       return true;
       break;
   }
@@ -405,60 +546,64 @@ bool RobotDriver::isWall(Compass8 dir)
 
 void RobotDriver::move(Compass8 dir, int distance)
 {
-  float destination_x, destination_y;
-  float distance_to_move;
+  float distance_to_add;
+
+  if (distance == 0) {
+    if (onEdge() && exit_velocity_ > 0.0) {
+      motion_forward(MM_PER_BLOCK / 2, 0.0);
+      motion_hold(100);
+      exit_velocity_ = 0.0;
+    }
+    else if (!onEdge() && exit_velocity_ == 0.0) {
+      return;
+    }
+    else {
+      freakOut(2);
+    }
+
+    return;
+  }
 
   turn(dir);
 
-  destination_x = getX();
-  destination_y = getY();
+  if (turn_advanced_)
+    distance--;
+
+  if (distance < 1)
+    return;
+
+  if (onEdge() && exit_velocity_ > 0.0) {
+    motion_forward(MM_PER_BLOCK * distance, exit_velocity_);
+    distance_to_add = distance;
+  }
+  else if (!onEdge() && exit_velocity_ == 0.0) {
+    motion_forward(MM_PER_BLOCK / 2 + MM_PER_BLOCK * (distance - 1), SEARCH_VELOCITY);
+    exit_velocity_ = SEARCH_VELOCITY;
+    distance_to_add = distance - 0.5;
+  }
+  else {
+    freakOut(3);
+  }
 
   switch (dir) {
     case kNorth:
-      destination_y += distance;
-      break;
-
-    case kNorthEast:
-      destination_x += distance;
-      destination_y += distance;
-      break;
-
-    case kEast:
-      destination_x += distance;
-      break;
-
-    case kSouthEast:
-      destination_x += distance;
-      destination_y -= distance;
+      setY(getYFloat() + distance_to_add);
       break;
 
     case kSouth:
-      destination_y -= distance;
+      setY(getYFloat() - distance_to_add);
       break;
 
-    case kSouthWest:
-      destination_x -= distance;
-      destination_y -= distance;
+    case kEast:
+      setX(getXFloat() + distance_to_add);
       break;
 
     case kWest:
-      destination_x -= distance;
-      break;
-
-    case kNorthWest:
-      destination_x -= distance;
-      destination_y += distance;
+      setX(getXFloat() - distance_to_add);
       break;
   }
 
-  distance_to_move = hypot(destination_x - getXFloat(),
-                            destination_y - getYFloat());
-
-  motion_forward(MM_PER_BLOCK * distance_to_move, 0);
-  motion_hold(10);
-
-  setX(destination_x);
-  setY(destination_y);
+  last_direction_ = dir;
 }
 
 
