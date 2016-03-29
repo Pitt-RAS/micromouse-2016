@@ -64,14 +64,14 @@ void loop()
   orientation->resetHeading();
 
   motion_forward(30.0,0.0);
-  motion_hold(100);
+  motion_hold(1000);
   
-  motion_forward(180.0*1.5,0.2);
-  motion_corner(kLeftTurn90, 0.2);
-  motion_forward(180.0*1.5,0.0);
+  //motion_forward(180.0*1.5,0.2);
+  //motion_corner(kLeftTurn90, 0.2);
+  //motion_forward(180.0*4+30,0.0);
   //motion_rotate(360);
-  motion_hold(10);
-  
-  //navigator.runDevelopmentCode();
   //motion_hold(10);
+  
+  navigator.runDevelopmentCode();
+  motion_hold(10);
 }

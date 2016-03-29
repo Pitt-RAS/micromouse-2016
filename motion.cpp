@@ -136,12 +136,12 @@ void motion_forward(float distance, float exit_speed) {
     motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
                  idealVelocity);
   }
-  orientation->update();
+  //orientation->update();
   enc_left_front_write(0);
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
-  orientation->resetHeading();
+  //orientation->resetHeading();
 }
 
 void motion_collect(float distance, float exit_speed){

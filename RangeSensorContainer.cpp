@@ -69,16 +69,18 @@ float RangeSensorContainer::errorFromCenter() {
 
   leftReading = diagLeftSensor.getRange(1);
   rightReading = diagRightSensor.getRange(1);
-  frontReading = min(frontLeftSensor.getRange(1), frontRightSensor.getRange(1));
 
-  if (frontReading < RANGE_DIAG_CUTOFF_FRONT_DISTANCE) {
+  if (frontLeftSensor.getRange(1) < RANGE_DIAG_CUTOFF_FRONT_DISTANCE && frontRightSensor.getRange(1) < RANGE_DIAG_CUTOFF_FRONT_DISTANCE)
     return 0.0;
-  } else if (leftReading < RANGE_MIDDLE && rightReading < RANGE_MIDDLE)
+  else if (leftReading < RANGE_DIAG_LEFT_MIDDLE && rightReading < RANGE_DIAG_RIGHT_MIDDLE) {
     return 0.5 * (leftReading - rightReading);
-  else if (leftReading < RANGE_MIDDLE)
-    return leftReading - RANGE_MIDDLE;
-  else if (rightReading < RANGE_MIDDLE)
-    return RANGE_MIDDLE - rightReading;
+  }
+  else if (leftReading < RANGE_DIAG_LEFT_MIDDLE) {
+    return leftReading - RANGE_DIAG_LEFT_MIDDLE;
+  }
+  else if (rightReading < RANGE_DIAG_RIGHT_MIDDLE) {
+    return RANGE_DIAG_RIGHT_MIDDLE - rightReading;
+  }
   else
     return 0.0;
 }
