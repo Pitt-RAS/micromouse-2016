@@ -1,0 +1,2 @@
+void streamRanges();
+void streamRawRanges();
