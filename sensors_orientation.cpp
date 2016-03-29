@@ -45,6 +45,23 @@ Orientation::Orientation() {
 
   mpu_.setIntFIFOBufferOverflowEnabled(true);
   mpu_.setIntDataReadyEnabled(true);
+
+  // there's no good magnetometer interface in the MPU9150 library, so here it is
+
+  // allow us to access the magnetometer over I2C
+  I2Cdev::writeByte(MPU9150_DEFAULT_ADDRESS, MPU9150_RA_INT_PIN_CFG, 0x02);
+  delay(10);
+
+  // enable the magnetometer
+  I2Cdev::writeByte(MPU9150_RA_MAG_ADDRESS, 0x0A, 0x01);
+  delay(10);
+
+  uint8_t mag_buf[4];
+  I2Cdev::readBytes(MPU9150_RA_MAG_ADDRESS, MPU9150_RA_MAG_XOUT_L, 4, mag_buf);
+  int16_t mx = (((int16_t)mag_buf[0]) << 8) | mag_buf[1];
+  int16_t my = (((int16_t)mag_buf[2]) << 8) | mag_buf[3];
+  last_mag_heading_ = atan2(mx, my) * RAD_TO_DEG;
+  mag_heading_offset_ = -last_mag_heading_;
 }
 
 void Orientation::interruptHandler() {
@@ -189,6 +206,33 @@ bool Orientation::update() {
     last_gyro_reading_ = (uint16_t)fifo_buffer[6] << 8 | fifo_buffer[7];
     last_gyro_reading_ -= secondary_gyro_offset_;
 
+    // Magnetometer update
+    updates_since_mag_reading_++;
+    if (updates_since_mag_reading_ == MAG_CYCLES_PER_UPDATE) {
+      updates_since_mag_reading_ = 0;
+      uint8_t mag_buf[4];
+      I2Cdev::readBytes(MPU9150_RA_MAG_ADDRESS, MPU9150_RA_MAG_XOUT_L, 4, mag_buf);
+      int16_t mx = (((int16_t)mag_buf[0]) << 8) | mag_buf[1];
+      int16_t my = (((int16_t)mag_buf[2]) << 8) | mag_buf[3];
+
+      float mag_heading = atan2(mx, my) * RAD_TO_DEG + mag_heading_offset_;
+
+      // make sure mag_heading is in the same rotation as the current heading
+      //
+      // this is necessary because our output heading is allowed to wrap,
+      //   but the magnetometer reading obviously won't
+      while (mag_heading - raw_heading_ > 180) {
+        mag_heading -= 360;
+      }
+
+      while (mag_heading - raw_heading_ < -180) {
+        mag_heading += 360;
+      }
+
+      raw_heading_ = raw_heading_ * (1 - MAG_COMPLEMENTARY_FILTER)
+                       + mag_heading * MAG_COMPLEMENTARY_FILTER;
+    }
+
     logger.logForwardAccel(accel_y);
     logger.logRadialAccel(accel_x);
     logger.logGyro(last_gyro_reading_);
@@ -205,10 +249,17 @@ bool Orientation::update() {
 void Orientation::resetHeading() {
   raw_heading_ = 0;
   last_update_time_ = micros();
+  mag_heading_offset_ = -last_mag_heading_;
 }
 
 void Orientation::incrementHeading(float offset) {
   raw_heading_ += offset;
+  mag_heading_offset_ -= offset;
+  if (mag_heading_offset_ < -180) {
+    mag_heading_offset_ += 360;
+  } else if (mag_heading_offset_ > 180) {
+    mag_heading_offset_ -= 360;
+  }
 }
 
 float Orientation::getHeading() {

@@ -110,6 +110,10 @@
 // Accelerometer parameters
 #define ACCEL_LSB_PER_G 2048
 
+// Magnetometer parameters
+#define MAG_CYCLES_PER_UPDATE 5
+#define MAG_COMPLEMENTARY_FILTER 0.01
+
 // Motor stop failsafe parameters
 #define FAILSAFE_GYRO_THRESHOLD 100 // in deg/s
 #define FAILSAFE_GYRO_ANGLE 20 // in deg

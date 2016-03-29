@@ -36,6 +36,11 @@ class Orientation {
     // angle we've covered since we went over the threshold
     bool angle_past_gyro_threshold_ = 0;
 
+    uint8_t updates_since_mag_reading_ = 0;
+
+    // between -180 and 180
+    float mag_heading_offset_;
+    float last_mag_heading_;
   public:
     static Orientation* getInstance();
 
