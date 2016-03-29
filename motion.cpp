@@ -589,7 +589,7 @@ void motion_corner(SweptTurnType turn_type, float speed) {
                  enc_left_back_velocity());
   }
 
-  motion_end_extrapolation = (enc_left_front_extrapolation + enc_right_front_extrapolation)/2;
+  motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
   orientation->incrementHeading(-sign * turn_table->getTotalAngle());
 }
 
