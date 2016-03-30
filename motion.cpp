@@ -163,8 +163,7 @@ void motion_forward(float distance, float exit_speed) {
     logger.logMotionType('f');
     logger.nextCycle();
   }
-  //orientation->update();
-  //orientation->resetHeading();
+  motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
 
   enc_left_front_write(0);
   enc_right_front_write(0);
@@ -438,14 +437,10 @@ void motion_rotate(float angle) {
     logger.logMotionType('p');
     logger.nextCycle();
   }
-  //menu.showInt(orientation->getHeading(),4);
-  orientation->update();
-  orientation->resetHeading();
 
-  enc_left_front_write(0);
-  enc_right_front_write(0);
-  enc_left_back_write(0);
-  enc_right_back_write(0);
+  orientation->incrementHeading(-angle);
+
+  motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
 
   float current_left_velocity = (enc_left_front_velocity()
                                   + enc_left_back_velocity()) / 2;
@@ -515,7 +510,7 @@ void motion_gyro_rotate(float angle) {
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
-  orientation->resetHeading();
+  orientation->incrementHeading(-angle);
 
   float current_left_velocity = (enc_left_front_velocity()
                                   + enc_left_back_velocity()) / 2;
