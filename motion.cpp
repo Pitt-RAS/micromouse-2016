@@ -163,6 +163,15 @@ void motion_forward(float distance, float exit_speed) {
   motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
   //orientation->update();
   //orientation->resetHeading();
+
+  float current_left_velocity = (enc_left_front_velocity()
+                                  + enc_left_back_velocity()) / 2;
+  float current_right_velocity = (enc_right_front_velocity()
+                                   + enc_right_back_velocity()) / 2;
+  motor_lf.Set(0, current_left_velocity);
+  motor_rf.Set(0, current_right_velocity);
+  motor_rb.Set(0, current_right_velocity);
+  motor_lb.Set(0, current_left_velocity);
 }
 
 void motion_collect(float distance, float exit_speed){
@@ -420,6 +429,15 @@ void motion_rotate(float angle) {
   orientation->update();
   orientation->resetHeading();
   motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
+
+  float current_left_velocity = (enc_left_front_velocity()
+                                  + enc_left_back_velocity()) / 2;
+  float current_right_velocity = (enc_right_front_velocity()
+                                   + enc_right_back_velocity()) / 2;
+  motor_lf.Set(0, current_left_velocity);
+  motor_rf.Set(0, current_right_velocity);
+  motor_rb.Set(0, current_right_velocity);
+  motor_lb.Set(0, current_left_velocity);
 }
 
 void motion_gyro_rotate(float angle) {
@@ -481,6 +499,15 @@ void motion_gyro_rotate(float angle) {
   enc_left_back_write(0);
   enc_right_back_write(0);
   orientation->resetHeading();
+
+  float current_left_velocity = (enc_left_front_velocity()
+                                  + enc_left_back_velocity()) / 2;
+  float current_right_velocity = (enc_right_front_velocity()
+                                   + enc_right_back_velocity()) / 2;
+  motor_lf.Set(0, current_left_velocity);
+  motor_rf.Set(0, current_right_velocity);
+  motor_rb.Set(0, current_right_velocity);
+  motor_lb.Set(0, current_left_velocity);
 }
 
 void motion_corner(SweptTurnType turn_type, float speed) {
@@ -623,6 +650,15 @@ void motion_corner(SweptTurnType turn_type, float speed) {
 
   motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
   orientation->incrementHeading(-sign * turn_table->getTotalAngle());
+
+  float current_left_velocity = (enc_left_front_velocity()
+                                  + enc_left_back_velocity()) / 2;
+  float current_right_velocity = (enc_right_front_velocity()
+                                   + enc_right_back_velocity()) / 2;
+  motor_lf.Set(0, current_left_velocity);
+  motor_rf.Set(0, current_right_velocity);
+  motor_rb.Set(0, current_right_velocity);
+  motor_lb.Set(0, current_left_velocity);
 }
 
 void motion_hold(unsigned int time) {
