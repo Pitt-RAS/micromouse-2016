@@ -106,16 +106,22 @@ void motion_forward(float distance, float exit_speed) {
     // to the left wall, requiring a positive angle to fix it.
     RangeSensors.updateReadings();
     rangeOffset = range_PID.Calculate(RangeSensors.errorFromCenter(), 0);
-    gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
-
-    if (abs(orientation->getHeading()) > 60) {
-      freakOut("FUCK");
-    }
 
     currentFrontLeft = enc_left_front_extrapolate();
     currentBackLeft = enc_left_back_extrapolate();
     currentFrontRight = enc_right_front_extrapolate();
     currentBackRight = enc_right_back_extrapolate();
+
+    // this is the heading we're at accoring to our encoders (measured in mm)
+    float encoder_heading = (currentFrontLeft + currentFrontRight
+                              - currentFrontRight - currentBackRight) / 2;
+
+    gyroOffset = gyro_PID.Calculate(encoder_heading,
+            orientation->getHeading() * distancePerDegree + rangeOffset);
+
+    if (abs(orientation->getHeading()) > 60) {
+      freakOut("FUCK");
+    }
 
     setpointFrontLeft = idealDistance + gyroOffset;
     setpointBackLeft = idealDistance + gyroOffset;
@@ -194,7 +200,7 @@ void motion_collect(float distance, float exit_speed){
   PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
-  PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
+  PIDController gyro_PID (KP_GYRO, KI_GYRO, KD_GYRO);
 
   if (orientation == NULL) {
     orientation = Orientation::getInstance();
@@ -265,12 +271,21 @@ void motion_collect(float distance, float exit_speed){
       logger.nextCycle();
     }
 
-    rotationOffset += rotation_PID.Calculate(orientation->getHeading() * distancePerDegree, 0);
-
     currentFrontLeft = enc_left_front_extrapolate();
     currentBackLeft = enc_left_back_extrapolate();
     currentFrontRight = enc_right_front_extrapolate();
     currentBackRight = enc_right_back_extrapolate();
+
+    // this is the heading we're at accoring to our encoders (measured in mm)
+    float encoder_heading = (currentFrontLeft + currentFrontRight
+                              - currentFrontRight - currentBackRight) / 2;
+
+    rotationOffset = gyro_PID.Calculate(encoder_heading,
+            orientation->getHeading() * distancePerDegree);
+
+    if (abs(orientation->getHeading()) > 60) {
+      freakOut("FUCK");
+    }
 
     setpointFrontLeft = idealDistance + rotationOffset;
     setpointBackLeft = idealDistance + rotationOffset;
@@ -380,18 +395,21 @@ void motion_rotate(float angle) {
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
-    gyro_correction += gyro_PID.Calculate(
-        orientation->getHeading() * distancePerDegree,
-        idealLinearDistance);
-
-    if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
-      freakOut("FUCK");
-    }
-
     currentFrontLeft = enc_left_front_extrapolate();
     currentBackLeft = enc_left_back_extrapolate();
     currentFrontRight = enc_right_front_extrapolate();
     currentBackRight = enc_right_back_extrapolate();
+
+    // this is the heading we're at accoring to our encoders (measured in mm)
+    float encoder_heading = (currentFrontLeft + currentFrontRight
+                              - currentFrontRight - currentBackRight) / 2;
+
+    gyro_correction = gyro_PID.Calculate(encoder_heading,
+            orientation->getHeading() * distancePerDegree);
+
+    if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
+      freakOut("FUCK");
+    }
 
     setpointFrontLeft = idealLinearDistance + gyro_correction;
     setpointBackLeft = idealLinearDistance + gyro_correction;
@@ -599,23 +617,26 @@ void motion_corner(SweptTurnType turn_type, float speed) {
 
     rotation_offset = sign * turn_table->getOffsetAtMicros(move_time_scaled);
 
-    gyro_correction += gyro_PID.Calculate(
-        orientation->getHeading() * distancePerDegree,
-        rotation_offset);
-
-    if (abs(orientation->getHeading() - rotation_offset / distancePerDegree) > 60) {
-      freakOut("FUCK");
-    }
-
     currentFrontLeft = enc_left_front_extrapolate();
     currentBackLeft = enc_left_back_extrapolate();
     currentFrontRight = enc_right_front_extrapolate();
     currentBackRight = enc_right_back_extrapolate();
 
-    setpointFrontLeft = idealDistance + rotation_offset + gyro_correction;
-    setpointBackLeft = idealDistance + rotation_offset + gyro_correction;
-    setpointFrontRight = idealDistance - rotation_offset - gyro_correction;
-    setpointBackRight = idealDistance - rotation_offset - gyro_correction;
+    // this is the heading we're at accoring to our encoders (measured in mm)
+    float encoder_heading = (currentFrontLeft + currentFrontRight
+                              - currentFrontRight - currentBackRight) / 2;
+
+    gyro_correction = gyro_PID.Calculate(encoder_heading,
+            orientation->getHeading() * distancePerDegree);
+
+    if (abs(orientation->getHeading() - idealDistance / distancePerDegree) > 60) {
+      freakOut("FUCK");
+    }
+
+    setpointFrontLeft = idealDistance + rotation_offset - gyro_correction;
+    setpointBackLeft = idealDistance + rotation_offset - gyro_correction;
+    setpointFrontRight = idealDistance - rotation_offset + gyro_correction;
+    setpointBackRight = idealDistance - rotation_offset + gyro_correction;
 
 //    motor_l.Set(distancePerDegree
 //        * time_scaling

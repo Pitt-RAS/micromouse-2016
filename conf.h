@@ -148,9 +148,9 @@
 #define KI_RANGE 0
 #define KD_RANGE 10000//10000
 
-#define KP_GYRO .003
+#define KP_GYRO 1
 #define KI_GYRO 0.00000000
-#define KD_GYRO .01//52
+#define KD_GYRO 0//.01//52
 
 #define KP_HOLD_RANGE 2
 #define KI_HOLD_RANGE 0
