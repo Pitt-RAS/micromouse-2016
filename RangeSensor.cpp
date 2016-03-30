@@ -7,24 +7,24 @@ RangeSensor::RangeSensor(int temp_pin, int lowT, int highT) {
   pin_ = temp_pin;
 
   switch (pin_) {
-    case RANGE1_PIN:
-      emitter_pin_ = EMITTER1_PIN;
-      constants_ = RANGE1_TRANSLATION;
+    case RANGE_DIAG_LEFT_PIN:
+      emitter_pin_ = EMITTER_DIAG_LEFT_PIN;
+      constants_ = RANGE_DIAG_LEFT_TRANSLATION;
       break;
 
-    case RANGE2_PIN:
-      emitter_pin_ = EMITTER2_PIN;
-      constants_ = RANGE2_TRANSLATION;
+    case RANGE_DIAG_RIGHT_PIN:
+      emitter_pin_ = EMITTER_DIAG_RIGHT_PIN;
+      constants_ = RANGE_DIAG_RIGHT_TRANSLATION;
       break;
 
-    case RANGE3_PIN:
-      emitter_pin_ = EMITTER3_PIN;
-      constants_ = RANGE3_TRANSLATION;
+    case RANGE_FRONT_LEFT_PIN:
+      emitter_pin_ = EMITTER_FRONT_LEFT_PIN;
+      constants_ = RANGE_FRONT_LEFT_TRANSLATION;
       break;
 
-    case RANGE4_PIN:
-      emitter_pin_ = EMITTER4_PIN;
-      constants_ = RANGE4_TRANSLATION;
+    case RANGE_FRONT_RIGHT_PIN:
+      emitter_pin_ = EMITTER_FRONT_RIGHT_PIN;
+      constants_ = RANGE_FRONT_RIGHT_TRANSLATION;
       break;
   }
 
