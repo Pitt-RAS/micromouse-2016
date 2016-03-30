@@ -10,6 +10,7 @@
 #include "data.h"
 #include "motion.h"
 #include "conf.h"
+#include "FreakOut.h"
 #include "RangeSensorContainer.h"
 #include "Menu.h"
 #endif
@@ -368,20 +369,6 @@ bool RobotDriver::onEdge()
   return false;
 }
 
-void RobotDriver::freakOut(int error_number)
-{
-  char buf[10];
-
-  sprintf(buf, "BAD%d", error_number);
-
-  motion_forward(MM_PER_BLOCK / 4, 0.0);
-  motion_hold(1000);
-
-  menu.showString(buf);
-
-  delay(1000000);
-}
-
 RobotDriver::RobotDriver() :
     exit_velocity_(0.0), last_direction_(kNorth), turn_advanced_(false)
 {
@@ -467,7 +454,9 @@ void RobotDriver::turn(Compass8 dir)
         distance_to_add = 1.0;
         break;
       default:
-        freakOut(4);
+        motion_forward(MM_PER_BLOCK / 4, 0.0);
+        motion_hold(100);
+        freakOut("BAD4");
         break;
     }
   }
@@ -476,7 +465,9 @@ void RobotDriver::turn(Compass8 dir)
     exit_velocity_ = 0.0;
   }
   else {
-    freakOut(1);
+    motion_forward(MM_PER_BLOCK / 4, 0.0);
+    motion_hold(100);
+    freakOut("BAD1");
   }
 
   switch (dir) {
@@ -558,7 +549,9 @@ void RobotDriver::move(Compass8 dir, int distance)
       return;
     }
     else {
-      freakOut(2);
+      motion_forward(MM_PER_BLOCK / 4, 0.0);
+      motion_hold(100);
+      freakOut("BAD2");
     }
 
     return;
@@ -582,7 +575,9 @@ void RobotDriver::move(Compass8 dir, int distance)
     distance_to_add = distance - 0.5;
   }
   else {
-    freakOut(3);
+    motion_forward(MM_PER_BLOCK / 4, 0.0);
+    motion_hold(100);
+    freakOut("BAD3");
   }
 
   switch (dir) {

@@ -234,7 +234,6 @@ class RobotDriver : public Driver, public Turnable
     bool turn_advanced_;
 
     bool onEdge();
-    void freakOut(int error_number);
 
   public:
     RobotDriver();
