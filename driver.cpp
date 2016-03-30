@@ -283,6 +283,18 @@ float Turnable::relativeDirF(float absolute_dir)
   return arc;
 }
 
+Compass8 Turnable::absoluteDir(Compass8 relative_dir)
+{
+  int arc;
+
+  arc = (int) relative_dir + (int) getDir();
+
+  if (arc > 7)
+    arc -= 8;
+
+  return (Compass8) arc;
+}
+
 Turnable::Turnable() : kInitialDirection(kDefaultInitialDirection)
 {
   dir_ = kInitialDirection;

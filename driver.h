@@ -145,6 +145,10 @@ class Turnable
     // given floating poing compass direction in degrees.
     float relativeDirF(float absolute_dir);
 
+    // Returns the absolute direction corresponding to the given relative direction
+    // absoluteDir(relativeDir(a)) == a
+    Compass8 absoluteDir(Compass8 relative_dir);
+
     // The next method must be implemented in a derived class.
 
     // Turns the robot to the given direction. This method is responsible for
