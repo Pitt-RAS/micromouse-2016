@@ -3,7 +3,6 @@
 
 #include "data.h"
 #include "driver.h"
-#include "Menu.h"
 
 // Everything in this file MUST be portable code.
 //
