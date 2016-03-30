@@ -17,8 +17,6 @@
 #include <I2Cdev.h>
 #include <MPU9150.h>
 
-#define BAUD 9600
-
 void setup()
 {
   // Set higher pwm frequency for smoother motor control.
@@ -43,6 +41,11 @@ void setup()
   pinMode(BUTTON1_PIN, INPUT_PULLUP);
   pinMode(BUTTON2_PIN, INPUT_PULLUP);
 
+  pinMode(13, OUTPUT);
+  digitalWrite(13, 0);
+
+  Serial.begin(BAUD);
+
   menu.begin();
   menu.checkBattery();
 }
@@ -53,7 +56,7 @@ void loop()
   Orientation* orientation = Orientation::getInstance();
   
   // Wait for button press.
-  while (digitalRead(BUTTON1_PIN) == HIGH)
+  while (!menu.buttonOkPressed())
     menu.checkBattery();
 
   delay(1000);

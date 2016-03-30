@@ -3,6 +3,9 @@
 
 #include <Arduino.h>
 
+// Serial port baud rate
+#define BAUD 9600
+
 // Define pin assignments for teensy3.2 on Rev2 PCB
 #define ENCODER_LF1_PIN 4
 #define ENCODER_LF2_PIN 2
