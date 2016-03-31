@@ -170,13 +170,19 @@ bool Menu::buttonBackPressed() {
 
 void Menu::soundBuzzer(int frequency)
 {
+  static bool on = false;
+
   if (frequency == 0) {
     analogWrite(BUZZER_PIN, 0);
+    on = false;
     return;
   }
 
-  analogWriteFrequency(BUZZER_PIN, frequency);
-  analogWrite(BUZZER_PIN, PWM_SPEED_STEPS / 2);
+  if (!on) {
+    analogWriteFrequency(BUZZER_PIN, frequency);
+    analogWrite(BUZZER_PIN, PWM_SPEED_STEPS / 2);
+    on = true;
+  }
 }
 
 void Menu::checkBattery()
