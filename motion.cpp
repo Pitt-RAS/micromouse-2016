@@ -31,8 +31,6 @@ static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 
 static Orientation* orientation = NULL;
-//variable to store encoder position at the end of motion functions 
-static float motion_end_extrapolation = 0;
 
 // instantiate the turn lookup tables
 //IdealSweptTurns turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
@@ -56,11 +54,10 @@ void motion_forward(float distance, float exit_speed) {
   // float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
   float current_speed = (enc_left_front_velocity() + enc_left_back_velocity() + enc_right_front_velocity() + enc_right_back_velocity())/4;
 
-  float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
-  if(motion_end_extrapolation != 0)
-    motion_end_extrapolation = currentExtrapolation;
+  float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate()
+                                 + enc_left_back_extrapolate() + enc_right_back_extrapolate())/4;
 
-  float drift = currentExtrapolation - motion_end_extrapolation;
+  float drift = currentExtrapolation;
 
   enc_left_front_write(0);
   enc_right_front_write(0);
@@ -91,7 +88,7 @@ void motion_forward(float distance, float exit_speed) {
   bool passedMiddle = false;
 
   // execute motion
-  while (idealDistance != distance) {
+  while (idealDistance != distance - drift) {
     orientation->update();
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = motionCalc.idealDistance(moveTime);
@@ -160,9 +157,13 @@ void motion_forward(float distance, float exit_speed) {
     logger.logMotionType('f');
     logger.nextCycle();
   }
-  motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
   //orientation->update();
   //orientation->resetHeading();
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 
   float current_left_velocity = (enc_left_front_velocity()
                                   + enc_left_back_velocity()) / 2;
@@ -349,19 +350,13 @@ void motion_rotate(float angle) {
 
   float current_speed = ((enc_left_front_velocity() + enc_left_back_velocity()) - (enc_right_front_velocity() + enc_right_back_velocity()))/4;
   
-  float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
-  if(motion_end_extrapolation != 0)
-    motion_end_extrapolation = currentExtrapolation;
+  float currentExtrapolation = (enc_left_front_extrapolate() + enc_left_front_extrapolate()
+                                  - enc_right_front_extrapolate() - enc_right_back_extrapolate())/2;
 
-  float drift = currentExtrapolation - motion_end_extrapolation;
-
-  enc_left_front_write(0);
-  enc_right_front_write(0);
-  enc_left_back_write(0);
-  enc_right_back_write(0);
+  float drift = currentExtrapolation;
 
   //instantiate with distance - the amount of drift between motion commands 
-  MotionCalc motionCalc (linearDistance, max_vel_rotate, current_speed, 0, max_accel_rotate,
+  MotionCalc motionCalc (linearDistance - drift, max_vel_rotate, current_speed, 0, max_accel_rotate,
                          max_decel_rotate);
 
   if (orientation == NULL) {
@@ -378,7 +373,7 @@ void motion_rotate(float angle) {
   moveTime = 0;
 
   // the right will always be the negative of the left in order to rotate on a point.
-  while (idealLinearDistance != linearDistance) {
+  while (idealLinearDistance != linearDistance - drift) {
     orientation->update();
 
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
@@ -428,7 +423,11 @@ void motion_rotate(float angle) {
   //menu.showInt(orientation->getHeading(),4);
   orientation->update();
   orientation->resetHeading();
-  motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 
   float current_left_velocity = (enc_left_front_velocity()
                                   + enc_left_back_velocity()) / 2;
@@ -528,16 +527,10 @@ void motion_corner(SweptTurnType turn_type, float speed) {
     orientation = Orientation::getInstance();
   }
 
-  float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
-  if(motion_end_extrapolation != 0)
-    motion_end_extrapolation = currentExtrapolation;
+  float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate()
+                                 + enc_left_back_extrapolate() + enc_right_back_extrapolate())/4;
 
-  float drift = currentExtrapolation - motion_end_extrapolation;
-
-  enc_left_front_write(0);
-  enc_right_front_write(0);
-  enc_left_back_write(0);
-  enc_right_back_write(0);
+  float drift = currentExtrapolation;
 
   switch (turn_type) {
     //case kLeftTurn45:
@@ -648,8 +641,12 @@ void motion_corner(SweptTurnType turn_type, float speed) {
     logger.nextCycle();
   }
 
-  motion_end_extrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate())/2;
   orientation->incrementHeading(-sign * turn_table->getTotalAngle());
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 
   float current_left_velocity = (enc_left_front_velocity()
                                   + enc_left_back_velocity()) / 2;
