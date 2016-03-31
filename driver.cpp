@@ -514,8 +514,6 @@ bool RobotDriver::isWall(Compass8 dir)
     }
   }
 
-  RangeSensors.updateReadings();
-
   switch (relativeDir(dir)) {
     case kNorth:
       return RangeSensors.isWall(front);
