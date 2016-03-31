@@ -670,7 +670,12 @@ void motion_hold(unsigned int time) {
 
   currentTime = 0;
 
+  if (orientation == NULL) {
+    orientation = Orientation::getInstance();
+  }
+
   while (currentTime / 1000 < time) {
+    orientation->update();
     errorFrontLeft = enc_left_front_extrapolate();
     errorFrontRight = enc_right_front_extrapolate();
     errorBackLeft = enc_left_back_extrapolate();
@@ -707,7 +712,12 @@ void motion_hold_range(int setpoint, unsigned int time) {
 
   currentTime = 0;
 
+  if (orientation == NULL) {
+    orientation = Orientation::getInstance();
+  }
+
   while (currentTime / 1000 < time) {
+    orientation->update();
 
     RangeSensors.frontLeftSensor.updateRange();
     RangeSensors.frontRightSensor.updateRange();
