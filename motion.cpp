@@ -54,8 +54,8 @@ void motion_forward(float distance, float exit_speed) {
 
     float leftReading, rightReading, position, nearestWhole, difference;
 
-    leftReading = enc_left_front_extrapolate();
-    rightReading = enc_right_front_extrapolate();
+    leftReading = enc_left_extrapolate();
+    rightReading = enc_right_extrapolate();
     position = (leftReading + rightReading) / 2 / MM_PER_BLOCK;
     nearestWhole = (int) (position + 0.5);
     difference = position - nearestWhole;

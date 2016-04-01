@@ -46,10 +46,15 @@ void RangeSensor::updateRange() {
 
   delayMicroseconds(45);
 
-  sensed_distance = (constants_.a * pow((on_reading - off_reading
-          + constants_.b), constants_.c) + constants_.d) + constants_.e;
+  if (on_reading - off_reading + constants_.b <= 0) {
+    last_reading_ = 10000;
+  }
+  else {
+    sensed_distance = (constants_.a * pow((on_reading - off_reading
+            + constants_.b), constants_.c) + constants_.d) + constants_.e;
 
-  last_reading_ = sensed_distance;
+    last_reading_ = sensed_distance;
+  }
 }
 
 int RangeSensor::getRange() {
