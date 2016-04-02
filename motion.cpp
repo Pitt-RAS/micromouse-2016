@@ -378,6 +378,8 @@ void motion_rotate(float angle) {
   orientation->handler_update_ = false;
   while (idealLinearDistance != linearDistance - drift) {
     orientation->update();
+    if (orientation->getHeading() > 180)
+      break;
 
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealLinearDistance = motionCalc.idealDistance(moveTime);
