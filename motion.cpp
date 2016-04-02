@@ -380,7 +380,7 @@ void motion_rotate(float angle) {
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
-    gyro_correction += gyro_PID.Calculate(
+    gyro_correction = gyro_PID.Calculate(
         orientation->getHeading() * distancePerDegree,
         idealLinearDistance);
 
@@ -599,7 +599,7 @@ void motion_corner(SweptTurnType turn_type, float speed) {
 
     rotation_offset = sign * turn_table->getOffsetAtMicros(move_time_scaled);
 
-    gyro_correction += gyro_PID.Calculate(
+    gyro_correction = gyro_PID.Calculate(
         orientation->getHeading() * distancePerDegree,
         rotation_offset);
 
