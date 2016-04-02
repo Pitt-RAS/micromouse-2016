@@ -142,7 +142,7 @@
 #define MOTION_COLLECT_MM_PER_READING 1
 
 // PID tuning parameters
-#define KP_POSITION 35//5.69
+#define KP_POSITION 35
 #define KI_POSITION 0
 #define KD_POSITION 20000
 
@@ -150,13 +150,13 @@
 #define KI_ROTATION 0.00000000//85
 #define KD_ROTATION 05//9
 
-#define KP_RANGE 6//1.7
+#define KP_RANGE 3
 #define KI_RANGE 0
-#define KD_RANGE 10000//10000
+#define KD_RANGE 5000
 
-#define KP_GYRO .003
-#define KI_GYRO 0.00000000
-#define KD_GYRO .01//52
+#define KP_GYRO 0.10
+#define KI_GYRO 0.00000800
+#define KD_GYRO 0.00
 
 #define KP_HOLD_RANGE 2
 #define KI_HOLD_RANGE 0
