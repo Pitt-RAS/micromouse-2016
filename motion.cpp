@@ -109,7 +109,7 @@ void motion_forward(float distance, float exit_speed) {
     gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
 
     if (abs(orientation->getHeading()) > 60) {
-      freakOut("FUCK");
+      freakOut("FACK");
     }
 
     currentFrontLeft = enc_left_front_extrapolate();
