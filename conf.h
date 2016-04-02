@@ -173,8 +173,8 @@
 #define MAX_COEFFICIENT_FRICTION 1
 #define MAX_ACCEL_STRAIGHT 5 // m/s/s
 #define MAX_DECEL_STRAIGHT -3 // m/s/s
-#define MAX_ACCEL_ROTATE 5 // m/s/s  
-#define MAX_DECEL_ROTATE -3 // m/s/s
+#define MAX_ACCEL_ROTATE 2 // m/s/s
+#define MAX_DECEL_ROTATE -2 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
 #define MAX_DECEL_CORNER -3 // m/s/s
 
