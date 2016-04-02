@@ -78,7 +78,7 @@ void motion_forward(float distance, float exit_speed) {
   PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   PIDController range_PID (KP_RANGE, KI_RANGE, KD_RANGE);
-  PIDController gyro_PID (KP_GYRO, KI_GYRO, KD_GYRO);
+  PIDController gyro_PID (KP_GYRO_FWD, KI_GYRO_FWD, KD_GYRO_FWD);
 
   // zero clock before move
   moveTime = 0;
