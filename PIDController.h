@@ -9,7 +9,7 @@ class PIDController {
     float kp, ki, kd;
     float i_lower_bound, i_upper_bound;
   public:
-    PIDController(float tempKP, float tempKI, float tempKD, float temp_i_upper_bound = 2,
+    PIDController(float tempKP, float tempKI, float tempKD, float temp_i_upper_bound = 10000,
                   float temp_i_lower_bound = 0);
     float Calculate(float current_value, float target_value);
 };
