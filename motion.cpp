@@ -341,7 +341,7 @@ void motion_collect(float distance, float exit_speed){
 
 // clockwise angle is positive, angle is in degrees
 void motion_rotate(float angle) {
-  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS_ROTATE / 360;
   float idealLinearDistance, idealLinearVelocity;
   float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
   float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
