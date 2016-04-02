@@ -354,7 +354,7 @@ SerialDriver::SerialDriver()
 
 
 
-bool RobotDriver::onEdge()
+bool ContinuousRobotDriver::onEdge()
 {
   float x_offset, y_offset;
 
@@ -369,13 +369,13 @@ bool RobotDriver::onEdge()
   return false;
 }
 
-RobotDriver::RobotDriver() :
+ContinuousRobotDriver::ContinuousRobotDriver() :
     exit_velocity_(0.0), last_direction_(kNorth), turn_advanced_(false)
 {
   // Initialize whatever we need to.
 }
 
-int RobotDriver::getX()
+int ContinuousRobotDriver::getX()
 {
   float x;
 
@@ -397,7 +397,7 @@ int RobotDriver::getX()
   return Driver::getX();
 }
 
-int RobotDriver::getY()
+int ContinuousRobotDriver::getY()
 {
   float y;
 
@@ -419,7 +419,7 @@ int RobotDriver::getY()
   return Driver::getY();
 }
 
-void RobotDriver::turn(Compass8 dir)
+void ContinuousRobotDriver::turn(Compass8 dir)
 {
   float arc_to_turn;
   float distance_to_add;
@@ -491,7 +491,7 @@ void RobotDriver::turn(Compass8 dir)
   setDir(dir);
 }
 
-bool RobotDriver::isWall(Compass8 dir)
+bool ContinuousRobotDriver::isWall(Compass8 dir)
 {
   RangeSensors.updateReadings();
   if (getX() == 0 && getY() == 0) {
@@ -533,7 +533,7 @@ bool RobotDriver::isWall(Compass8 dir)
   }
 }
 
-void RobotDriver::move(Compass8 dir, int distance)
+void ContinuousRobotDriver::move(Compass8 dir, int distance)
 {
   float distance_to_add;
 
@@ -597,6 +597,147 @@ void RobotDriver::move(Compass8 dir, int distance)
   }
 
   last_direction_ = dir;
+}
+
+
+
+
+RobotDriver::RobotDriver()
+{
+  // Initialize whatever we need to.
+}
+
+void RobotDriver::turn(Compass8 dir)
+{
+  int arc_to_turn;
+  int current;
+  int desired;
+
+  current = (int) getDir();
+  desired = (int) dir;
+
+  arc_to_turn = desired - current;
+
+  if (arc_to_turn < 0)
+    arc_to_turn += 8;
+
+  if (arc_to_turn != 0) {
+    if (arc_to_turn <= 4) {
+      motion_rotate(45.0 * arc_to_turn);
+    }
+    else {
+      arc_to_turn -= 8;
+      motion_rotate(45.0 * arc_to_turn);
+    }
+  }
+
+  setDir(dir);
+}
+
+bool RobotDriver::isWall(Compass8 dir)
+{
+  int arc_to_turn;
+  int current;
+  int desired;
+
+  current = (int) getDir();
+  desired = (int) dir;
+
+  arc_to_turn = desired - current;
+
+  if (arc_to_turn < 0)
+    arc_to_turn += 8;
+
+  if (arc_to_turn != 0) {
+    if (arc_to_turn <= 4) {
+      arc_to_turn = arc_to_turn;
+    }
+    else {
+      arc_to_turn -= 8;
+    }
+  }
+
+  RangeSensors.updateReadings();
+
+  switch (arc_to_turn) {
+    case 0:
+      return RangeSensors.savedIsWall(front);
+      break;
+    case 2:
+      return RangeSensors.savedIsWall(right);
+      break;
+    case 4:
+      return RangeSensors.savedIsWall(back);
+      break;
+    case -2:
+      return RangeSensors.savedIsWall(left);
+      break;
+    default:
+      // This is unacceptable as a long term solution.
+      //
+      // TODO: Implement a utility method for conversion from absolute
+      //       direction to relative direction
+      return true;
+      break;
+  }
+}
+
+void RobotDriver::move(Compass8 dir, int distance)
+{
+  float destination_x, destination_y;
+  float distance_to_move;
+
+  turn(dir);
+
+  destination_x = getX();
+  destination_y = getY();
+
+  switch (dir) {
+    case kNorth:
+      destination_y += distance;
+      break;
+
+    case kNorthEast:
+      destination_x += distance;
+      destination_y += distance;
+      break;
+
+    case kEast:
+      destination_x += distance;
+      break;
+
+    case kSouthEast:
+      destination_x += distance;
+      destination_y -= distance;
+      break;
+
+    case kSouth:
+      destination_y -= distance;
+      break;
+
+    case kSouthWest:
+      destination_x -= distance;
+      destination_y -= distance;
+      break;
+
+    case kWest:
+      destination_x -= distance;
+      break;
+
+    case kNorthWest:
+      destination_x -= distance;
+      destination_y += distance;
+      break;
+  }
+
+  distance_to_move = hypot(destination_x - getXFloat(),
+                            destination_y - getYFloat());
+
+  motion_forward(MM_PER_BLOCK * distance_to_move, 0);
+  motion_hold(10);
+
+  setX(destination_x);
+  setY(destination_y);
 }
 
 
