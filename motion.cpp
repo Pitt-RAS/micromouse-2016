@@ -355,7 +355,7 @@ void motion_rotate(float angle) {
   float currentExtrapolation = (enc_left_front_extrapolate() + enc_left_front_extrapolate()
                                   - enc_right_front_extrapolate() - enc_right_back_extrapolate())/2;
 
-  float drift = currentExtrapolation;
+  float drift = 0;
 
   //instantiate with distance - the amount of drift between motion commands 
   MotionCalc motionCalc (linearDistance - drift, max_vel_rotate, current_speed, 0, max_accel_rotate,
