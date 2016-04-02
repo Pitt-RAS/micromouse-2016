@@ -86,6 +86,7 @@ void motion_forward(float distance, float exit_speed) {
   RangeSensors.updateReadings();
   float savedError = 0;
   bool passedMiddle = false;
+  orientation->handler_update_ = false;
 
   // execute motion
   while (idealDistance != distance - drift) {
@@ -173,6 +174,7 @@ void motion_forward(float distance, float exit_speed) {
   motor_rf.Set(0, current_right_velocity);
   motor_rb.Set(0, current_right_velocity);
   motor_lb.Set(0, current_left_velocity);
+  orientation->handler_update_ = true;
 }
 
 void motion_collect(float distance, float exit_speed){
@@ -373,6 +375,7 @@ void motion_rotate(float angle) {
   moveTime = 0;
 
   // the right will always be the negative of the left in order to rotate on a point.
+  orientation->handler_update_ = false;
   while (idealLinearDistance != linearDistance - drift) {
     orientation->update();
 
@@ -437,6 +440,7 @@ void motion_rotate(float angle) {
   motor_rf.Set(0, current_right_velocity);
   motor_rb.Set(0, current_right_velocity);
   motor_lb.Set(0, current_left_velocity);
+  orientation->handler_update_ = true;
 }
 
 void motion_gyro_rotate(float angle) {

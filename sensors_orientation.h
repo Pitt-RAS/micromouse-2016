@@ -42,6 +42,7 @@ class Orientation {
     float mag_heading_offset_;
     float last_mag_heading_;
   public:
+    bool handler_update_ = false;
     static Orientation* getInstance();
 
     // determine the right offset for the gyro
