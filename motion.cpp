@@ -158,8 +158,8 @@ void motion_forward(float distance, float exit_speed) {
     logger.logMotionType('f');
     logger.nextCycle();
   }
-  //orientation->update();
-  //orientation->resetHeading();
+  orientation->update();
+  orientation->resetHeading();
 
   enc_left_front_write(0);
   enc_right_front_write(0);
@@ -425,7 +425,7 @@ void motion_rotate(float angle) {
   }
   //menu.showInt(orientation->getHeading(),4);
   orientation->update();
-  orientation->resetHeading();
+  orientation->incrementHeading(-angle);
 
   enc_left_front_write(0);
   enc_right_front_write(0);
