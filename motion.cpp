@@ -155,8 +155,12 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
     logger.logMotionType('f');
     logger.nextCycle();
   }
+
+  uint8_t old_SREG = SREG;
+  noInterrupts();
   orientation->update();
-  orientation->resetHeading();
+  orientation->handler_update_ = true;
+  SREG = old_SREG;
 
   enc_left_front_write(0);
   enc_right_front_write(0);
@@ -422,8 +426,12 @@ void motion_rotate(float angle) {
     logger.nextCycle();
   }
   //menu.showInt(orientation->getHeading(),4);
+  uint8_t old_SREG = SREG;
+  noInterrupts();
   orientation->update();
   orientation->incrementHeading(-angle);
+  orientation->handler_update_ = true;
+  SREG = old_SREG;
 
   enc_left_front_write(0);
   enc_right_front_write(0);
@@ -438,7 +446,6 @@ void motion_rotate(float angle) {
   motor_rf.Set(0, current_right_velocity);
   motor_rb.Set(0, current_right_velocity);
   motor_lb.Set(0, current_left_velocity);
-  orientation->handler_update_ = true;
 }
 
 void motion_gyro_rotate(float angle) {
@@ -499,7 +506,7 @@ void motion_gyro_rotate(float angle) {
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
-  orientation->resetHeading();
+  orientation->incrementHeading(-angle);
 
   float current_left_velocity = (enc_left_front_velocity()
                                   + enc_left_back_velocity()) / 2;
@@ -590,6 +597,8 @@ void motion_corner(SweptTurnType turn_type, float speed) {
   // zero clock before move
   move_time = 0;
 
+  orientation->handler_update_ = false;
+
   // execute motion
   while (move_time_scaled < total_time) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
@@ -643,7 +652,12 @@ void motion_corner(SweptTurnType turn_type, float speed) {
     logger.nextCycle();
   }
 
+  uint8_t old_SREG = SREG;
+  noInterrupts();
+  orientation->update();
   orientation->incrementHeading(-sign * turn_table->getTotalAngle());
+  orientation->handler_update_ = true;
+  SREG = old_SREG;
 
   enc_left_front_write(0);
   enc_right_front_write(0);
