@@ -54,10 +54,8 @@ void loop()
 {
   Navigator<ContinuousRobotDriverRefactor> navigator;
   Orientation* orientation = Orientation::getInstance();
-  
-  // Wait for button press.
-  while (!menu.buttonOkPressed())
-    menu.checkBattery();
+
+  menu.waitForHand();
 
   delay(1000);
   
