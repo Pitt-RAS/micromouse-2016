@@ -213,17 +213,24 @@ void Menu::waitForHand()
       time = millis();
       initial_heading = orientation->getHeading();
     }
+    checkBattery();
   }
 
   do {
     RangeSensors.frontRightSensor.updateRange();
     RangeSensors.diagRightSensor.updateRange();
+    checkBattery();
   } while (RangeSensors.frontRightSensor.getRange() > HAND_SWIPE_FORWARD_RANGE
             || RangeSensors.diagRightSensor.getRange() > HAND_SWIPE_DIAG_RANGE);
 
   do {
     RangeSensors.frontRightSensor.updateRange();
     RangeSensors.diagRightSensor.updateRange();
+    checkBattery();
   } while (RangeSensors.frontRightSensor.getRange() < HAND_SWIPE_FORWARD_RANGE
             || RangeSensors.diagRightSensor.getRange() < HAND_SWIPE_DIAG_RANGE);
+  
+  soundBuzzer(1000);
+  delay(100);
+  soundBuzzer(0);
 }
