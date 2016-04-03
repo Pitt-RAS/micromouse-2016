@@ -784,7 +784,9 @@ void ContinuousRobotDriverRefactor::turn_in_place(Compass8 dir)
   if (arc > 180.0)
     arc -= 360.0;
 
-  motion_rotate(45.0 * relativeDir(dir));
+  motion_rotate(arc);
+
+  setDir(dir);
 }
 
 void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
@@ -813,16 +815,44 @@ void ContinuousRobotDriverRefactor::begin(Compass8 dir)
 {
   turn_in_place(dir);
   motion_forward(MM_PER_BLOCK / 2, 0.0, SEARCH_VELOCITY);
+
+  switch(dir) {
+    case kNorth:
+      setY(getY() + 1);
+      break;
+    case kSouth:
+      setY(getY() - 1);
+      break;
+    case kEast:
+      setX(getX() + 1);
+      break;
+    case kWest:
+      setX(getX() - 1);
+      break;
+    default:
+      freakOut("BAG3");
+      break;
+  }
+
+  setDir(dir);
 }
 
 void ContinuousRobotDriverRefactor::stop(Compass8 dir)
 {
   motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
   turn_in_place(dir);
+  motion_hold(10);
+
+  setDir(dir);
 }
 
 void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
 {
+  turn_while_moving(dir);
+
+  if (distance > 1)
+    motion_forward(MM_PER_BLOCK * (distance - 1), SEARCH_VELOCITY, SEARCH_VELOCITY);
+
   switch(dir) {
     case kNorth:
       setY(getY() + distance);
@@ -842,17 +872,16 @@ void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
   }
 
   setDir(dir);
+}
 
-  turn_while_moving(dir);
-
-  if (distance > 1)
-    motion_forward(distance - 1, SEARCH_VELOCITY, SEARCH_VELOCITY);
+ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor() : moving_(false)
+{
+  // Nothing here for now
 }
 
 void ContinuousRobotDriverRefactor::turn(Compass8 dir)
 {
   // Not using this method.
-  return;
 }
 
 bool ContinuousRobotDriverRefactor::isWall(Compass8 dir)
@@ -915,12 +944,16 @@ void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
   else {
     if (will_end_moving) {
       begin(dir);
-      proceed(dir, distance);
+
+      if (distance > 1)
+        proceed(dir, distance - 1);
     }
     else {
       turn_in_place(dir);
     }
   }
+
+  moving_ = will_end_moving;
 }
 
 

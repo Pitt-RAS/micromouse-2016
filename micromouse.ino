@@ -52,7 +52,7 @@ void setup()
 
 void loop()
 {
-  Navigator<ContinuousRobotDriver> navigator;
+  Navigator<ContinuousRobotDriverRefactor> navigator;
   Orientation* orientation = Orientation::getInstance();
   
   // Wait for button press.
