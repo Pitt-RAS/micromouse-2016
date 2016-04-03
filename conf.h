@@ -176,8 +176,8 @@
 #define BATTERY_VOLTAGE 8.1 // Volts
 #define BATTERY_VOLTAGE_WARNING 7.7 // Volts
 #define MAX_COEFFICIENT_FRICTION 1
-#define MAX_ACCEL_STRAIGHT 5 // m/s/s
-#define MAX_DECEL_STRAIGHT -3 // m/s/s
+#define MAX_ACCEL_STRAIGHT 7 // m/s/s
+#define MAX_DECEL_STRAIGHT -5 // m/s/s
 #define MAX_ACCEL_ROTATE 2 // m/s/s
 #define MAX_DECEL_ROTATE -2 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
@@ -185,7 +185,7 @@
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT 0.2 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 0.7 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
@@ -203,7 +203,7 @@
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
-#define MAX_VEL_ROTATE .2 // m/s
+#define MAX_VEL_ROTATE .5 // m/s
 
 
 // Zll forward speeds should be the same, and should be the maximum turn speed.  
@@ -223,6 +223,6 @@
 #define SWEPT_TURN_180_FORWARD_SPEED 0.935
 #define SWEPT_TURN_180_ANGLE 180.0
 
-#define SEARCH_VELOCITY 0.2
+#define SEARCH_VELOCITY 0.4
 
 #endif
