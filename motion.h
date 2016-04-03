@@ -7,6 +7,7 @@ void motion_set_max_speed(float new_max_speed);
 void motion_set_max_accel(float new_max_accel);
 
 void motion_forward(float distance, float current_speed, float exit_speed);
+void motion_forward_diag(float distance, float current_speed, float exit_speed);
 void motion_collect(float distance, float current_speed, float exit_speed);
 void motion_rotate(float angle);
 void motion_gyro_rotate(float angle);

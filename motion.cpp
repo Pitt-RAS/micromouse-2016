@@ -175,9 +175,153 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
   motor_rf.Set(0, current_right_velocity);
   motor_rb.Set(0, current_right_velocity);
   motor_lb.Set(0, current_left_velocity);
-  orientation->handler_update_ = true;
 }
 
+void motion_forward_diag(float distance, float current_speed, float exit_speed) {
+  float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
+  float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
+  float correctionFrontRight, correctionBackRight, correctionFrontLeft, correctionBackLeft;
+  float rangeOffset, gyroOffset;
+  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+  float idealDistance, idealVelocity;
+  elapsedMicros moveTime;
+
+  float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate()
+                                 + enc_left_back_extrapolate() + enc_right_back_extrapolate())/4;
+
+  float drift = currentExtrapolation;
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
+
+  //instantiate with distance - the amount of drift between motion commands
+  MotionCalc motionCalc (distance-drift, max_vel_straight, current_speed, exit_speed, max_accel_straight,
+                         max_decel_straight);
+
+  if (orientation == NULL) {
+    orientation = Orientation::getInstance();
+  }
+
+  PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+
+  PIDController range_PID (KP_RANGE, KI_RANGE, KD_RANGE);
+  PIDController gyro_PID (0.0015, 0.000, 0.00);
+
+  // zero clock before move
+  moveTime = 0;
+
+  RangeSensors.updateReadings();
+  float savedError = 0;
+  bool passedMiddle = false;
+  orientation->handler_update_ = false;
+
+  // execute motion
+  while (idealDistance != distance - drift) {
+    orientation->update();
+    //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
+    idealDistance = motionCalc.idealDistance(moveTime);
+    idealVelocity = motionCalc.idealVelocity(moveTime);
+
+    float leftReading, rightReading, position, nearestWhole, difference;
+
+    leftReading = enc_left_front_extrapolate();
+    rightReading = enc_right_front_extrapolate();
+    position = (leftReading + rightReading) / 2 / MM_PER_BLOCK;
+    nearestWhole = (int) (position + 0.5);
+    difference = position - nearestWhole;
+
+    // Add error from rangefinder data. Positive error is when it is too close
+    // to the left wall, requiring a positive angle to fix it.
+    RangeSensors.updateReadings();
+    //rangeOffset = range_PID.Calculate(RangeSensors.errorFromCenter(), 0);
+    if (RangeSensors.frontRightSensor.getRange() < 185) {
+      rangeOffset = RangeSensors.frontRightSensor.getRange() - 185;
+    } else if (RangeSensors.frontLeftSensor.getRange() < 185) {
+      rangeOffset = 185 - RangeSensors.frontLeftSensor.getRange();
+    }
+    rangeOffset *= 1;
+    gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
+
+    if (abs(orientation->getHeading()) > 60) {
+      freakOut("FACK");
+      //menu.showString("FACK", 4);
+      //delay(3000);
+      //char buf[5];
+      //sprintf(buf, "%04f", orientation->getHeading());
+      //freakOut(buf);
+    }
+
+    currentFrontLeft = enc_left_front_extrapolate();
+    currentBackLeft = enc_left_back_extrapolate();
+    currentFrontRight = enc_right_front_extrapolate();
+    currentBackRight = enc_right_back_extrapolate();
+
+    setpointFrontLeft = idealDistance + gyroOffset;
+    setpointBackLeft = idealDistance + gyroOffset;
+    setpointFrontRight = idealDistance - gyroOffset;
+    setpointBackRight = idealDistance - gyroOffset;
+
+    correctionFrontLeft = left_front_PID.Calculate(currentFrontLeft,
+                                                   setpointFrontLeft);
+    correctionBackLeft = left_back_PID.Calculate(currentBackLeft,
+                                                   setpointBackLeft);
+    correctionFrontRight = right_front_PID.Calculate(currentFrontRight,
+                                                   setpointFrontRight);
+    correctionBackRight = right_back_PID.Calculate(currentBackRight,
+                                                   setpointBackRight);
+
+    // Save isWall state for use by high-level code.
+    if (!passedMiddle && position > distance / MM_PER_BLOCK - 0.5) {
+	    RangeSensors.saveIsWall();
+	    passedMiddle = true;
+    }
+
+    //if (-0.25 < difference && difference < 0.25)
+    //  rangeOffset = savedError;
+    //else
+    //  savedError = rangeOffset;
+
+    // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
+    // the offsets that are less than an encoder tick need to be added/subtracted from errorFrontLeft and errorFrontRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
+
+    motor_lf.Set(motionCalc.idealAccel(moveTime) + correctionFrontLeft,
+                 idealVelocity);
+    motor_rf.Set(motionCalc.idealAccel(moveTime) + correctionFrontRight,
+                 idealVelocity);
+    motor_rb.Set(motionCalc.idealAccel(moveTime) + correctionBackRight,
+                 idealVelocity);
+    motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
+                 idealVelocity);
+
+    logger.logMotionType('f');
+    logger.nextCycle();
+  }
+
+  uint8_t old_SREG = SREG;
+  noInterrupts();
+  orientation->update();
+  orientation->handler_update_ = true;
+  SREG = old_SREG;
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
+
+  float current_left_velocity = (enc_left_front_velocity()
+                                  + enc_left_back_velocity()) / 2;
+  float current_right_velocity = (enc_right_front_velocity()
+                                   + enc_right_back_velocity()) / 2;
+  motor_lf.Set(0, current_left_velocity);
+  motor_rf.Set(0, current_right_velocity);
+  motor_rb.Set(0, current_right_velocity);
+  motor_lb.Set(0, current_left_velocity);
+}
 void motion_collect(float distance, float current_speed, float exit_speed){
   float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
   float currentFrontRight, currentFrontLeft, currentBackRight, currentBackLeft;
