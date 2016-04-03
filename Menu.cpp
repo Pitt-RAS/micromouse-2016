@@ -211,30 +211,51 @@ void Menu::checkBattery()
 void Menu::waitForHand()
 {
   Orientation* orientation = Orientation::getInstance();
+  bool gyro_failed = true;
   float initial_heading = orientation->getHeading();
   uint32_t time = millis();
-  while (millis() - time < HAND_SWIPE_START_TIME) {
-    float delta_heading = abs(orientation->getHeading() - initial_heading);
-    if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
-      time = millis();
-      initial_heading = orientation->getHeading();
+
+  while (gyro_failed) {
+    gyro_failed = false;
+    while (millis() - time < HAND_SWIPE_START_TIME) {
+      float delta_heading = abs(orientation->getHeading() - initial_heading);
+      if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
+        time = millis();
+        initial_heading = orientation->getHeading();
+      }
+      checkBattery();
     }
-    checkBattery();
+
+    do {
+      RangeSensors.frontRightSensor.updateRange();
+      RangeSensors.diagRightSensor.updateRange();
+      float delta_heading = abs(orientation->getHeading() - initial_heading);
+      if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
+        time = millis();
+        initial_heading = orientation->getHeading();
+        gyro_failed = true;
+        break;
+      }
+      checkBattery();
+    } while (RangeSensors.frontRightSensor.getRange() > HAND_SWIPE_FORWARD_RANGE
+              || RangeSensors.diagRightSensor.getRange() > HAND_SWIPE_DIAG_RANGE);
+
+    if (!gyro_failed) {
+      do {
+        RangeSensors.frontRightSensor.updateRange();
+        RangeSensors.diagRightSensor.updateRange();
+        float delta_heading = abs(orientation->getHeading() - initial_heading);
+        if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
+          time = millis();
+          initial_heading = orientation->getHeading();
+          gyro_failed = true;
+          break;
+        }
+        checkBattery();
+      } while (RangeSensors.frontRightSensor.getRange() < HAND_SWIPE_FORWARD_RANGE
+                || RangeSensors.diagRightSensor.getRange() < HAND_SWIPE_DIAG_RANGE);
+    }
   }
-
-  do {
-    RangeSensors.frontRightSensor.updateRange();
-    RangeSensors.diagRightSensor.updateRange();
-    checkBattery();
-  } while (RangeSensors.frontRightSensor.getRange() > HAND_SWIPE_FORWARD_RANGE
-            || RangeSensors.diagRightSensor.getRange() > HAND_SWIPE_DIAG_RANGE);
-
-  do {
-    RangeSensors.frontRightSensor.updateRange();
-    RangeSensors.diagRightSensor.updateRange();
-    checkBattery();
-  } while (RangeSensors.frontRightSensor.getRange() < HAND_SWIPE_FORWARD_RANGE
-            || RangeSensors.diagRightSensor.getRange() < HAND_SWIPE_DIAG_RANGE);
   
   soundBuzzer(1000);
   delay(100);

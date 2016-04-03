@@ -129,7 +129,7 @@
 
 // Hand swipe start
 #define HAND_SWIPE_START_TIME 500 // in millis
-#define HAND_SWIPE_HEADING_TOLERANCE 0.5 // in degrees
+#define HAND_SWIPE_HEADING_TOLERANCE 0.05 // in degrees
 #define HAND_SWIPE_FORWARD_RANGE 50
 #define HAND_SWIPE_DIAG_RANGE 30
 
