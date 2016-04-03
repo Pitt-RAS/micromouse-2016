@@ -359,7 +359,7 @@ bool ContinuousRobotDriver::onEdge()
   float x_offset, y_offset;
 
   x_offset = getXFloat() - getX();
-  y_offset = getYFloat() - getX();
+  y_offset = getYFloat() - getY();
 
   if (x_offset < -0.25 || x_offset > 0.25)
     return true;
@@ -370,7 +370,7 @@ bool ContinuousRobotDriver::onEdge()
 }
 
 ContinuousRobotDriver::ContinuousRobotDriver() :
-    exit_velocity_(0.0), last_direction_(kNorth), turn_advanced_(false)
+    exit_velocity_(0.0), turn_advanced_(false)
 {
   // Initialize whatever we need to.
 }
@@ -422,7 +422,6 @@ int ContinuousRobotDriver::getY()
 void ContinuousRobotDriver::turn(Compass8 dir)
 {
   float arc_to_turn;
-  float distance_to_add;
 
   arc_to_turn = 45.0 * (int) relativeDir(dir);
 
@@ -430,34 +429,63 @@ void ContinuousRobotDriver::turn(Compass8 dir)
     arc_to_turn -= 360.0;
 
   turn_advanced_ = false;
-  distance_to_add = 0.0;
 
   if (onEdge() && exit_velocity_ > 0.0) {
     switch(relativeDir(dir)) {
       case kNorth:
         break;
       case kSouth:
-        motion_forward(MM_PER_BLOCK / 2, 0.0);
+        motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
         motion_rotate(180.0);
-        motion_forward(MM_PER_BLOCK / 2, exit_velocity_);
+        motion_forward(MM_PER_BLOCK / 2, 0, exit_velocity_);
         turn_advanced_ = true;
-        distance_to_add = 1.0;
         break;
       case kEast:
         motion_corner(kRightTurn90, exit_velocity_);
         turn_advanced_ = true;
-        distance_to_add = 1.0;
         break;
       case kWest:
         motion_corner(kLeftTurn90, exit_velocity_);
         turn_advanced_ = true;
-        distance_to_add = 1.0;
         break;
       default:
-        motion_forward(MM_PER_BLOCK / 4, 0.0);
+        motion_forward(MM_PER_BLOCK / 4, SEARCH_VELOCITY, 0.0);
         motion_hold(100);
+        delay(3000);
         freakOut("BAD4");
         break;
+    }
+
+    if (relativeDir(dir) == kEast || relativeDir(dir) == kWest) {
+      switch (getDir()) {
+        case kNorth:
+          setY(getYFloat() + 0.5);
+          break;
+        case kSouth:
+          setY(getYFloat() - 0.5);
+          break;
+        case kEast:
+          setX(getXFloat() + 0.5);
+          break;
+        case kWest:
+          setX(getXFloat() - 0.5);
+          break;
+      }
+
+      switch (dir) {
+        case kNorth:
+          setY(getYFloat() + 0.5);
+          break;
+        case kSouth:
+          setY(getYFloat() - 0.5);
+          break;
+        case kEast:
+          setX(getXFloat() + 0.5);
+          break;
+        case kWest:
+          setX(getXFloat() - 0.5);
+          break;
+      }
     }
   }
   else if (!onEdge() && exit_velocity_ == 0.0) {
@@ -465,27 +493,9 @@ void ContinuousRobotDriver::turn(Compass8 dir)
     exit_velocity_ = 0.0;
   }
   else {
-    motion_forward(MM_PER_BLOCK / 4, 0.0);
+    motion_forward(MM_PER_BLOCK / 4, SEARCH_VELOCITY, 0.0);
     motion_hold(100);
     freakOut("BAD1");
-  }
-
-  switch (dir) {
-    case kNorth:
-      setY(getYFloat() + distance_to_add);
-      break;
-
-    case kSouth:
-      setY(getYFloat() - distance_to_add);
-      break;
-
-    case kEast:
-      setX(getXFloat() + distance_to_add);
-      break;
-
-    case kWest:
-      setX(getXFloat() - distance_to_add);
-      break;
   }
 
   setDir(dir);
@@ -535,24 +545,48 @@ bool ContinuousRobotDriver::isWall(Compass8 dir)
 
 void ContinuousRobotDriver::move(Compass8 dir, int distance)
 {
+
+  //char buf[5];
+  //snprintf(buf, 5, "%02d%02d", getX(), getY());
+  //menu.showString(buf, 4);
   float distance_to_add;
+  menu.showInt((int)dir, 4);
 
   if (distance == 0) {
     if (onEdge() && exit_velocity_ > 0.0) {
-      motion_forward(MM_PER_BLOCK / 2, 0.0);
-      motion_hold(100);
+      motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
+      motion_hold(10);
       exit_velocity_ = 0.0;
+
+      switch (getDir()) {
+        case kNorth:
+          setY(getYFloat() + 0.5);
+          break;
+
+        case kSouth:
+          setY(getYFloat() - 0.5);
+          break;
+
+        case kEast:
+          setX(getXFloat() + 0.5);
+          break;
+
+        case kWest:
+          setX(getXFloat() - 0.5);
+          break;
+      }
+      turn(dir);
+      return;
     }
     else if (!onEdge() && exit_velocity_ == 0.0) {
+      turn(dir);
       return;
     }
     else {
-      motion_forward(MM_PER_BLOCK / 4, 0.0);
+      motion_forward(MM_PER_BLOCK / 4, SEARCH_VELOCITY, 0.0);
       motion_hold(100);
       freakOut("BAD2");
     }
-
-    return;
   }
 
   turn(dir);
@@ -564,16 +598,16 @@ void ContinuousRobotDriver::move(Compass8 dir, int distance)
     return;
 
   if (onEdge() && exit_velocity_ > 0.0) {
-    motion_forward(MM_PER_BLOCK * distance, exit_velocity_);
+    motion_forward(MM_PER_BLOCK * distance, SEARCH_VELOCITY, exit_velocity_);
     distance_to_add = distance;
   }
   else if (!onEdge() && exit_velocity_ == 0.0) {
-    motion_forward(MM_PER_BLOCK / 2 + MM_PER_BLOCK * (distance - 1), SEARCH_VELOCITY);
+    motion_forward(MM_PER_BLOCK / 2 + MM_PER_BLOCK * (distance - 1), 0, SEARCH_VELOCITY);
     exit_velocity_ = SEARCH_VELOCITY;
     distance_to_add = distance - 0.5;
   }
   else {
-    motion_forward(MM_PER_BLOCK / 4, 0.0);
+    motion_forward(MM_PER_BLOCK / 4, SEARCH_VELOCITY, 0.0);
     motion_hold(100);
     freakOut("BAD3");
   }
@@ -595,8 +629,6 @@ void ContinuousRobotDriver::move(Compass8 dir, int distance)
       setX(getXFloat() - distance_to_add);
       break;
   }
-
-  last_direction_ = dir;
 }
 
 
@@ -733,7 +765,7 @@ void RobotDriver::move(Compass8 dir, int distance)
   distance_to_move = hypot(destination_x - getXFloat(),
                             destination_y - getYFloat());
 
-  motion_forward(MM_PER_BLOCK * distance_to_move, 0);
+  motion_forward(MM_PER_BLOCK * distance_to_move, 0, 0);
   motion_hold(10);
 
   setX(destination_x);

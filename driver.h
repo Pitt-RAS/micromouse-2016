@@ -230,7 +230,6 @@ class ContinuousRobotDriver : public Driver, public Turnable
 {
   private:
     float exit_velocity_;
-    Compass8 last_direction_;
     bool turn_advanced_;
 
     bool onEdge();
