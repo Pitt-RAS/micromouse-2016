@@ -226,20 +226,53 @@ class SerialDriver : public SimulationDriver
 };
 
 // Driver for our Micromouse robot
-class RobotDriver : public Driver, public Turnable
+class ContinuousRobotDriver : public Driver, public Turnable
 {
   private:
     float exit_velocity_;
-    Compass8 last_direction_;
     bool turn_advanced_;
 
     bool onEdge();
 
   public:
-    RobotDriver();
+    ContinuousRobotDriver();
 
     int getX();
     int getY();
+
+    void turn(Compass8 dir);
+
+    bool isWall(Compass8 dir);
+    void move(Compass8 dir, int distance);
+};
+
+// Driver for our Micromouse robot
+class RobotDriver : public Driver, public Turnable
+{
+  public:
+    RobotDriver();
+
+    void turn(Compass8 dir);
+
+    bool isWall(Compass8 dir);
+    void move(Compass8 dir, int distance);
+};
+
+class ContinuousRobotDriverRefactor : public Driver, public Turnable
+{
+  private:
+    bool moving_;
+
+    void turn_in_place(Compass8 dir);
+    void turn_while_moving(Compass8 dir);
+
+    void begin(Compass8 dir);
+    void stop(Compass8 dir);
+
+    void proceed(Compass8 dir, int distance);
+
+  public:
+    ContinuousRobotDriverRefactor();
 
     void turn(Compass8 dir);
 

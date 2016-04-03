@@ -66,6 +66,8 @@ void Orientation::interruptHandler() {
   mpu_interrupt_ = true;
   if (Orientation::instance_ != NULL) {
     Orientation::instance_->next_update_time_ = micros();
+    if (Orientation::instance_->handler_update_)
+      Orientation::instance_->update();
   }
 }
 

@@ -77,10 +77,10 @@
 #define DIAG_LEFT_HIGH_THRESHOLD 340
 #define DIAG_RIGHT_LOW_THRESHOLD 360
 #define DIAG_RIGHT_HIGH_THRESHOLD 360
-#define FRONT_LEFT_LOW_THRESHOLD 212
-#define FRONT_LEFT_HIGH_THRESHOLD 212
-#define FRONT_RIGHT_LOW_THRESHOLD 187
-#define FRONT_RIGHT_HIGH_THRESHOLD 187
+#define FRONT_LEFT_LOW_THRESHOLD 150
+#define FRONT_LEFT_HIGH_THRESHOLD 150
+#define FRONT_RIGHT_LOW_THRESHOLD 197
+#define FRONT_RIGHT_HIGH_THRESHOLD 197
 
 // Range sensor middle readings
 #define RANGE_DIAG_LEFT_MIDDLE 94
@@ -142,7 +142,7 @@
 #define MOTION_COLLECT_MM_PER_READING 1
 
 // PID tuning parameters
-#define KP_POSITION 35//5.69
+#define KP_POSITION 35
 #define KI_POSITION 0
 #define KD_POSITION 20000
 
@@ -150,13 +150,17 @@
 #define KI_ROTATION 0.00000000//85
 #define KD_ROTATION 05//9
 
-#define KP_RANGE 6//1.7
+#define KP_RANGE 3
 #define KI_RANGE 0
-#define KD_RANGE 10000//10000
+#define KD_RANGE 5000
 
-#define KP_GYRO .003
-#define KI_GYRO 0.00000000
-#define KD_GYRO .01//52
+#define KP_GYRO 0.10
+#define KI_GYRO 0.00000800
+#define KD_GYRO 0.00
+
+#define KP_GYRO_FWD 0.0015
+#define KI_GYRO_FWD 0
+#define KD_GYRO_FWD 0
 
 #define KP_HOLD_RANGE 2
 #define KI_HOLD_RANGE 0
@@ -165,22 +169,23 @@
 // Robot characteristics
 #define ROBOT_MASS .1302 // kilograms
 #define MOMENT_OF_INERTIA 0.00015 //kg -m^2
-#define MM_BETWEEN_WHEELS 74.5 // millimeters
+#define MM_BETWEEN_WHEELS 74.5
+#define MM_BETWEEN_WHEELS_ROTATE 70
 #define NUMBER_OF_MOTORS 4
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
 #define BATTERY_VOLTAGE_WARNING 7.7 // Volts
 #define MAX_COEFFICIENT_FRICTION 1
-#define MAX_ACCEL_STRAIGHT 5 // m/s/s
-#define MAX_DECEL_STRAIGHT -3 // m/s/s
-#define MAX_ACCEL_ROTATE 5 // m/s/s  
-#define MAX_DECEL_ROTATE -3 // m/s/s
+#define MAX_ACCEL_STRAIGHT 7 // m/s/s
+#define MAX_DECEL_STRAIGHT -5 // m/s/s
+#define MAX_ACCEL_ROTATE 2 // m/s/s
+#define MAX_DECEL_ROTATE -2 // m/s/s
 #define MAX_ACCEL_CORNER 3 // m/s/s  
 #define MAX_DECEL_CORNER -3 // m/s/s
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT 0.2 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 0.4 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
@@ -198,7 +203,7 @@
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
-#define MAX_VEL_ROTATE .2 // m/s
+#define MAX_VEL_ROTATE .5 // m/s
 
 
 // Zll forward speeds should be the same, and should be the maximum turn speed.  
@@ -218,6 +223,6 @@
 #define SWEPT_TURN_180_FORWARD_SPEED 0.935
 #define SWEPT_TURN_180_ANGLE 180.0
 
-#define SEARCH_VELOCITY 0.2
+#define SEARCH_VELOCITY 0.4
 
 #endif
