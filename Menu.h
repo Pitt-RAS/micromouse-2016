@@ -28,6 +28,7 @@ class Menu {
 
   void soundBuzzer(int frequency);
   void checkBattery();
+  void waitForHand();
 };
 
 extern Menu menu;

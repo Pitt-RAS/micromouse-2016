@@ -127,6 +127,12 @@
 #define MENU_DEAD_ZONE 1
 #define MENU_RESTORING_FORCE 2
 
+// Hand swipe start
+#define HAND_SWIPE_START_TIME 500 // in millis
+#define HAND_SWIPE_HEADING_TOLERANCE 0.5 // in degrees
+#define HAND_SWIPE_FORWARD_RANGE 50
+#define HAND_SWIPE_DIAG_RANGE 30
+
 // Logging configuration
 #define LOG_SIZE 500
 

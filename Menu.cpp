@@ -5,7 +5,9 @@
 #include "conf.h"
 #include "motors.h"
 #include "PIDController.h"
+#include "RangeSensorContainer.h"
 #include "sensors_encoders.h"
+#include "sensors_orientation.h"
 
 Menu menu;
 
@@ -198,4 +200,30 @@ void Menu::checkBattery()
 
   sprintf(buf, "%0d.%02d", whole, decimal);
   menu.showString(buf);
+}
+
+void Menu::waitForHand()
+{
+  Orientation* orientation = Orientation::getInstance();
+  float initial_heading = orientation->getHeading();
+  uint32_t time = millis();
+  while (millis() - time < HAND_SWIPE_START_TIME) {
+    float delta_heading = abs(orientation->getHeading() - initial_heading);
+    if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
+      time = millis();
+      initial_heading = orientation->getHeading();
+    }
+  }
+
+  do {
+    RangeSensors.frontRightSensor.updateRange();
+    RangeSensors.diagRightSensor.updateRange();
+  } while (RangeSensors.frontRightSensor.getRange() > HAND_SWIPE_FORWARD_RANGE
+            || RangeSensors.diagRightSensor.getRange() > HAND_SWIPE_DIAG_RANGE);
+
+  do {
+    RangeSensors.frontRightSensor.updateRange();
+    RangeSensors.diagRightSensor.updateRange();
+  } while (RangeSensors.frontRightSensor.getRange() < HAND_SWIPE_FORWARD_RANGE
+            || RangeSensors.diagRightSensor.getRange() < HAND_SWIPE_DIAG_RANGE);
 }
