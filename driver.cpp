@@ -775,4 +775,155 @@ void RobotDriver::move(Compass8 dir, int distance)
 
 
 
+void ContinuousRobotDriverRefactor::turn_in_place(Compass8 dir)
+{
+  float arc;
+
+  arc = 45.0 * relativeDir(dir);
+
+  if (arc > 180.0)
+    arc -= 360.0;
+
+  motion_rotate(45.0 * relativeDir(dir));
+}
+
+void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
+{
+  switch(relativeDir(dir)) {
+    case kNorth:
+      motion_forward(MM_PER_BLOCK, SEARCH_VELOCITY, SEARCH_VELOCITY);
+      break;
+    case kSouth:
+      motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
+      motion_rotate(180.0);
+      motion_forward(MM_PER_BLOCK / 2, 0.0, SEARCH_VELOCITY);
+      break;
+    case kEast:
+      motion_corner(kRightTurn90, SEARCH_VELOCITY);
+      break;
+    case kWest:
+      motion_corner(kLeftTurn90, SEARCH_VELOCITY);
+      break;
+    default:
+      freakOut("BAG1");
+  }
+}
+
+void ContinuousRobotDriverRefactor::begin(Compass8 dir)
+{
+  turn_in_place(dir);
+  motion_forward(MM_PER_BLOCK / 2, 0.0, SEARCH_VELOCITY);
+}
+
+void ContinuousRobotDriverRefactor::stop(Compass8 dir)
+{
+  motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
+  turn_in_place(dir);
+}
+
+void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
+{
+  switch(dir) {
+    case kNorth:
+      setY(getY() + distance);
+      break;
+    case kSouth:
+      setY(getY() - distance);
+      break;
+    case kEast:
+      setX(getX() + distance);
+      break;
+    case kWest:
+      setX(getX() - distance);
+      break;
+    default:
+      freakOut("BAG2");
+      break;
+  }
+
+  setDir(dir);
+
+  turn_while_moving(dir);
+
+  if (distance > 1)
+    motion_forward(distance - 1, SEARCH_VELOCITY, SEARCH_VELOCITY);
+}
+
+void ContinuousRobotDriverRefactor::turn(Compass8 dir)
+{
+  // Not using this method.
+  return;
+}
+
+bool ContinuousRobotDriverRefactor::isWall(Compass8 dir)
+{
+  RangeSensors.updateReadings();
+
+  if (getX() == 0 && getY() == 0) {
+    switch (relativeDir(dir)) {
+      case kNorth:
+        return RangeSensors.isWall(front);
+        break;
+      case kSouth:
+        return RangeSensors.isWall(back);
+        break;
+      case kEast:
+        return true;
+        break;
+      case kWest:
+        return true;
+        break;
+      default:
+        return true;
+        break;
+    }
+  }
+
+  switch (relativeDir(dir)) {
+    case kNorth:
+      return RangeSensors.isWall(front);
+      break;
+    case kSouth:
+      return RangeSensors.isWall(back);
+      break;
+    case kEast:
+      return RangeSensors.isWall(right);
+      break;
+    case kWest:
+      return RangeSensors.isWall(left);
+      break;
+    default:
+      return true;
+      break;
+  }
+}
+
+void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
+{
+  bool will_end_moving;
+
+  will_end_moving = distance > 0;
+
+  if (moving_) {
+    if (will_end_moving) {
+      proceed(dir, distance);
+    }
+    else {
+      stop(dir);
+    }
+  }
+  else {
+    if (will_end_moving) {
+      begin(dir);
+      proceed(dir, distance);
+    }
+    else {
+      turn_in_place(dir);
+    }
+  }
+}
+
+
+
+
 #endif // #ifndef COMPILE_FOR_PC

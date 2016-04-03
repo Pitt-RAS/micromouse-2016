@@ -258,6 +258,28 @@ class RobotDriver : public Driver, public Turnable
     void move(Compass8 dir, int distance);
 };
 
+class ContinuousRobotDriverRefactor : public Driver, public Turnable
+{
+  private:
+    bool moving_;
+
+    void turn_in_place(Compass8 dir);
+    void turn_while_moving(Compass8 dir);
+
+    void begin(Compass8 dir);
+    void stop(Compass8 dir);
+
+    void proceed(Compass8 dir, int distance);
+
+  public:
+    ContinuousRobotDriverRefactor();
+
+    void turn(Compass8 dir);
+
+    bool isWall(Compass8 dir);
+    void move(Compass8 dir, int distance);
+};
+
 #endif // #ifndef COMPILE_FOR_PC
 
 #endif // #ifndef DRIVER_H
