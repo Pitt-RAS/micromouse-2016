@@ -42,7 +42,7 @@ IdealSweptTurns turn_135_table(SWEPT_TURN_135_FORWARD_SPEED,
 IdealSweptTurns turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
                               SWEPT_TURN_180_ANGLE, 0.001);
 
-void motion_forward(float distance, float exit_speed) {
+void motion_forward(float distance, float current_speed, float exit_speed) {
   float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
   float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
   float correctionFrontRight, correctionBackRight, correctionFrontLeft, correctionBackLeft;
@@ -50,9 +50,6 @@ void motion_forward(float distance, float exit_speed) {
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealDistance, idealVelocity;
   elapsedMicros moveTime;
-
-  // float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
-  float current_speed = (enc_left_front_velocity() + enc_left_back_velocity() + enc_right_front_velocity() + enc_right_back_velocity())/4;
 
   float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate()
                                  + enc_left_back_extrapolate() + enc_right_back_extrapolate())/4;
@@ -177,7 +174,7 @@ void motion_forward(float distance, float exit_speed) {
   orientation->handler_update_ = true;
 }
 
-void motion_collect(float distance, float exit_speed){
+void motion_collect(float distance, float current_speed, float exit_speed){
   float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
   float currentFrontRight, currentFrontLeft, currentBackRight, currentBackLeft;
   float setpointFrontRight, setpointFrontLeft, setpointBackRight, setpointBackLeft;
@@ -187,7 +184,6 @@ void motion_collect(float distance, float exit_speed){
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   elapsedMicros moveTime;
 
-  float current_speed = (enc_left_front_velocity() + enc_left_back_velocity() + enc_right_front_velocity() + enc_right_back_velocity())/4;
   MotionCalc motionCalc (distance, max_vel_straight, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
 
