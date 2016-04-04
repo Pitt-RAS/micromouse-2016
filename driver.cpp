@@ -198,7 +198,16 @@ void Driver::clearState() {
 #ifdef COMPILE_FOR_PC
   remove("saved_state.maze");
 #else
+  Maze<16, 16> maze;
+  saveState(maze);
   EEPROM.write(EEPROM_MAZE_FLAG_LOCATION, 0);
+#endif
+}
+
+void Driver::resetState() {
+#ifndef COMPILE_FOR_PC
+  Maze<16, 16> maze;
+  saveState(maze);
 #endif
 }
 

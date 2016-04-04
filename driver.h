@@ -102,8 +102,11 @@ class Driver
     // Saves the state of the given cell only
     virtual void updateState(Maze<16, 16>& maze, size_t x, size_t y);
 
-    // Sets the saved state to an empty maze
+    // Removes the saved state
     virtual void clearState();
+
+    // Sets the saved state to an empty maze
+    virtual void resetState();
 
     // True if there is a maze stored in memory
     virtual bool hasStoredState();
