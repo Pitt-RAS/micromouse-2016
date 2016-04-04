@@ -112,20 +112,35 @@ void Navigator<driver_type>::driveCardboardMaze()
 template <typename driver_type>
 void Navigator<driver_type>::findBox(int x, int y)
 {
+  if (driver.hasStoredState()) {
+    driver.loadState(maze);
+  } else {
+    driver.resetState();
+  }
+
   while (driver.getX() != x || driver.getY() != y) {
-    if (driver.isWall(kNorth))
+    if (driver.isWall(kNorth)) {
       maze.addWall(driver.getX(), driver.getY(), kNorth);
+      driver.updateState(maze, driver.getX(), driver.getY() + 1);
+    }
 
-    if (driver.isWall(kSouth))
+    if (driver.isWall(kSouth)) {
       maze.addWall(driver.getX(), driver.getY(), kSouth);
+      driver.updateState(maze, driver.getX(), driver.getY() - 1);
+    }
 
-    if (driver.isWall(kEast))
+    if (driver.isWall(kEast)) {
       maze.addWall(driver.getX(), driver.getY(), kEast);
+      driver.updateState(maze, driver.getX() + 1, driver.getY());
+    }
 
-    if (driver.isWall(kWest))
+    if (driver.isWall(kWest)) {
       maze.addWall(driver.getX(), driver.getY(), kWest);
+      driver.updateState(maze, driver.getX() - 1, driver.getY());
+    }
 
     maze.visit(driver.getX(), driver.getY());
+    driver.updateState(maze, driver.getX(), driver.getY());
 
     {
       FloodFillPath<16, 16>
