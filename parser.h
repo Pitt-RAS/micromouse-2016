@@ -1,5 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
+#define COMPILE_FOR_PC
 #include "data.h"
 #include <queue>
 
@@ -16,58 +17,111 @@ enum Move {
 	exit_left_diag = 9
 };
 
+class FakePath{
+	private:
+	std::queue<Compass8> fake_path;
+
+	public:
+	FakePath(Compass8 path[]);
+	Compass8 nextDirection();
+	bool isEmpty();
+	int getLength();
+
+};
+
+FakePath::FakePath(Compass8 path[]){
+	int end = 16;
+	for (int i = 0; i < 16; i = i + 1)
+	{
+		fake_path.push(path[i]);
+	}
+}
+
+Compass8 FakePath::nextDirection(){
+	Compass8 dir = fake_path.front();
+	fake_path.pop();
+	return dir;
+}
+
+bool FakePath::isEmpty(){
+	return fake_path.empty();
+}
+
+int FakePath::getLength(){
+	return fake_path.size();
+}
+
+
 class PathParser {
   private:
     Compass8 dir;
     Compass8 relativeDir(Compass8 next_dir, Compass8 current_dir);
-    void beginDecision(Path<16, 16> path);
-    void forwardDecisions(Path<16, 16> path);
-    void leftDecisions(Path<16, 16> path);
-    void rightDecisions(Path<16, 16> path);
-    void diagonalDecisions(bool approachRight, Path<16, 16> path);
+    void beginDecision(FakePath *path);
+    void forwardDecisions(FakePath *path);
+    void leftDecisions(FakePath *path);
+    void rightDecisions(FakePath *path);
+    void diagonalDecisions(bool approachRight, FakePath *path);
   public:
    std::queue<int> move_list;
-   PathParser(Path<16,16> original_path);
+   PathParser(FakePath *path);
    std::queue<int> getMoveList();
 };
 
+int main(int argc, const char * argv[])
+{
+	std::cout << "HI\n";
+	Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kSouth, kSouth, kSouth, kEast, kNorth, kEast, kNorth, kNorth, kEast, kNorth, kEast, kEast};
+	FakePath path(paddy);
+	PathParser joe(&path);
+	joe.getMoveList();
+}
 
-PathParser::PathParser(Path<16, 16> path)
+
+
+PathParser::PathParser(FakePath *path)
 {
   Compass8 movement_direction, next_direction, decision_direction;
 
-  next_direction = path.nextDirection();
+  // next_direction = path->nextDirection();
 
   //in the case we got no path
-  if (path.isEmpty())
+  //if (path->isEmpty())
 
   //do some pivot logic for the start here
 
-  movement_direction = next_direction;
-  next_direction = path.nextDirection();
+  // movement_direction = next_direction;
+  // next_direction = path->nextDirection();
 
-  decision_direction = relativeDir(next_direction, movement_direction);
+  // decision_direction = relativeDir(next_direction, movement_direction);
 
-  dir = decision_direction;
+  //dir = (Compass8)((int)next_direction + (int)decision_direction);
 
   beginDecision(path);
 }
 
 std::queue<int> PathParser::getMoveList()
 {
+	//return move_list;
+	while(!move_list.empty()){
+		int m = move_list.front();
+		move_list.pop();
+		std::cout << m << "\n";
+	}
 	return move_list;
 }
 
-void PathParser::beginDecision(Path<16, 16> path){
+void PathParser::beginDecision(FakePath *path){
 	//assumes that every movement into this will be a forward
-	Compass8 next_direction;
-	while (!path.isEmpty())
+	while (!path->isEmpty())
 	{
-		switch(dir)
+		Compass8 next_direction = path->nextDirection();
+		Compass8 decision_dir = relativeDir(next_direction, dir);
+		dir = next_direction;
+		switch(decision_dir)
 		{
 			//forward move
 			case kNorth:
-				forwardDecisions(path);
+				move_list.push(forward);
 				break;
 			//right move
 			case kEast:
@@ -84,26 +138,27 @@ void PathParser::beginDecision(Path<16, 16> path){
 
 }
 
-void PathParser::forwardDecisions(Path<16, 16> path){
-	Compass8 next_direction = path.nextDirection();
-	Compass8 decision_dir = relativeDir(next_direction, dir);
-	dir = decision_dir;
+void PathParser::forwardDecisions(FakePath *path){
+	// //dir = (Compass8)(((int)dir + (int)decision_dir)%7);
+	// dir = decision_dir;
 
-	if(decision_dir == kNorth)
-		move_list.push(forward);
-	else
-		return;
+	// if(decision_dir == kNorth){
+	// 	move_list.push(forward);
+	// }
+	// else
+	// 	return;
 
-	forwardDecisions(path);
+	// if(path->isEmpty())
+	// 	return;
 }
 
-void PathParser::rightDecisions(Path<16, 16> path){
+void PathParser::rightDecisions(FakePath *path){
 	Compass8 next_direction, decision_dir;
-	next_direction = path.nextDirection();
+	next_direction = path->nextDirection();
 	decision_dir = relativeDir(next_direction, dir);
-	dir = decision_dir;
+	dir = next_direction;
 
-	switch(dir){
+	switch(decision_dir){
 		//forward move
 		case kNorth:
 			//set motion corner
@@ -111,10 +166,10 @@ void PathParser::rightDecisions(Path<16, 16> path){
 			break;
 		//right move
 		case kEast:
-			next_direction = path.nextDirection();
+			next_direction = path->nextDirection();
 			decision_dir = relativeDir(next_direction, dir);
-			dir = decision_dir;
-			switch(dir){
+			dir = next_direction;
+			switch(decision_dir){
 				case kNorth:
 					//180 outta here
 					move_list.push(right_180);
@@ -145,31 +200,34 @@ void PathParser::rightDecisions(Path<16, 16> path){
 	}
 }
 
-void PathParser::leftDecisions(Path<16, 16> path){
+void PathParser::leftDecisions(FakePath *path){
 	Compass8 next_direction, decision_dir;
-	next_direction = path.nextDirection();
+	next_direction = path->nextDirection();
 	decision_dir = relativeDir(next_direction, dir);
-	dir = decision_dir;
+	//dir = (Compass8)((int)decision_dir)%7);
+	dir = next_direction;
 
-	switch(dir){
+	switch(decision_dir){
 		//forward move
 		case kNorth:
 			//set motion corner
+			//dir = kNorth;
 			move_list.push(left_90);
 			break;
 		//right move
 		case kEast:
 			//diagonal move
+			std::cout<<"gets here\n";
 			move_list.push(setup_left_diag);
 			move_list.push(diag);
 			diagonalDecisions(false, path);
 			break;
 		//left move
 		case kWest:
-			next_direction = path.nextDirection();
+			next_direction = path->nextDirection();
 			decision_dir = relativeDir(next_direction, dir);
-			dir = decision_dir;
-			switch(dir){
+			dir = next_direction;
+			switch(decision_dir){
 				case kNorth:
 					//180 outta here
 					move_list.push(left_180);
@@ -193,11 +251,11 @@ void PathParser::leftDecisions(Path<16, 16> path){
 	}
 }
 
-void PathParser::diagonalDecisions(bool approachRight, Path<16, 16> path){
-	Compass8 next_direction = path.nextDirection();
+void PathParser::diagonalDecisions(bool approachRight, FakePath *path){
+	Compass8 next_direction = path->nextDirection();
 	Compass8 decision_dir = relativeDir(next_direction, dir);
-	dir = decision_dir;
-	switch(dir)
+	dir = next_direction;
+	switch(decision_dir)
 		{
 			case kNorth:
 				//to put us forward again
