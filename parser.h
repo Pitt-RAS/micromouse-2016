@@ -14,7 +14,10 @@ enum Move {
 	setup_right_diag = 6,
 	diag = 7,
 	exit_right_diag = 8,
-	exit_left_diag = 9
+	exit_left_diag = 9,
+	pivot_right_90 = 10,
+	pivot_left_90 = 11,
+	pivot_180 = 12
 };
 
 class FakePath{
@@ -74,7 +77,6 @@ class PathParser {
 
 int main(int argc, const char * argv[])
 {
-	std::cout << "HI\n";
 	Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kSouth, kSouth, kSouth, kEast, kNorth, kEast, kNorth, kNorth, kEast, kNorth, kEast, kEast};
 	FakePath path(paddy);
 	PathParser joe(&path);
@@ -86,8 +88,6 @@ int main(int argc, const char * argv[])
 PathParser::PathParser(FakePath *path)
 {
   Compass8 movement_direction, next_direction, decision_direction;
-
-  std::cout<<relativeDir(kEast,kSouth)<<"\n";
 
   // next_direction = path->nextDirection();
 
@@ -112,7 +112,49 @@ std::queue<int> PathParser::getMoveList()
 	while(!move_list.empty()){
 		int m = move_list.front();
 		move_list.pop();
-		std::cout << m << "\n";
+		std::string s;
+		switch(m){
+			case (forward):
+				s = "forward";
+				break;
+			case (left_90):
+				s = "left_90";
+				break;
+			case (right_90):
+				s = "right_90";
+				break;
+			case (left_180):
+				s = "left_180";
+				break;
+			case(right_180):
+				s = "right_180";
+				break;
+			case(setup_left_diag):
+				s = "setup_left_diag";
+				break;
+			case(setup_right_diag):
+				s = "setup_right_diag";
+				break;
+			case (diag):
+				s = "diag";
+				break;
+			case (exit_right_diag):
+				s = "exit_right_diag";
+				break;
+			case (exit_left_diag):
+				s = "exit_left_diag";
+				break;
+			case (pivot_180):
+				s = "pivot_180";
+			case (pivot_left_90):
+				s = "pivot_left_90";
+			case (pivot_right_90):
+				s = "pivot_right_90";
+			default:
+				break;
+
+		}
+		std::cout << s << "\n";
 	}
 	return move_list;
 }
@@ -183,6 +225,24 @@ void PathParser::rightDecisions(FakePath *path){
 					break;
 				case kEast:
 					//this is a stupid decision to make because it's just driving a circle, but we'll have to deal with it idk how though
+					//just pivot turn to the direction you want to go after going back to original cell
+					next_direction = path->nextDirection();
+					decision_dir = relativeDir(next_direction, dir);
+					dir = next_direction;
+					switch(decision_dir){
+						case(kNorth):
+							move_list.push(pivot_left_90);
+							break;
+						case(kWest):
+							move_list.push(pivot_180);
+							break;
+						case(kEast):
+							move_list.push(forward);
+							break;
+						default:
+							break;
+					}
+
 					break;
 				case kWest:
 					//corner into diagonal special case
@@ -246,13 +306,29 @@ void PathParser::leftDecisions(FakePath *path){
 					diagonalDecisions(false, path);
 					break;
 				case kWest:
+					//just pivot turn to the direction you want to go after going back to original cell
+					next_direction = path->nextDirection();
+					decision_dir = relativeDir(next_direction, dir);
+					dir = next_direction;
+					switch(decision_dir){
+						case(kNorth):
+							move_list.push(pivot_right_90);
+							break;
+						case(kWest):
+							move_list.push(forward);
+							break;
+						case(kEast):
+							move_list.push(pivot_180);
+							break;
+						default:
+							break;
+					}
 					break;
 				default:
 					break;
 			}
 			break;
 		default:
-			std::cout<<"SHIT\n";
 			break;
 	}
 }
@@ -280,7 +356,6 @@ void PathParser::diagonalDecisions(bool approachRight, FakePath *path){
 				}
 				else{
 					move_list.push(exit_right_diag);
-					std::cout<<dir<<"OK\n";
 					return;
 				}
 				break;
@@ -298,7 +373,6 @@ void PathParser::diagonalDecisions(bool approachRight, FakePath *path){
 				}
 				break;
 			default:
-				std::cout<<"SHIT\n";
 				break;
 		}
 }
