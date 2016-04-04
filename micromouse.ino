@@ -47,23 +47,55 @@ void setup()
   Serial.begin(BAUD);
 
   menu.begin();
-  menu.checkBattery();
 }
+
+char* primary_options[] = {
+  "RUN",
+  "OPT"
+};
+
+char* secondary_options[] = {
+  "CLR",
+  "BACK"
+};
 
 void loop()
 {
-  Navigator<ContinuousRobotDriverRefactor> navigator;
-  Orientation* orientation = Orientation::getInstance();
+  switch (menu.getString(primary_options, 2, 4)) {
+    case 0: { // RUN
+      Navigator<ContinuousRobotDriverRefactor> navigator;
+      Orientation* orientation = Orientation::getInstance();
 
-  menu.waitForHand();
+      menu.waitForHand();
+      delay(1000);
 
+      enc_left_front_write(0);
+      enc_right_front_write(0);
+      enc_left_back_write(0);
+      enc_right_back_write(0);
+      orientation->resetHeading();
+
+      navigator.runDevelopmentCode();
+      break;
+    }
+    case 1: { // OPT
+      delay(500);
+      switch (menu.getString(secondary_options, 2, 4)) {
+        case 0: { // CLR
+          RobotDriver driver;
+          driver.clearState();
+          break;
+        }
+        case 1: // BACK
+        default: {
+          break;
+        }
+      }
+      break;
+    }
+    default: {
+      break;
+    }
+  }
   delay(1000);
-  
-  enc_left_front_write(0);
-  enc_right_front_write(0);
-  enc_left_back_write(0);
-  enc_right_back_write(0);
-  orientation->resetHeading();
-
-  navigator.runDevelopmentCode();
 }

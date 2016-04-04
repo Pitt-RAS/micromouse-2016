@@ -95,10 +95,9 @@ int Menu::getInt(int min, int max, int initial, int d) {
 
     if (abs(enc_left_back_extrapolate()) < MENU_DEAD_ZONE) {
         motor_lb.Set(0, enc_left_back_velocity());
-    } else if (enc_left_back_extrapolate() < 0) {
-        motor_lb.Set(MENU_RESTORING_FORCE, enc_left_back_velocity());
     } else {
-        motor_lb.Set(-MENU_RESTORING_FORCE, enc_left_back_velocity());
+        motor_lb.Set(-MENU_RESTORING_FORCE * enc_left_back_extrapolate(),
+                     enc_left_back_velocity());
     }
 
     okPressed = buttonOkPressed();
@@ -128,25 +127,24 @@ size_t Menu::getString(char* strings[], size_t strings_len, size_t chars, size_t
     float distance_from_center = enc_left_back_extrapolate();
 
     if (distance_from_center > distance_between_options / 2) {
-      if (result < strings_len - 1) {
+      if (result > 0) {
         enc_left_back_write(-distance_between_options / 2);
-        result++;
+        result--;
         showString(strings[result], chars, left_align);
       }
     } else if (distance_from_center < -distance_between_options / 2) {
-      if (result > 0) {
+      if (result < strings_len - 1) {
         enc_left_back_write(distance_between_options / 2);
-        result--;
+        result++;
         showString(strings[result], chars, left_align);
       }
     }
 
     if (abs(enc_left_back_extrapolate()) < MENU_DEAD_ZONE) {
         motor_lb.Set(0, enc_left_back_velocity());
-    } else if (enc_left_back_extrapolate() < 0) {
-        motor_lb.Set(MENU_RESTORING_FORCE, enc_left_back_velocity());
     } else {
-        motor_lb.Set(-MENU_RESTORING_FORCE, enc_left_back_velocity());
+        motor_lb.Set(-MENU_RESTORING_FORCE * enc_left_back_extrapolate(),
+                     enc_left_back_velocity());
     }
 
     okPressed = buttonOkPressed();

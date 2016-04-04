@@ -125,7 +125,7 @@
 #define BUTTON_BACK_PIN BUTTON2_PIN
 #define MENU_STEP_ANGLE 35 // distance between options in degrees
 #define MENU_DEAD_ZONE 1
-#define MENU_RESTORING_FORCE 2
+#define MENU_RESTORING_FORCE 5
 
 // Hand swipe start
 #define HAND_SWIPE_START_TIME 500 // in millis
@@ -135,6 +135,10 @@
 
 // Logging configuration
 #define LOG_SIZE 500
+
+// EEPROM save location parameters
+#define EEPROM_MAZE_LOCATION 1
+#define EEPROM_MAZE_FLAG_LOCATION 0
 
 // Motion control paremeters
 #define MM_PER_BLOCK 180

@@ -1,12 +1,14 @@
 #include "driver.h"
 
 #ifdef COMPILE_FOR_PC
+#include <fstream>
 #include <iostream>
 #include <unistd.h>
 #endif
 
 #ifndef COMPILE_FOR_PC
 #include <Arduino.h>
+#include <EEPROM.h>
 #include "data.h"
 #include "motion.h"
 #include "conf.h"
@@ -92,7 +94,137 @@ void Driver::move(Path<16, 16> path)
   }
 }
 
+void Driver::saveState(Maze<16, 16>& maze) {
+#ifdef COMPILE_FOR_PC
+  std::ofstream out_file;
+  out_file.open("saved_state.maze");
+#endif
 
+  for (int x = 0; x < 16; x++) {
+    for (int y = 0; y < 16; y++) {
+      uint8_t out = 0;
+      out |= maze.isWall(x, y, kNorth) << 0;
+      out |= maze.isWall(x, y, kEast) << 1;
+      out |= maze.isWall(x, y, kSouth) << 2;
+      out |= maze.isWall(x, y, kWest) << 3;
+      out |= maze.isVisited(x, y) << 4;
+#ifdef COMPILE_FOR_PC
+      out_file << out;
+#else
+      EEPROM.write(EEPROM_MAZE_LOCATION + 16*x + y, out);
+#endif
+    }
+  }
+
+#ifdef COMPILE_FOR_PC
+  out_file.close();
+#else
+  EEPROM.write(EEPROM_MAZE_FLAG_LOCATION, 1);
+#endif
+}
+
+void Driver::loadState(Maze<16, 16>& maze) {
+#ifdef COMPILE_FOR_PC
+  std::ifstream in_file;
+  in_file.open("saved_state.maze");
+#endif
+
+  for (int x = 0; x < 16; x++) {
+    for (int y = 0; y < 16; y++) {
+      uint8_t in;
+#ifdef COMPILE_FOR_PC
+      std::ifstream >> in;
+#else
+      in = EEPROM.read(EEPROM_MAZE_LOCATION + 16*x + y);
+#endif
+
+      if (in & (1 << 0)) {
+        maze.addWall(x, y, kNorth);
+      } else {
+        maze.removeWall(x, y, kNorth);
+      }
+
+      if (in & (1 << 1)) {
+        maze.addWall(x, y, kEast);
+      } else {
+        maze.removeWall(x, y, kEast);
+      }
+
+      if (in & (1 << 2)) {
+        maze.addWall(x, y, kSouth);
+      } else {
+        maze.removeWall(x, y, kSouth);
+      }
+
+      if (in & (1 << 3)) {
+        maze.addWall(x, y, kWest);
+      } else {
+        maze.removeWall(x, y, kWest);
+      }
+
+      if (in & (1 << 4)) {
+        maze.visit(x, y);
+      } else {
+        maze.unvisit(x, y);
+      }
+    }
+  }
+
+#ifdef COMPILE_FOR_PC
+  in_file.close();
+#endif
+}
+
+void Driver::updateState(Maze<16, 16>& maze, size_t x, size_t y) {
+  uint8_t out = 0;
+  out |= maze.isWall(x, y, kNorth) << 0;
+  out |= maze.isWall(x, y, kEast) << 1;
+  out |= maze.isWall(x, y, kSouth) << 2;
+  out |= maze.isWall(x, y, kWest) << 3;
+  out |= maze.isVisited(x, y) << 4;
+
+#ifdef COMPILE_FOR_PC
+  std::fstream out_file;
+  out_file.open("saved_state.maze");
+  out_file.seekp(16*x + y);
+  out_file << out;
+  out_file.close();
+#else
+  EEPROM.write(EEPROM_MAZE_LOCATION + 16*x + y, out);
+#endif
+}
+
+void Driver::clearState() {
+#ifdef COMPILE_FOR_PC
+  remove("saved_state.maze");
+#else
+  Maze<16, 16> maze;
+  saveState(maze);
+  EEPROM.write(EEPROM_MAZE_FLAG_LOCATION, 0);
+#endif
+}
+
+void Driver::resetState() {
+#ifndef COMPILE_FOR_PC
+  Maze<16, 16> maze;
+  saveState(maze);
+#endif
+}
+
+bool Driver::hasStoredState() {
+#ifdef COMPILE_FOR_PC
+  std::ifstream test_file ("saved_state.maze");
+  if (test_file.good()) {
+    test_file.close();
+    return true;
+  } else {
+    test_file.close();
+    return false;
+  }
+#else
+  return EEPROM.read(EEPROM_MAZE_FLAG_LOCATION) != 0;
+#endif
+}
 
 
 Compass8 Turnable::getDir()
@@ -955,8 +1087,5 @@ void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
 
   moving_ = will_end_moving;
 }
-
-
-
 
 #endif // #ifndef COMPILE_FOR_PC

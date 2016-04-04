@@ -88,10 +88,28 @@ class Driver
     // Moves the robot a number of blocks in a given direction.
     virtual void move(Compass8 dir, int distance) = 0;
 
-    // The next method may be overridden in a derived class.
+    // The next four methods may be overridden in a derived class.
 
     // Moves the robot through the given Path.
     virtual void move(Path<16, 16> path);
+
+    // Writes the current state to persistent memory
+    virtual void saveState(Maze<16, 16>& maze);
+
+    // Loads the saved state into the given maze object
+    virtual void loadState(Maze<16, 16>& maze);
+
+    // Saves the state of the given cell only
+    virtual void updateState(Maze<16, 16>& maze, size_t x, size_t y);
+
+    // Removes the saved state
+    virtual void clearState();
+
+    // Sets the saved state to an empty maze
+    virtual void resetState();
+
+    // True if there is a maze stored in memory
+    virtual bool hasStoredState();
 };
 
 // Standard driver interface for a robot that must be turned (as opposed to one
