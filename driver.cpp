@@ -227,6 +227,8 @@ bool Driver::hasStoredState() {
 }
 
 
+float Turnable::kDefaultInitialDirection = 0.0;
+
 Compass8 Turnable::getDir()
 {
   return (Compass8) ( (((int) dir_ + 45 / 2) % 360) / 45 );
@@ -281,9 +283,13 @@ float Turnable::relativeDirF(float absolute_dir)
   return arc;
 }
 
-Turnable::Turnable() : kInitialDirection(0.0)
+Turnable::Turnable() : kInitialDirection(kDefaultInitialDirection)
 {
   dir_ = kInitialDirection;
+}
+
+void Turnable::setDefaultInitialDirection(Compass8 dir) {
+  kDefaultInitialDirection = ((float)dir) * 45;
 }
 
 

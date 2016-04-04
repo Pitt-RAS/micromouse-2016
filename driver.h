@@ -117,6 +117,7 @@ class Driver
 class Turnable
 {
   private:
+    static float kDefaultInitialDirection;
     const float kInitialDirection;
 
     float dir_;
@@ -153,6 +154,9 @@ class Turnable
 
   public:
     Turnable();
+
+    // Sets the default initial direction for all instances of this class
+    static void setDefaultInitialDirection(Compass8 dir);
 };
 
 // Standard interface for a simulation driver (i.e. a driver that does not
