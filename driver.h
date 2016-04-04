@@ -104,6 +104,9 @@ class Driver
 
     // Sets the saved state to an empty maze
     virtual void clearState();
+
+    // True if there is a maze stored in memory
+    virtual bool hasStoredState();
 };
 
 // Standard driver interface for a robot that must be turned (as opposed to one

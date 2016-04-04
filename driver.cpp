@@ -118,6 +118,8 @@ void Driver::saveState(Maze<16, 16>& maze) {
 
 #ifdef COMPILE_FOR_PC
   out_file.close();
+#else
+  EEPROM.write(EEPROM_MAZE_FLAG_LOCATION, 1);
 #endif
 }
 
@@ -193,8 +195,26 @@ void Driver::updateState(Maze<16, 16>& maze, size_t x, size_t y) {
 }
 
 void Driver::clearState() {
-  Maze<16, 16> maze;
-  saveState(maze);
+#ifdef COMPILE_FOR_PC
+  remove("saved_state.maze");
+#else
+  EEPROM.write(EEPROM_MAZE_FLAG_LOCATION, 0);
+#endif
+}
+
+bool Driver::hasStoredState() {
+#ifdef COMPILE_FOR_PC
+  std::ifstream test_file ("saved_state.maze");
+  if (test_file.good()) {
+    test_file.close();
+    return true;
+  } else {
+    test_file.close();
+    return false;
+  }
+#else
+  return EEPROM.read(EEPROM_MAZE_FLAG_LOCATION) != 0;
+#endif
 }
 
 
