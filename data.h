@@ -306,6 +306,7 @@ class FloodFillPath :
                                               size_t finish_x, size_t finish_y);
 };
 
+// Path that traces another path from the start to the first unvisited box.
 template <size_t x_size, size_t y_size>
 class KnownPath : public Path<x_size, y_size>
 {
@@ -737,10 +738,9 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
   if (this->start_x_ == this->finish_x_ && this->start_y_ == this->finish_y_)
     return;
 
-  for (x = 0; x < x_size; x++) {
-    for (y = 0; y < y_size; y++) {
-      boxes_[y][x] = 0;
-    }
+  for (x = 0; x < x_size; x++)
+  for (y = 0; y < y_size; y++) {
+    boxes_[y][x] = 0;
   }
 
   x = this->finish_x_;
@@ -788,7 +788,7 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
     }
 
     if (!this->maze_.isWall(x, y, kSouth)
-          && y - 1 >= 0 && boxes_[y - 1][x] == 0) {
+          && y >= 1 && boxes_[y - 1][x] == 0) {
       paint_queue.enqueue(&boxes_[y - 1][x]);
       next_layer_size++;
     }
@@ -800,7 +800,7 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
     }
 
     if (!this->maze_.isWall(x, y, kWest)
-          && x - 1 >= 0 && boxes_[y][x - 1] == 0) {
+          && x >= 1 && boxes_[y][x - 1] == 0) {
       paint_queue.enqueue(&boxes_[y][x - 1]);
       next_layer_size++;
     }
@@ -855,8 +855,8 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
     direction_ptr = NULL;
 
     if (distance != 0) {
-      // check the forward direction first, and choose that if it's the same
-      //   distance as a turn would be
+      // Check the forward direction first, and choose that if it's the same
+      // distance as a turn would be.
       if (last_direction_ptr != NULL) {
         switch (*last_direction_ptr) {
           case kNorth: {

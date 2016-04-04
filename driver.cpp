@@ -71,6 +71,9 @@ void Driver::move(Path<16, 16> path)
   Compass8 movement_direction, next_direction;
   int movement_distance;
 
+  if (path.isEmpty())
+    return;
+
   next_direction = path.nextDirection();
 
   if (path.isEmpty())
