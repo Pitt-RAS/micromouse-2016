@@ -56,7 +56,13 @@ char* primary_options[] = {
 
 char* secondary_options[] = {
   "CLR",
+  "SDIR",
   "BACK"
+};
+
+char* direction_options[] = {
+  "NRTH",
+  "EAST"
 };
 
 void loop()
@@ -79,14 +85,30 @@ void loop()
       break;
     }
     case 1: { // OPT
-      delay(500);
-      switch (menu.getString(secondary_options, 2, 4)) {
+      switch (menu.getString(secondary_options, 3, 4)) {
         case 0: { // CLR
           RobotDriver driver;
           driver.clearState();
           break;
         }
-        case 1: // BACK
+        case 1: { // SDIR
+          switch (menu.getString(direction_options, 2, 4)) {
+            case 0: { // NORTH
+              Turnable::setDefaultInitialDirection(kNorth);
+              menu.storeDefaultDirection(kNorth);
+              break;
+            }
+            case 1: { // EAST
+              Turnable::setDefaultInitialDirection(kEast);
+              menu.storeDefaultDirection(kEast);
+              break;
+            }
+            default: {
+              break;
+            }
+          }
+        }
+        case 2: // BACK
         default: {
           break;
         }
@@ -97,5 +119,4 @@ void loop()
       break;
     }
   }
-  delay(1000);
 }
