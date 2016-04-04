@@ -24,6 +24,7 @@ class FakePath{
 	public:
 	FakePath(Compass8 path[]);
 	Compass8 nextDirection();
+	Compass8 peek();
 	bool isEmpty();
 	int getLength();
 
@@ -49,6 +50,10 @@ bool FakePath::isEmpty(){
 
 int FakePath::getLength(){
 	return fake_path.size();
+}
+
+Compass8 FakePath::peek(){
+	return fake_path.front();
 }
 
 
@@ -82,6 +87,8 @@ PathParser::PathParser(FakePath *path)
 {
   Compass8 movement_direction, next_direction, decision_direction;
 
+  std::cout<<relativeDir(kEast,kSouth)<<"\n";
+
   // next_direction = path->nextDirection();
 
   //in the case we got no path
@@ -90,7 +97,7 @@ PathParser::PathParser(FakePath *path)
   //do some pivot logic for the start here
 
   // movement_direction = next_direction;
-  // next_direction = path->nextDirection();
+  dir = next_direction = path->nextDirection();
 
   // decision_direction = relativeDir(next_direction, movement_direction);
 
@@ -182,7 +189,7 @@ void PathParser::rightDecisions(FakePath *path){
 					move_list.push(right_90);
 					move_list.push(setup_right_diag);
 					move_list.push(diag);
-					diagonalDecisions(false, path);
+					diagonalDecisions(true, path);
 					break;
 				default:
 					break;
@@ -217,7 +224,6 @@ void PathParser::leftDecisions(FakePath *path){
 		//right move
 		case kEast:
 			//diagonal move
-			std::cout<<"gets here\n";
 			move_list.push(setup_left_diag);
 			move_list.push(diag);
 			diagonalDecisions(false, path);
@@ -233,45 +239,48 @@ void PathParser::leftDecisions(FakePath *path){
 					move_list.push(left_180);
 					break;
 				case kEast:
-					//this is a stupid decision to make because it's just driving a circle, but we'll have to deal with it idk how though
-					break;
-				case kWest:
 					//corner into diagonal special case
 					move_list.push(left_90);
 					move_list.push(setup_left_diag);
 					move_list.push(diag);
 					diagonalDecisions(false, path);
 					break;
+				case kWest:
+					break;
 				default:
 					break;
 			}
 			break;
 		default:
+			std::cout<<"SHIT\n";
 			break;
 	}
 }
 
 void PathParser::diagonalDecisions(bool approachRight, FakePath *path){
-	Compass8 next_direction = path->nextDirection();
+	Compass8 next_direction = path->peek();
 	Compass8 decision_dir = relativeDir(next_direction, dir);
-	dir = next_direction;
 	switch(decision_dir)
 		{
 			case kNorth:
-				//to put us forward again
 				if(approachRight)
 					move_list.push(exit_left_diag);
 				else
 					move_list.push(exit_right_diag);
+
 				return;
 				break;
 			case kEast:
 				if(approachRight){
 					move_list.push(diag);
+					dir = next_direction;
+					next_direction = path->nextDirection();
 					diagonalDecisions(false, path);
+					return;
 				}
 				else{
 					move_list.push(exit_right_diag);
+					std::cout<<dir<<"OK\n";
 					return;
 				}
 				break;
@@ -282,10 +291,14 @@ void PathParser::diagonalDecisions(bool approachRight, FakePath *path){
 				}
 				else{
 					move_list.push(diag);
+					dir = next_direction;
+					next_direction = path->nextDirection();
 					diagonalDecisions(true, path);
+					return;
 				}
 				break;
 			default:
+				std::cout<<"SHIT\n";
 				break;
 		}
 }
