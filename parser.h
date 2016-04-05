@@ -22,12 +22,14 @@ enum Move {
   left_135 = 14
 };
 
+
+
 class FakePath{
   private:
   std::queue<Compass8> fake_path;
 
   public:
-  FakePath(Compass8 path[]);
+  FakePath(Compass8 path[], int length);
   Compass8 nextDirection();
   Compass8 peek();
   bool isEmpty();
@@ -35,9 +37,9 @@ class FakePath{
 
 };
 
-FakePath::FakePath(Compass8 path[]){
-  int end = 16;
-  for (int i = 0; i < 16; i = i + 1)
+FakePath::FakePath(Compass8 path[], int length){
+  int end = length;
+  for (int i = 0; i < end; i = i + 1)
   {
     fake_path.push(path[i]);
   }
@@ -80,8 +82,15 @@ class PathParser {
 
 int main(int argc, const char * argv[])
 {
-  Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kSouth, kEast, kSouth, kEast, kNorth, kEast, kNorth, kNorth, kEast, kNorth, kEast, kEast};
-  FakePath path(paddy);
+  Compass8 paddy[] = {kNorth, kEast, kSouth, kEast, kEast, kEast, kEast, kNorth, kEast, kEast, kSouth, kEast, kNorth, kEast, kEast, kSouth,kEast,kEast, kNorth, kEast,
+  	kSouth, kEast, kEast, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kWest,
+  	kWest, kSouth, kWest, kNorth, kWest, kNorth, kWest, kNorth, kNorth, kEast, kSouth, kEast, kEast,
+  	kNorth, kNorth, kWest, kNorth, kWest, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth,
+  	kWest, kSouth, kWest, kSouth, kSouth, kEast, kSouth, kEast, kEast, kNorth, kEast,kNorth, kEast, kNorth, kEast, kNorth, kEast, kNorth,
+  	kWest, kWest};
+
+  int length = sizeof(paddy)/sizeof(Compass8);
+  FakePath path(paddy, length);
   PathParser joe(&path);
   joe.getMoveList();
 }
@@ -107,7 +116,8 @@ PathParser::PathParser(FakePath *path)
   //dir = (Compass8)((int)next_direction + (int)decision_direction);
 
   beginDecision(path);
-  move_list = cleanPath();
+  std::cout<<"get's here\n";
+  //move_list = cleanPath();
 }
 
 std::queue<int> PathParser::cleanPath(){
@@ -376,13 +386,29 @@ void PathParser::diagonalDecisions(bool approachRight, FakePath *path){
           return;
         }
         else{
-          move_list.push(right_135);
+          next_direction = path->peek();
+        	decision_dir = relativeDir(next_direction, dir);
+        	if(decision_dir != kWest)
+          	move_list.push(right_135);
+          else{
+          	move_list.push(right_90);
+          	dir = path->nextDirection();
+          	diagonalDecisions(true, path);
+          }
           return;
         }
         break;
       case kWest:
         if(approachRight){
-          move_list.push(left_135);
+        	next_direction = path->peek();
+        	decision_dir = relativeDir(next_direction, dir);
+        	if(decision_dir != kEast)
+          	move_list.push(left_135);
+          else{
+          	move_list.push(left_90);
+          	dir = path->nextDirection();
+          	diagonalDecisions(false, path);
+          }
           return;
         }
         else{
