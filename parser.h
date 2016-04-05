@@ -7,7 +7,7 @@
 enum Move {
 	//1 cell edge
   forward = 0,
-  //2 cell edges for straigh - 1 cell edge on a diagonal??
+  //2 cell edges for straight - 1 cell edge on a diagonal??
   left_90 = 1,
   right_90 = 2,
   //through 3 cell edges
@@ -75,9 +75,9 @@ Compass8 FakePath::peek(){
 class PathParser {
   private:
     Compass8 dir;
+    bool lastMoveFlag;
     Compass8 relativeDir(Compass8 next_dir, Compass8 current_dir);
     void beginDecision(FakePath *path);
-    void forwardDecisions(FakePath *path);
     void leftDecisions(FakePath *path);
     void rightDecisions(FakePath *path);
     void diagonalDecisions(bool approachRight, FakePath *path);
@@ -91,18 +91,18 @@ class PathParser {
 int main(int argc, const char * argv[])
 {
 	//all-japan 2015 test case: blue
-  Compass8 paddy[] = {kNorth, kEast, kSouth, kEast, kEast, kEast, kEast, kNorth, kEast, kEast, kSouth, kEast, kNorth, kEast, kEast, kSouth,kEast,kEast, kNorth, kEast,
-  	kSouth, kEast, kEast, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kWest,
-  	kWest, kSouth, kWest, kNorth, kWest, kNorth, kWest, kNorth, kNorth, kEast, kSouth, kEast, kEast,
-  	kNorth, kNorth, kWest, kNorth, kWest, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth,
-  	kWest, kSouth, kWest, kSouth, kSouth, kEast, kSouth, kEast, kEast, kNorth, kEast,kNorth, kEast, kNorth, kEast, kNorth, kEast, kNorth,
-  	kWest};
+  // Compass8 paddy[] = {kNorth, kEast, kSouth, kEast, kEast, kEast, kEast, kNorth, kEast, kEast, kSouth, kEast, kNorth, kEast, kEast, kSouth,kEast,kEast, kNorth, kEast,
+  // 	kSouth, kEast, kEast, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kWest,
+  // 	kWest, kSouth, kWest, kNorth, kWest, kNorth, kWest, kNorth, kNorth, kEast, kSouth, kEast, kEast,
+  // 	kNorth, kNorth, kWest, kNorth, kWest, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth,
+  // 	kWest, kSouth, kWest, kSouth, kSouth, kEast, kSouth, kEast, kEast, kNorth, kEast,kNorth, kEast, kNorth, kEast, kNorth, kEast, kNorth,
+  // 	kWest};
 
   //all-japan 2015 test case: green
 
 
 	//diagonal test case
-  //Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kNorth, kNorth};
+  Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kNorth};
 
   //diagonal cornering test case
   //Compass8 paddy[] = {kEast, kEast, kSouth, kEast, kNorth, kEast, kEast};
@@ -119,6 +119,7 @@ int main(int argc, const char * argv[])
 
 PathParser::PathParser(FakePath *path)
 {
+	lastMoveFlag = false;
   Compass8 movement_direction, next_direction, decision_direction;
   dir = next_direction = path->nextDirection();
   //all paths start by assuming that you're starting from the middle of the previous cell
@@ -209,7 +210,7 @@ void PathParser::beginDecision(FakePath *path){
   //assumes that every movement into this will be a forward
   while (!path->isEmpty())
   {
-    std::cout<<path->getLength()<<"\n";
+    //std::cout<<path->getLength()<<"\n";
     Compass8 next_direction = path->nextDirection();
     Compass8 decision_dir = relativeDir(next_direction, dir);
     dir = next_direction;
@@ -227,25 +228,16 @@ void PathParser::beginDecision(FakePath *path){
       case kWest:
         leftDecisions(path);
         break;
+      //if known path is behind you??
+      case kSouth:
+      	move_list.push(forward);
+      	move_list.push(pivot_180);
+      	move_list.push(forward);
       default:
         break;
     }
   }
 
-}
-
-void PathParser::forwardDecisions(FakePath *path){
-  // //dir = (Compass8)(((int)dir + (int)decision_dir)%7);
-  // dir = decision_dir;
-
-  // if(decision_dir == kNorth){
-  //  move_list.push(forward);
-  // }
-  // else
-  //  return;
-
-  // if(path->isEmpty())
-  //  return;
 }
 
 void PathParser::rightDecisions(FakePath *path){
@@ -374,11 +366,19 @@ void PathParser::leftDecisions(FakePath *path){
 }
 
 void PathParser::diagonalDecisions(bool approachRight, FakePath *path){
+
+  Compass8 next_direction, decision_dir;
+
 	if(path->isEmpty())
-  	return;
-  Compass8 next_direction = path->nextDirection();
-  Compass8 decision_dir = relativeDir(next_direction, dir);
-  dir = next_direction;
+  	lastMoveFlag = true;
+
+  if(!lastMoveFlag){
+    next_direction = path->nextDirection();
+    decision_dir = relativeDir(next_direction, dir);
+    dir = next_direction;
+  }
+  else decision_dir = kNorth; //if last move, straighten out
+
   switch(decision_dir)
     {
       case kNorth:
