@@ -284,6 +284,7 @@ class ContinuousRobotDriverRefactor : public Driver, public Turnable
 {
   private:
     bool moving_;
+    bool left_back_wall_;
 
     void turn_in_place(Compass8 dir);
     void turn_while_moving(Compass8 dir);

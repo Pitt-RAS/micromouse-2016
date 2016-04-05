@@ -949,7 +949,7 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
   }
 }
 
-void ContinuousRobotDriverRefactor::begin(Compass8 dir)
+void ContinuousRobotDriverRefactor::beginFromCenter(Compass8 dir)
 {
   turn_in_place(dir);
   motion_forward(MM_PER_BLOCK / 2, 0.0, SEARCH_VELOCITY);
@@ -973,6 +973,26 @@ void ContinuousRobotDriverRefactor::begin(Compass8 dir)
   }
 
   setDir(dir);
+}
+
+void ContinuousRobotDriverRefactor::beginFromBack(Compass8 dir, int distance)
+{
+  if (dir != getDir()) {
+    motion_forward(MM_FROM_BACK_TO_CENTER, 0, 0);
+    turn_in_place(dir);
+
+    if (distance > 0) {
+      motion_forward(MM_PER_BLOCK / 2, 0, SEARCH_VELOCITY);
+
+      if (distance > 1)
+        proceed(distance - 1);
+    }
+  } else {
+    motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, SEARCH_VELOCITY);
+
+    if (distance > 1)
+      proceed(distance - 1);
+  }
 }
 
 void ContinuousRobotDriverRefactor::stop(Compass8 dir)
@@ -1012,7 +1032,8 @@ void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
   setDir(dir);
 }
 
-ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor() : moving_(false)
+ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor() : moving_(false),
+    left_back_wall_(false)
 {
   // Nothing here for now
 }
@@ -1071,6 +1092,13 @@ void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
 
   will_end_moving = distance > 0;
 
+  if (!left_back_wall_) {
+    beginFromBack(dir, distance);
+    moving_ = will_end_moving;
+    left_back_wall_ = true;
+    return;
+  }
+
   if (moving_) {
     if (will_end_moving) {
       proceed(dir, distance);
@@ -1081,7 +1109,7 @@ void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
   }
   else {
     if (will_end_moving) {
-      begin(dir);
+      beginFromCenter(dir);
 
       if (distance > 1)
         proceed(dir, distance - 1);
