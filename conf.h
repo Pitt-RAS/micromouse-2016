@@ -198,7 +198,7 @@
 #define RATED_VOLTAGE 8 // Voltage that ratings were measured with
 #define RATED_INTERNAL_RESISTANCE 3.1 // ohms of resistance in motor coils
 #define RATED_FREERUN_CURRENT 0.06// Amps
-#define RATED_RPM_PER_VBEMF 818000 // RPM/Volt
+#define RATED_RPM_PER_VBEMF 500 // RPM/Volt
 #define RATED_TORQUE_PER_AMP 0.000622353 // torque in N-m at output shaft, Amps passed through motor
 
 // Convert motor parameters to robot parameters
