@@ -12,6 +12,8 @@
 #include "data.h"
 #include "motion.h"
 #include "conf.h"
+#include "sensors_encoders.h"
+#include "sensors_orientation.h"
 #include "FreakOut.h"
 #include "RangeSensorContainer.h"
 #include "Menu.h"
@@ -941,14 +943,48 @@ void ContinuousRobotDriverRefactor::turn_in_place(Compass8 dir)
 
 void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
 {
+  bool wall_behind = false;
+
   switch(relativeDir(dir)) {
     case kNorth:
       motion_forward(MM_PER_BLOCK, SEARCH_VELOCITY, SEARCH_VELOCITY);
       break;
     case kSouth:
       motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
-      motion_rotate(180.0);
-      motion_forward(MM_PER_BLOCK / 2, 0.0, SEARCH_VELOCITY);
+      if (isWall(absoluteDir(kNorth))) {
+        wall_behind = true;
+      }
+
+      if (isWall(absoluteDir(kEast))) {
+        motion_rotate(90);
+        motion_hold_range(MM_PER_BLOCK / 2, 500);
+        motion_rotate(90);
+      } else if (isWall(absoluteDir(kWest))) {
+        motion_rotate(-90);
+        motion_hold_range(MM_PER_BLOCK / 2, 500);
+        motion_rotate(-90);
+      } else {
+        motion_rotate(180);
+      }
+
+      if (wall_behind) {
+        float old_max_vel = motion_get_maxVel_straight();
+        motion_set_maxVel_straight(MOTION_RESET_BACKUP_VEL);
+        motion_forward(-MM_FROM_BACK_TO_CENTER - MOTION_RESET_BACKUP_DISTANCE, 0, 0);
+        motion_set_maxVel_straight(old_max_vel);
+
+        enc_left_back_write(0);
+        enc_right_back_write(0);
+        enc_left_front_write(0);
+        enc_right_front_write(0);
+        Orientation::getInstance()->resetHeading();
+
+        motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, SEARCH_VELOCITY);
+
+      } else {
+        motion_forward(MM_PER_BLOCK / 2, 0.0, SEARCH_VELOCITY);
+      }
+
       break;
     case kEast:
       motion_corner(kRightTurn90, SEARCH_VELOCITY);

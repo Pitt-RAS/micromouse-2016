@@ -211,6 +211,9 @@
 //    if this max velocity is higher than max straight velocity then use max straight velocity
 #define MAX_VEL_ROTATE .5 // m/s
 
+#define MOTION_RESET_BACKUP_VEL 0.05
+#define MOTION_RESET_BACKUP_DISTANCE 50
+
 
 // Zll forward speeds should be the same, and should be the maximum turn speed.  
 // All max angular accelerations can be the same, but don't have to be

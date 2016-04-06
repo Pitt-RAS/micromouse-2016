@@ -938,3 +938,31 @@ void motion_set_maxVel_straight(float temp_max_vel_straight) {
 void motion_set_maxVel_rotate(float temp_max_vel_rotate) {
   max_vel_rotate = temp_max_vel_rotate;
 }
+
+float motion_get_maxAccel_straight() {
+  return max_accel_straight;
+}
+float motion_get_maxDecel_straight() {
+  return max_decel_straight;
+}
+
+float motion_get_maxAccel_rotate() {
+  return max_accel_rotate;
+}
+float motion_get_maxDecel_rotate() {
+  return max_decel_rotate;
+}
+
+float motion_get_maxAccel_corner() {
+  return max_accel_corner;
+}
+float motion_get_maxDecel_corner() {
+  return max_decel_corner;
+}
+
+float motion_get_maxVel_straight() {
+  return max_vel_straight;
+}
+float motion_get_maxVel_rotate() {
+  return max_vel_rotate;
+}
