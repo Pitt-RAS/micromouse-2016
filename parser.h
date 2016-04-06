@@ -115,7 +115,7 @@ int main(int argc, const char * argv[])
   //Compass8 paddy[] = {kEast, kEast, kSouth, kEast, kNorth, kEast, kEast};
 
   //
-  Compass8 paddy[] = {kNorth, kNorth, kEast, kEast,kEast,kSouth,kEast,kSouth};
+  Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kEast, kEast, kSouth, kEast};
   int length = sizeof(paddy)/sizeof(Compass8);
   std::cout<<length<<"\n";
   FakePath fpath(paddy, length);
@@ -282,9 +282,7 @@ void PathParser::rightDecisions(){
     //right move
     case kEast:
     	if(path.isEmpty()){
-				move_list.push(setup_right_diag);
-				move_list.push(diag);
-				move_list.push(exit_left_diag);
+				move_list.push(right_180);
 				return;
 			}
   		decision_dir = path.nextDirection();
@@ -368,9 +366,7 @@ void PathParser::leftDecisions(){
     //left move
     case kWest:
       if(path.isEmpty()){
-				move_list.push(setup_left_diag);
-				move_list.push(diag);
-				move_list.push(exit_right_diag);
+				move_list.push(left_180);
 				return;
 			}
   		decision_dir = path.nextDirection();
