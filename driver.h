@@ -293,7 +293,8 @@ class ContinuousRobotDriverRefactor : public Driver, public Turnable
     void turn_in_place(Compass8 dir);
     void turn_while_moving(Compass8 dir);
 
-    void begin(Compass8 dir);
+    void beginFromCenter(Compass8 dir);
+    void beginFromBack(Compass8 dir, int distance);
     void stop(Compass8 dir);
 
     void proceed(Compass8 dir, int distance);

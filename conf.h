@@ -143,6 +143,7 @@
 
 // Motion control paremeters
 #define MM_PER_BLOCK 180
+#define MM_FROM_BACK_TO_CENTER 30
 #define MM_PER_STEP 0.653868
 #define MOTION_COLLECT_MM_PER_READING 1
 

@@ -992,18 +992,55 @@ void ContinuousRobotDriverRefactor::beginFromBack(Compass8 dir, int distance)
   if (dir != getDir()) {
     motion_forward(MM_FROM_BACK_TO_CENTER, 0, 0);
     turn_in_place(dir);
+    setDir(dir);
 
     if (distance > 0) {
       motion_forward(MM_PER_BLOCK / 2, 0, SEARCH_VELOCITY);
 
+      switch(dir) {
+        case kNorth:
+          setY(getY() + 1);
+          break;
+        case kSouth:
+          setY(getY() - 1);
+          break;
+        case kEast:
+          setX(getX() + 1);
+          break;
+        case kWest:
+          setX(getX() - 1);
+          break;
+        default:
+          freakOut("BAG3");
+          break;
+      }
+
       if (distance > 1)
-        proceed(distance - 1);
+        proceed(dir, distance - 1);
     }
   } else {
     motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, SEARCH_VELOCITY);
 
+    switch(dir) {
+      case kNorth:
+        setY(getY() + 1);
+        break;
+      case kSouth:
+        setY(getY() - 1);
+        break;
+      case kEast:
+        setX(getX() + 1);
+        break;
+      case kWest:
+        setX(getX() - 1);
+        break;
+      default:
+        freakOut("BAG3");
+        break;
+    }
+
     if (distance > 1)
-      proceed(distance - 1);
+      proceed(dir, distance - 1);
   }
 }
 
