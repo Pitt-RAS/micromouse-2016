@@ -115,7 +115,7 @@ int main(int argc, const char * argv[])
   //Compass8 paddy[] = {kEast, kEast, kSouth, kEast, kNorth, kEast, kEast};
 
   //
-  Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kEast, kEast, kSouth, kEast};
+  Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kEast, kEast, kSouth, kWest, kWest,kSouth, kEast, kSouth};
   int length = sizeof(paddy)/sizeof(Compass8);
   std::cout<<length<<"\n";
   FakePath fpath(paddy, length);
@@ -275,9 +275,10 @@ void PathParser::rightDecisions(){
       move_list.push(right_90);
 
       dir = path.peek();
-      if(dir == kNorth)
+      if(dir == kNorth){
       	move_list.push(forward);
-
+      	decision_dir = path.nextDirection();
+     	}
       break;
     //right move
     case kEast:
@@ -292,8 +293,10 @@ void PathParser::rightDecisions(){
           //180 outta here
           move_list.push(right_180);
           dir = path.peek();
-		      if(dir == kNorth)
+		      if(dir == kNorth){
 		      	move_list.push(forward);
+      			decision_dir = path.nextDirection();
+     			}
           break;
         case kEast:
           //this is a stupid decision to make because it's just driving a circle, but we'll have to deal with it idk how though
@@ -353,8 +356,10 @@ void PathParser::leftDecisions(){
       //dir = kNorth;
       move_list.push(left_90);
       dir = path.peek();
-      if(dir == kNorth)
+      if(dir == kNorth){
       	move_list.push(forward);
+      	decision_dir = path.nextDirection();
+     	}
       break;
     //right move
     case kEast:
@@ -376,8 +381,10 @@ void PathParser::leftDecisions(){
           //180 outta here
           move_list.push(left_180);
           dir = path.peek();
-		      if(dir == kNorth)
+		      if(dir == kNorth){
 		      	move_list.push(forward);
+      			decision_dir = path.nextDirection();
+     			}
           break;
         case kEast:
         	move_list.push(left_135);
