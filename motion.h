@@ -11,7 +11,7 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed);
 void motion_collect(float distance, float current_speed, float exit_speed);
 void motion_rotate(float angle);
 void motion_gyro_rotate(float angle);
-void motion_corner(SweptTurnType turn_type, float speed);
+void motion_corner(SweptTurnType turn_type, float speed, float size_scaling = 1);
 
 void motion_hold(unsigned int time);
 void motion_hold_range(int setpoint, unsigned int time);

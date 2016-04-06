@@ -987,10 +987,14 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
 
       break;
     case kEast:
-      motion_corner(kRightTurn90, SEARCH_VELOCITY);
+      motion_forward(10, SEARCH_VELOCITY, SEARCH_VELOCITY);
+      motion_corner(kRightTurn90, SEARCH_VELOCITY, 160./180);
+      motion_forward(10, SEARCH_VELOCITY, SEARCH_VELOCITY);
       break;
     case kWest:
-      motion_corner(kLeftTurn90, SEARCH_VELOCITY);
+      motion_forward(10, SEARCH_VELOCITY, SEARCH_VELOCITY);
+      motion_corner(kLeftTurn90, SEARCH_VELOCITY, 160./180);
+      motion_forward(10, SEARCH_VELOCITY, SEARCH_VELOCITY);
       break;
     default:
       freakOut("BAG1");

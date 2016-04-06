@@ -662,7 +662,7 @@ void motion_gyro_rotate(float angle) {
   motor_lb.Set(0, current_left_velocity);
 }
 
-void motion_corner(SweptTurnType turn_type, float speed) {
+void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
   float sign;
   float currentFrontRight, currentFrontLeft, currentBackRight, currentBackLeft;
   float setpointFrontRight, setpointFrontLeft, setpointBackRight, setpointBackLeft;
@@ -748,7 +748,7 @@ void motion_corner(SweptTurnType turn_type, float speed) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     orientation->update();
 
-    move_time_scaled = move_time * time_scaling;
+    move_time_scaled = move_time * time_scaling / size_scaling;
     
     idealDistance = move_time * speed / 1000;
 
