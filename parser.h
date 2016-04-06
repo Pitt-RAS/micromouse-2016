@@ -40,6 +40,7 @@ class FakePath{
   FakePath(Compass8 path[], int length);
   Compass8 nextDirection();
   Compass8 peek();
+  void push(Compass8 item);
   bool isEmpty();
   int getLength();
 
@@ -59,6 +60,10 @@ Compass8 FakePath::nextDirection(){
   return dir;
 }
 
+void FakePath::push(Compass8 item){
+	fake_path.push(item);
+}
+
 bool FakePath::isEmpty(){
   return fake_path.empty();
 }
@@ -74,16 +79,18 @@ Compass8 FakePath::peek(){
 
 class PathParser {
   private:
-    Compass8 dir;
+    Compass8 dir, decision_dir;
     bool lastMoveFlag;
+    FakePath path;
     Compass8 relativeDir(Compass8 next_dir, Compass8 current_dir);
-    void beginDecision(FakePath *path);
-    void leftDecisions(FakePath *path);
-    void rightDecisions(FakePath *path);
-    void diagonalDecisions(bool approachRight, FakePath *path);
+    void beginDecision();
+    void leftDecisions();
+    void rightDecisions();
+    void diagonalDecisions(bool approachRight);
+    void buildRelativePath(FakePath *abspath);
   public:
    std::queue<int> move_list;
-   PathParser(FakePath *path);
+   PathParser(FakePath *abspath);
    std::queue<int> getMoveList();
    std::queue<int> cleanPath();
 };
@@ -102,28 +109,44 @@ int main(int argc, const char * argv[])
 
 
 	//diagonal test case
-  Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kNorth};
+  //Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kNorth};
 
   //diagonal cornering test case
   //Compass8 paddy[] = {kEast, kEast, kSouth, kEast, kNorth, kEast, kEast};
 
   //
+  Compass8 paddy[] = {kNorth, kNorth, kEast, kEast,kEast,kSouth,kEast,kSouth};
   int length = sizeof(paddy)/sizeof(Compass8);
   std::cout<<length<<"\n";
-  FakePath path(paddy, length);
-  PathParser joe(&path);
+  FakePath fpath(paddy, length);
+  PathParser joe(&fpath);
   joe.getMoveList();
 }
 
 
 
-PathParser::PathParser(FakePath *path)
+PathParser::PathParser(FakePath *abspath) : path(NULL, 0)
 {
 	lastMoveFlag = false;
   Compass8 movement_direction, next_direction, decision_direction;
-  dir = next_direction = path->nextDirection();
+  //dir = next_direction = abspath->nextDirection();
   //all paths start by assuming that you're starting from the middle of the previous cell
-  beginDecision(path);
+  buildRelativePath(abspath);
+  beginDecision();
+}
+
+void PathParser::buildRelativePath(FakePath *abspath){
+	//assume moving into the first cell of path
+	dir = abspath->nextDirection();
+	while(!abspath->isEmpty()){
+		Compass8 next_direction = abspath->nextDirection();
+    Compass8 rel_dir = relativeDir(next_direction, dir);
+    dir = next_direction;
+		path.push(rel_dir);
+	}
+	//final forward into last cell
+	//path.push(kNorth);
+
 }
 
 std::queue<int> PathParser::cleanPath(){
@@ -206,14 +229,13 @@ std::queue<int> PathParser::getMoveList()
   return move_list;
 }
 
-void PathParser::beginDecision(FakePath *path){
+void PathParser::beginDecision(){
   //assumes that every movement into this will be a forward
-  while (!path->isEmpty())
+  while (!path.isEmpty())
   {
     //std::cout<<path->getLength()<<"\n";
-    Compass8 next_direction = path->nextDirection();
-    Compass8 decision_dir = relativeDir(next_direction, dir);
-    dir = next_direction;
+    decision_dir = path.nextDirection();
+
     switch(decision_dir)
     {
       //forward move
@@ -222,11 +244,11 @@ void PathParser::beginDecision(FakePath *path){
         break;
       //right move
       case kEast:
-        rightDecisions(path);
+        rightDecisions();
         break;
       //left move
       case kWest:
-        leftDecisions(path);
+        leftDecisions();
         break;
       //if known path is behind you??
       case kSouth:
@@ -240,40 +262,56 @@ void PathParser::beginDecision(FakePath *path){
 
 }
 
-void PathParser::rightDecisions(FakePath *path){
-  Compass8 next_direction, decision_dir;
-  next_direction = path->nextDirection();
-  decision_dir = relativeDir(next_direction, dir);
-  dir = next_direction;
-
+void PathParser::rightDecisions(){
+	if(path.isEmpty()){
+		move_list.push(right_90);
+		return;
+	}
+  decision_dir = path.nextDirection();
   switch(decision_dir){
     //forward move
     case kNorth:
       //set motion corner
       move_list.push(right_90);
+
+      dir = path.peek();
+      if(dir == kNorth)
+      	move_list.push(forward);
+
       break;
     //right move
     case kEast:
-      next_direction = path->nextDirection();
-      decision_dir = relativeDir(next_direction, dir);
-      dir = next_direction;
+    	if(path.isEmpty()){
+				move_list.push(setup_right_diag);
+				move_list.push(diag);
+				move_list.push(exit_left_diag);
+				return;
+			}
+  		decision_dir = path.nextDirection();
+
       switch(decision_dir){
         case kNorth:
           //180 outta here
           move_list.push(right_180);
+          dir = path.peek();
+		      if(dir == kNorth)
+		      	move_list.push(forward);
           break;
         case kEast:
           //this is a stupid decision to make because it's just driving a circle, but we'll have to deal with it idk how though
           //just pivot turn to the direction you want to go after going back to original cell
-          next_direction = path->nextDirection();
-          decision_dir = relativeDir(next_direction, dir);
-          dir = next_direction;
+        	if(path.isEmpty())
+        		return;
+          decision_dir = path.nextDirection();
+
           switch(decision_dir){
             case(kNorth):
               move_list.push(pivot_left_90);
+              move_list.push(forward);
               break;
             case(kWest):
               move_list.push(pivot_180);
+              move_list.push(forward);
               break;
             case(kEast):
               move_list.push(forward);
@@ -285,7 +323,7 @@ void PathParser::rightDecisions(FakePath *path){
           break;
         case kWest:
         	move_list.push(right_135);
-          diagonalDecisions(true, path);
+          diagonalDecisions(true);
           break;
         default:
           break;
@@ -296,18 +334,19 @@ void PathParser::rightDecisions(FakePath *path){
       //diagonal move
       move_list.push(setup_right_diag);
       move_list.push(diag);
-      diagonalDecisions(true, path);
+      diagonalDecisions(true);
       break;
     default:
       break;
   }
 }
 
-void PathParser::leftDecisions(FakePath *path){
-  Compass8 next_direction, decision_dir;
-  next_direction = path->nextDirection();
-  decision_dir = relativeDir(next_direction, dir);
-  dir = next_direction;
+void PathParser::leftDecisions(){
+	if(path.isEmpty()){
+		move_list.push(left_90);
+		return;
+	}
+  decision_dir = path.nextDirection();
 
   switch(decision_dir){
     //forward move
@@ -315,42 +354,56 @@ void PathParser::leftDecisions(FakePath *path){
       //set motion corner
       //dir = kNorth;
       move_list.push(left_90);
+      dir = path.peek();
+      if(dir == kNorth)
+      	move_list.push(forward);
       break;
     //right move
     case kEast:
       //diagonal move
       move_list.push(setup_left_diag);
       move_list.push(diag);
-      diagonalDecisions(false, path);
+      diagonalDecisions(false);
       break;
     //left move
     case kWest:
-      next_direction = path->nextDirection();
-      decision_dir = relativeDir(next_direction, dir);
-      dir = next_direction;
+      if(path.isEmpty()){
+				move_list.push(setup_left_diag);
+				move_list.push(diag);
+				move_list.push(exit_right_diag);
+				return;
+			}
+  		decision_dir = path.nextDirection();
+
       switch(decision_dir){
         case kNorth:
           //180 outta here
           move_list.push(left_180);
+          dir = path.peek();
+		      if(dir == kNorth)
+		      	move_list.push(forward);
           break;
         case kEast:
         	move_list.push(left_135);
-          diagonalDecisions(false, path);
+          diagonalDecisions(false);
           break;
         case kWest:
           //just pivot turn to the direction you want to go after going back to original cell
-          next_direction = path->nextDirection();
-          decision_dir = relativeDir(next_direction, dir);
-          dir = next_direction;
+          if(path.isEmpty())
+        		return;
+          decision_dir = path.nextDirection();
+
           switch(decision_dir){
             case(kNorth):
               move_list.push(pivot_right_90);
+              move_list.push(forward);
               break;
             case(kWest):
               move_list.push(forward);
               break;
             case(kEast):
               move_list.push(pivot_180);
+              move_list.push(forward);
               break;
             default:
               break;
@@ -365,17 +418,13 @@ void PathParser::leftDecisions(FakePath *path){
   }
 }
 
-void PathParser::diagonalDecisions(bool approachRight, FakePath *path){
+void PathParser::diagonalDecisions(bool approachRight){
 
-  Compass8 next_direction, decision_dir;
-
-	if(path->isEmpty())
+	if(path.isEmpty())
   	lastMoveFlag = true;
 
   if(!lastMoveFlag){
-    next_direction = path->nextDirection();
-    decision_dir = relativeDir(next_direction, dir);
-    dir = next_direction;
+    decision_dir = path.nextDirection();
   }
   else decision_dir = kNorth; //if last move, straighten out
 
@@ -391,47 +440,59 @@ void PathParser::diagonalDecisions(bool approachRight, FakePath *path){
         break;
       case kEast:
         if(approachRight){
+
+        	if(path.isEmpty()){
+						move_list.push(exit_right_diag);
+						return;
+					}
           move_list.push(diag);
-          diagonalDecisions(false, path);
+          diagonalDecisions(false);
           return;
         }
         else{
-          next_direction = path->peek();
-        	decision_dir = relativeDir(next_direction, dir);
-        	if(path->isEmpty())
-        		decision_dir = kNorth;
+        	if(path.isEmpty()){
+        		move_list.push(right_135);
+        		return;
+        	}
+        	decision_dir = path.nextDirection();
         	//135 to straighten out or 90 to go to continue diagonal
         	if(decision_dir != kWest)
           	move_list.push(right_135);
           else{
           	move_list.push(right_90);
           	move_list.push(diag);
-          	dir = path->nextDirection();
-          	diagonalDecisions(true, path);
+          	diagonalDecisions(true);
           }
           return;
         }
         break;
       case kWest:
         if(approachRight){
-        	next_direction = path->peek();
-        	decision_dir = relativeDir(next_direction, dir);
-        	if(path->isEmpty())
-        		decision_dir = kNorth;
+        	if(path.isEmpty()){
+        		move_list.push(left_135);
+        		return;
+        	}
+        	decision_dir = path.nextDirection();
+
         	//135 to straighten out or 90 to go to continue diagonal
         	if(decision_dir != kEast)
           	move_list.push(left_135);
           else{
           	move_list.push(left_90);
           	move_list.push(diag);
-          	dir = path->nextDirection();
-          	diagonalDecisions(false, path);
+          	diagonalDecisions(false);
           }
           return;
         }
         else{
+
+        	if(path.isEmpty()){
+						move_list.push(exit_left_diag);
+						return;
+					}
+
           move_list.push(diag);
-          diagonalDecisions(true, path);
+          diagonalDecisions(true);
           return;
         }
         break;
