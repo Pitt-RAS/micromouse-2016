@@ -50,19 +50,19 @@ void RangeSensor::updateRange() {
   last_raw_reading_ = on_reading - off_reading;
   last_reading_time_ = micros();
 
-  if (sensed_distance < constants_.v0) {
-    if (on_reading - off_reading - constants_.b1 < 0) {
+  if (last_raw_reading_ < constants_.v0) {
+    if (last_raw_reading_ - constants_.b1 < 0) {
       sensed_distance = INFINITY;
     } else {
-      sensed_distance = (constants_.a1 * pow((on_reading - off_reading
-            - constants_.b1), constants_.c1) + constants_.d1) + constants_.e;
+      sensed_distance = (constants_.a1 * pow(last_raw_reading_
+            - constants_.b1, constants_.c1) + constants_.d1) + constants_.e;
     }
   } else {
-    if (on_reading - off_reading - constants_.b2 < 0) {
+    if (last_raw_reading_ - constants_.b2 < 0) {
       sensed_distance = INFINITY;
     } else {
-      sensed_distance = (constants_.a2 * pow((on_reading - off_reading
-            - constants_.b2), constants_.c2) + constants_.d2) + constants_.e;
+      sensed_distance = (constants_.a2 * pow(last_raw_reading_
+            - constants_.b2, constants_.c2) + constants_.d2) + constants_.e;
     }
   }
 

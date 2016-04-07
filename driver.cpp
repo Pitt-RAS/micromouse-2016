@@ -957,11 +957,11 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
 
       if (isWall(absoluteDir(kEast))) {
         motion_rotate(90);
-        motion_hold_range(MM_PER_BLOCK / 2, 500);
+        motion_hold_range(MOTION_RESET_HOLD_DISTANCE, 500);
         motion_rotate(90);
       } else if (isWall(absoluteDir(kWest))) {
         motion_rotate(-90);
-        motion_hold_range(MM_PER_BLOCK / 2, 500);
+        motion_hold_range(MOTION_RESET_HOLD_DISTANCE, 500);
         motion_rotate(-90);
       } else {
         motion_rotate(180);

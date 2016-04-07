@@ -27,41 +27,43 @@ if __name__ == '__main__' :
     readings = data[:,0]
     ranges = data[:,1]
 
-    v0_guess = 600.
+    v0_guess = 900.
 
     cutoff_i = 0
     while readings[cutoff_i] < v0_guess: cutoff_i += 1
 
     #initial_params_1 = [994.82, 83.322, -0.388, -46.38]
-    initial_params_1 = [3000.] + list(curve_fit(lambda x, b, c, d: p(x, 3000, b, c, d), readings[:cutoff_i], ranges[:cutoff_i], p0 = (0, -.28, -200), maxfev = 10**6)[0])
+    initial_params_1 = [982.981088769] + list(curve_fit(lambda x, b, c, d: p(x, 982.981088769, b, c, d), readings[:cutoff_i], ranges[:cutoff_i], p0 = (3.01477552114, -0.290806601873, -105.008228929), maxfev = 10**6)[0])
     print initial_params_1
-    a2_calculated = a2(initial_params_1[0], initial_params_1[1], initial_params_1[2], initial_params_1[3], 500., 3., v0_guess)
-    d2_calculated = d2(initial_params_1[0], initial_params_1[1], initial_params_1[2], initial_params_1[3], 500., 3., v0_guess)
-    initial_params_2 = curve_fit(lambda x, b, c: p(x, a2_calculated, b, c, d2_calculated), readings[cutoff_i-1:], ranges[cutoff_i-1:], p0 = (500., 3.))[0]
+    a2_calculated = a2(initial_params_1[0], initial_params_1[1], initial_params_1[2], initial_params_1[3], 890., .2, v0_guess)
+    d2_calculated = d2(initial_params_1[0], initial_params_1[1], initial_params_1[2], initial_params_1[3], 890., .2, v0_guess)
+    #initial_params_2 = curve_fit(lambda x, b, c: p(x, a2_calculated, b, c, d2_calculated), readings[cutoff_i-1:], ranges[cutoff_i-1:], p0 = (890., .2))[0]
+    initial_params_2 = curve_fit(p, readings[cutoff_i-1:], ranges[cutoff_i-1:], p0 = (-0.0006, 880., 2.4, 33.), maxfev = 10**6)[0]
     print initial_params_2
 
     plt.plot(readings, ranges, '.')
-    plt.plot(readings, f(readings, *(list(initial_params_1)+list(initial_params_2)+[v0_guess])))
-    plt.plot(readings, f(readings, 994.82, 83.322, -0.3888, -46.38366, -4925.18, 81.82, 760.66))
+    #plt.plot(readings, f(readings, *(list(initial_params_1)+list(initial_params_2)+[v0_guess])))
+    #plt.plot(readings, f(readings, 994.82, 83.322, -0.3888, -46.38366, -4925.18, 81.82, 760.66))
+    plt.plot(readings, np.piecewise(readings, [readings < v0_guess, readings >= v0_guess], [lambda x: p(x, *initial_params_1), lambda x: p(x, *initial_params_2)]))
     plt.show()
-    print 'Fit:'
-    fit = curve_fit(f, readings, ranges, p0 = list(initial_params_1) + list(initial_params_2) + [v0_guess], maxfev = 10**6)
-    fit_params = fit[0]
-    print fit_params
-    print 'Error:'
-    print fit[1]
+    #print 'Fit:'
+    #fit = curve_fit(f, readings, ranges, p0 = list(initial_params_1) + list(initial_params_2) + [v0_guess], maxfev = 10**6)
+    #fit_params = fit[0]
+    #print fit_params
+    #print 'Error:'
+    #print fit[1]
 
-    print 'Final params:'
-    print '{',
-    for i in range(4):
-        print str(fit_params[i]) + ',',
-    print str(a2(*fit_params)) + ',',
-    print str(fit_params[4]) + ',',
-    print str(fit_params[5]) + ',',
-    print str(d2(*fit_params)) + ',',
-    print str(fit_params[-1]),
-    print '}'
+    #print 'Final params:'
+    #print '{',
+    #for i in range(4):
+    #    print str(fit_params[i]) + ',',
+    #print str(a2(*fit_params)) + ',',
+    #print str(fit_params[4]) + ',',
+    #print str(fit_params[5]) + ',',
+    #print str(d2(*fit_params)) + ',',
+    #print str(fit_params[-1]),
+    #print '}'
 
-    plt.plot(readings, ranges, '.')
-    plt.plot(readings, f(readings, *fit_params))
-    plt.show()
+    #plt.plot(readings, ranges, '.')
+    #plt.plot(readings, f(readings, *fit_params))
+    #plt.show()
