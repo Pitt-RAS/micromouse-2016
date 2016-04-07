@@ -4,21 +4,6 @@
 #include "data.h"
 #include <queue>
 
-#include <Arduino.h>
-
-namespace std {
-  void __throw_bad_alloc()
-  {
-    Serial.println("Unable to allocate memory");
-  }
-
-  void __throw_length_error(char const* e)
-  {
-    Serial.print("Length Error :");
-    Serial.println(e);
-  }
-}
-
 enum Move {
 	//1 cell edge
   forward = 0,
@@ -40,7 +25,7 @@ enum Move {
   pivot_right_90 = 10,
   pivot_left_90 = 11,
   pivot_180 = 12,
-  //assuming 135 take you through 3 cell edges
+  //assuming 135 take you through 2 cell edges
   right_135 = 13,
   left_135 = 14
 };
@@ -110,7 +95,7 @@ class PathParser {
    std::queue<int> cleanPath();
 };
 
-int test(int argc, const char * argv[])
+int main(int argc, const char * argv[])
 {
 	//all-japan 2015 test case: blue
   // Compass8 paddy[] = {kNorth, kEast, kSouth, kEast, kEast, kEast, kEast, kNorth, kEast, kEast, kSouth, kEast, kNorth, kEast, kEast, kSouth,kEast,kEast, kNorth, kEast,
@@ -130,9 +115,9 @@ int test(int argc, const char * argv[])
   //Compass8 paddy[] = {kEast, kEast, kSouth, kEast, kNorth, kEast, kEast};
 
   //
-  Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kEast, kEast, kSouth, kWest, kWest,kSouth, kEast, kSouth, kEast};
+  Compass8 paddy[] = {kNorth, kEast, kNorth};
   int length = sizeof(paddy)/sizeof(Compass8);
-  Serial.println(length);
+  std::cout<<length<<"\n";
   FakePath fpath(paddy, length);
   PathParser joe(&fpath);
   joe.getMoveList();
@@ -188,7 +173,7 @@ std::queue<int> PathParser::getMoveList()
   while(!move_list.empty()){
     int m = move_list.front();
     move_list.pop();
-    const char* s;
+    std::string s;
     switch(m){
       case (forward):
         s = "forward";
@@ -239,7 +224,7 @@ std::queue<int> PathParser::getMoveList()
         break;
 
     }
-    Serial.println(s);
+    std::cout << s << "\n";
   }
   return move_list;
 }
@@ -339,6 +324,7 @@ void PathParser::rightDecisions(){
           break;
         case kWest:
         	move_list.push(right_135);
+        	move_list.push(diag);
           diagonalDecisions(true);
           break;
         default:
@@ -403,6 +389,7 @@ void PathParser::leftDecisions(){
           break;
         case kEast:
         	move_list.push(left_135);
+        	move_list.push(diag);
           diagonalDecisions(false);
           break;
         case kWest:
