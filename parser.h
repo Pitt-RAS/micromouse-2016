@@ -4,6 +4,21 @@
 #include "data.h"
 #include <queue>
 
+#include <Arduino.h>
+
+namespace std {
+  void __throw_bad_alloc()
+  {
+    Serial.println("Unable to allocate memory");
+  }
+
+  void __throw_length_error(char const* e)
+  {
+    Serial.print("Length Error :");
+    Serial.println(e);
+  }
+}
+
 enum Move {
 	//1 cell edge
   forward = 0,
@@ -95,7 +110,7 @@ class PathParser {
    std::queue<int> cleanPath();
 };
 
-int main(int argc, const char * argv[])
+int test(int argc, const char * argv[])
 {
 	//all-japan 2015 test case: blue
   // Compass8 paddy[] = {kNorth, kEast, kSouth, kEast, kEast, kEast, kEast, kNorth, kEast, kEast, kSouth, kEast, kNorth, kEast, kEast, kSouth,kEast,kEast, kNorth, kEast,
@@ -117,7 +132,7 @@ int main(int argc, const char * argv[])
   //
   Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kEast, kEast, kSouth, kWest, kWest,kSouth, kEast, kSouth, kEast};
   int length = sizeof(paddy)/sizeof(Compass8);
-  std::cout<<length<<"\n";
+  Serial.println(length);
   FakePath fpath(paddy, length);
   PathParser joe(&fpath);
   joe.getMoveList();
@@ -173,7 +188,7 @@ std::queue<int> PathParser::getMoveList()
   while(!move_list.empty()){
     int m = move_list.front();
     move_list.pop();
-    std::string s;
+    const char* s;
     switch(m){
       case (forward):
         s = "forward";
@@ -224,7 +239,7 @@ std::queue<int> PathParser::getMoveList()
         break;
 
     }
-    std::cout << s << "\n";
+    Serial.println(s);
   }
   return move_list;
 }
