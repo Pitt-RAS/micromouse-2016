@@ -210,7 +210,7 @@
 // highest reliable max angular accel is most accurate turn
 //  max angular accel can be calculated with below equation
 //  max angular accel = (max linear accel) * 90000 * ROBOT_MASS * MM_BETWEEN_WHEELS / (robot rot. inertia)
-#define SWEPT_TURN_45_FORWARD_SPEED 0.8
+#define SWEPT_TURN_45_FORWARD_SPEED 0.87
 #define SWEPT_TURN_45_ANGLE 45.0
 
 #define SWEPT_TURN_90_FORWARD_SPEED 0.84

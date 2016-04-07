@@ -33,8 +33,8 @@ static float max_vel_rotate = MAX_VEL_ROTATE;
 static Orientation* orientation = NULL;
 
 // instantiate the turn lookup tables
-//IdealSweptTurns turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
-//                              SWEPT_TURN_45_ANGLE, 0.001);
+IdealSweptTurns turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
+                              SWEPT_TURN_45_ANGLE, 0.001);
 IdealSweptTurns turn_90_table(SWEPT_TURN_90_FORWARD_SPEED,
                               SWEPT_TURN_90_ANGLE, 0.001);
 IdealSweptTurns turn_135_table(SWEPT_TURN_135_FORWARD_SPEED,
@@ -686,11 +686,11 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
   float drift = currentExtrapolation;
 
   switch (turn_type) {
-    //case kLeftTurn45:
-    //  turn_table = &turn_45_table;
-    //  time_scaling = speed / SWEPT_TURN_45_FORWARD_SPEED;
-    //  sign = -1;
-    //  break;
+    case kLeftTurn45:
+      turn_table = &turn_45_table;
+      time_scaling = speed / SWEPT_TURN_45_FORWARD_SPEED;
+      sign = -1;
+      break;
     case kLeftTurn90:
       turn_table = &turn_90_table;
       time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED;
@@ -706,11 +706,11 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
       time_scaling = speed / SWEPT_TURN_180_FORWARD_SPEED;
       sign = -1;
       break;
-    //case kRightTurn45:
-    //  turn_table = &turn_45_table;
-    //  time_scaling = speed / SWEPT_TURN_45_FORWARD_SPEED;
-    //  sign = 1;
-    //  break;
+    case kRightTurn45:
+      turn_table = &turn_45_table;
+      time_scaling = speed / SWEPT_TURN_45_FORWARD_SPEED;
+      sign = 1;
+      break;
     case kRightTurn90:
       turn_table = &turn_90_table;
       time_scaling = speed / SWEPT_TURN_90_FORWARD_SPEED;
