@@ -26,6 +26,20 @@ IdealSweptTurns::IdealSweptTurns(float temp_tangential_velocity, float temp_turn
   
   const_velocity_duration = theta_const / getVelocityAtTime(acceleration_duration);
   float max_velocity = getVelocityAtTime(acceleration_duration);
+
+  //this is the case that it's a 45
+  if(theta_accel*2 > turn_angle){
+    const_velocity_duration = 0.0;
+    theta_const = 0.0;
+    int x;
+    int t;
+    for(t = 0; x < turn_angle/2; t++){
+      x = getAngleAtTime(t*time_step, true);
+    }
+    theta_accel = x;
+    acceleration_duration = x * time_step;
+    max_velocity = getVelocityAtTime(acceleration_duration);
+  }
   
   turn_duration = 2 * acceleration_duration + const_velocity_duration;
 
