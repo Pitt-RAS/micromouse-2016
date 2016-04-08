@@ -32,6 +32,7 @@ RangeSensor::RangeSensor(int temp_pin, int lowT, int highT) {
   high_threshold_ = highT;
 }
 
+
 void RangeSensor::updateRange() {
   float off_reading, on_reading;
   float sensed_distance;
@@ -40,11 +41,12 @@ void RangeSensor::updateRange() {
   digitalWrite(emitter_pin_, HIGH);
 
   delayMicroseconds(45);
+  //NEW// delayMicroseconds(RANGE_SENSOR_ON_TIME);
 
   on_reading = analogRead(pin_);
   digitalWrite(emitter_pin_, LOW);
 
-  delayMicroseconds(45);
+  delayMicroseconds(45); // Depricated in NEW
 
   if (on_reading - off_reading + constants_.b <= 0) {
     last_reading_ = 10000;
@@ -55,21 +57,35 @@ void RangeSensor::updateRange() {
 
     last_reading_ = sensed_distance;
   }
+    
+  /* NEW
+    if (last_raw_reading_ < constants_.v0) {
+        if (last_raw_reading_ - constants_.b1 < 0) {
+            sensed_distance = INFINITY;
+        } else {
+            sensed_distance = (constants_.a1 * pow(last_raw_reading_
+                                                   - constants_.b1, constants_.c1) + constants_.d1) + constants_.e;
+        }
+    } else {
+        if (last_raw_reading_ - constants_.b2 < 0) {
+            sensed_distance = INFINITY;
+        } else {
+            sensed_distance = (constants_.a2 * pow(last_raw_reading_
+                                                   - constants_.b2, constants_.c2) + constants_.d2) + constants_.e;
+        }
+    }
+   */
+    
 }
 
+
 int RangeSensor::getRange() {
-  if(sawWall) {
-	sawWall = last_reading_ < high_threshold_;
-  }
-  else {
-	sawWall = last_reading_ < low_threshold_;
-  }
 
   return last_reading_;
 }
 
 int RangeSensor::getRange(int index) {
-	return last_reading_;
+	return last_raw_reading_;
 }
 
 bool RangeSensor::isWall() {

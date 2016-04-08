@@ -104,6 +104,22 @@ float MotionCalc::idealDistance (int elapsedTime) {
   else {
     return (dTot * 1000);
   }
+    
+    /* NEW
+    if (elapsedTime < tStart) {
+        return (elapsedTime / 1000 * (vStart + .5 * aStart * elapsedTime / 1000000));
+    }
+    else if (elapsedTime < (tStart + tConst)) {
+        return (dStart * 1000 + vMax * (elapsedTime - tStart) / 1000);
+    }
+    else if (elapsedTime < (tStart + tConst + tEnd)) {
+        float t = ((float)elapsedTime - tStart - tConst) / 1000000;
+        return (((dTot - dEnd) + (vMax * t + .5 * aEnd * t * t)) * 1000);
+    }
+    else {
+        return (dTot * 1000);
+    }
+     */
 }
 
 float MotionCalc::idealVelocity (int elapsedTime) {

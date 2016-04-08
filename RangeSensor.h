@@ -6,6 +6,8 @@
 class RangeSensor {
  private:
   int last_reading_ = 0;
+  int last_raw_reading_ = 0;
+  uint32_t last_reading_time_ = 0;
  
   bool sawWall = true;
 
@@ -20,6 +22,14 @@ class RangeSensor {
     float d;
     int e;
   };
+    /* NEW
+    struct TranslationConstants {
+        float a1, b1, c1, d1;
+        float a2, b2, c2, d2;
+        int v0;
+        int e;
+    };
+     */
 
   TranslationConstants constants_;
 
@@ -29,6 +39,9 @@ class RangeSensor {
   int getRange();
   int getRange(int index);
   
+  //returns the raw result of the last reading
+  int getRawReading();
+    
   bool isWall();
 };
 
