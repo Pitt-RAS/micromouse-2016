@@ -2,6 +2,7 @@
 
 #include "Logger.h"
 #include "Menu.h"
+#include "PlayMelodies.h"
 #include "motors.h"
 
 void freakOut(char* msg) {
@@ -10,6 +11,7 @@ void freakOut(char* msg) {
   motor_rf.Set(0, 0);
   motor_rb.Set(0, 0);
   menu.showString(msg);
+  crashMelody();
   while (!menu.buttonOkPressed()) {
     // wait for button press before dumping logs
   }

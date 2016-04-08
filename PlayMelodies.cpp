@@ -1,6 +1,6 @@
-#include "PlayMelodies.h"
 #include <Arduino.h>
-#include "Conf.h"
+#include "PlayMelodies.h"
+#include "conf.h"
 
 void speedRunMelody() { // time warning sound
   int tempo = 600; // tempo in beats per minute
@@ -26,7 +26,7 @@ void speedRunMelody() { // time warning sound
 
 void crashMelody() { // either death sounds or game over sound
   
-  int tempo = 800; // tempo in beats per minute
+  int tempo = 400; // tempo in beats per minute
 
   // set duration of a whole note
   int millis_per_whole_note = 4.0 * 60.0 * 1000.0 / (float)tempo;
@@ -49,15 +49,15 @@ void crashMelody() { // either death sounds or game over sound
 
 void speedFinishMelody() { // flagpole fanfare
   
-  int tempo = 600; // tempo in beats per minute
+  int tempo = 300; // tempo in beats per minute
 
   // set duration of a whole note
   int millis_per_whole_note = 4.0 * 60.0 * 1000.0 / (float)tempo;
 
   int note_list[] = {
     NOTE_G3, NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5, NOTE_E5, NOTE_G5, NOTE_E5,
-    NOTE_GS3, NOTE_C4, NOTE_DS4, NOTE_GS4, NOTE_C5, NOTE_DS5, NOTE_GS5, NOTE_DS4
-    NOTE_AS3, NOTE_D4, NOTE_F4, NOTE_AS4, NOTE_D5, NOTE_F5, NOTE_AS5, NOTE_AS5, NOTE_AS5, NOTE_AS5, NOTE_C5
+    NOTE_GS3, NOTE_C4, NOTE_DS4, NOTE_GS4, NOTE_C5, NOTE_DS5, NOTE_GS5, NOTE_DS5,
+    NOTE_AS3, NOTE_D4, NOTE_F4, NOTE_AS4, NOTE_D5, NOTE_F5, NOTE_AS5, NOTE_AS5, NOTE_AS5, NOTE_AS5, NOTE_C6
   };
 
   float note_duration[] = {
@@ -75,15 +75,15 @@ void speedFinishMelody() { // flagpole fanfare
 void searchFinishMelody() { //
 
 
-  int tempo = 600; // tempo in beats per minute
+  int tempo = 300; // tempo in beats per minute
 
   // set duration of a whole note
   int millis_per_whole_note = 4.0 * 60.0 * 1000.0 / (float)tempo;
 
   int note_list[] = {
     NOTE_G3, NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5, NOTE_E5, NOTE_G5, NOTE_E5,
-    NOTE_GS3, NOTE_C4, NOTE_DS4, NOTE_GS4, NOTE_C5, NOTE_DS5, NOTE_GS5, NOTE_DS4
-    NOTE_AS3, NOTE_D4, NOTE_F4, NOTE_AS4, NOTE_D5, NOTE_F5, NOTE_AS5, NOTE_AS5, NOTE_AS5, NOTE_AS5, NOTE_C5
+    NOTE_GS3, NOTE_C4, NOTE_DS4, NOTE_GS4, NOTE_C5, NOTE_DS5, NOTE_GS5, NOTE_DS5,
+    NOTE_AS3, NOTE_D4, NOTE_F4, NOTE_AS4, NOTE_D5, NOTE_F5, NOTE_AS5, NOTE_AS5, NOTE_AS5, NOTE_AS5, NOTE_C6
   };
 
   float note_duration[] = {
@@ -99,7 +99,7 @@ void searchFinishMelody() { //
 }
 
 void stopMelody() { // pause sound
-  int tempo = 800; // tempo in beats per minute
+  int tempo = 400; // tempo in beats per minute
 
   // set duration of a whole note
   int millis_per_whole_note = (4.0 * 60.0 * 1000.0 / (float)tempo);
@@ -121,7 +121,7 @@ void stopMelody() { // pause sound
 
 
 void startMelody() {
-  int tempo = 1000; // tempo in beats per minute
+  int tempo = 600; // tempo in beats per minute
 
   // set duration of a whole note
   int millis_per_whole_note = (4.0 * 60.0 * 1000.0 / (float)tempo);
@@ -144,7 +144,7 @@ void startMelody() {
 void playNote(int note_frequency, int note_duration) {
 
   if (note_frequency > 0) {
-    int pause_between_notes = 10;
+    int pause_between_notes = 5;
     tone( BUZZER_PIN , note_frequency);
     delay(note_duration - pause_between_notes); // duration in millis
     noTone(BUZZER_PIN);

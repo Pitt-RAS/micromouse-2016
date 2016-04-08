@@ -8,6 +8,7 @@
 #include "driver.h"
 #include "motors.h"
 #include "PIDController.h"
+#include "PlayMelodies.h"
 #include "RangeSensorContainer.h"
 #include "sensors_encoders.h"
 #include "sensors_orientation.h"
@@ -215,8 +216,14 @@ void Menu::checkBattery()
 
   float voltage = (8.225 / 6.330) * (26 / 10) * (3.3 / 1023) * analogRead(BATTERY_PIN);
 
-  if (voltage < BATTERY_VOLTAGE_WARNING)
-    soundBuzzer(2000);
+  if (voltage < BATTERY_VOLTAGE_WARNING) {
+    tone(BUZZER_PIN, 2000);
+    delay(1000);
+    analogWriteFrequency(MOTOR_LF_PWM_PIN, 46875);
+    analogWriteFrequency(MOTOR_RF_PWM_PIN, 46875);
+    analogWriteFrequency(MOTOR_LB_PWM_PIN, 46875);
+    analogWriteFrequency(MOTOR_RB_PWM_PIN, 46875);
+  }
 
   whole = (int) voltage;
   decimal = (int) ((voltage - whole) * 100);
@@ -279,9 +286,7 @@ void Menu::waitForHand()
     }
   }
   
-  soundBuzzer(1000);
   delay(100);
-  soundBuzzer(0);
 }
 
 void Menu::storeDefaultDirection(Compass8 dir) {

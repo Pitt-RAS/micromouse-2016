@@ -103,6 +103,8 @@ void searchFinishMelody(); //
 
 void stopMelody(); // pause sound
 
+void startMelody(); // main theme
+
 void playNote(int note_frequency, int note_duration); //
 
 #endif
