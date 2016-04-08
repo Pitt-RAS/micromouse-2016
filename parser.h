@@ -4,6 +4,21 @@
 #include "data.h"
 #include <queue>
 
+#include <Arduino.h>
+
+namespace std {
+  void __throw_bad_alloc()
+  {
+    Serial.println("Unable to allocate memory");
+  }
+
+  void __throw_length_error(char const* e)
+  {
+    Serial.print("Length Error :");
+    Serial.println(e);
+  }
+}
+
 enum Move {
 	//1 cell edge
   forward = 0,
@@ -87,45 +102,45 @@ class PathParser {
     void leftDecisions();
     void rightDecisions();
     void diagonalDecisions(bool approachRight);
-    void buildRelativePath(FakePath *abspath);
+    void buildRelativePath(Path<16, 16> *abspath);
   public:
    std::queue<int> move_list;
-   PathParser(FakePath *abspath);
+   PathParser(Path<16, 16> *abspath);
    std::queue<int> getMoveList();
    std::queue<int> cleanPath();
 };
 
-int main(int argc, const char * argv[])
-{
-	//all-japan 2015 test case: blue
-  // Compass8 paddy[] = {kNorth, kEast, kSouth, kEast, kEast, kEast, kEast, kNorth, kEast, kEast, kSouth, kEast, kNorth, kEast, kEast, kSouth,kEast,kEast, kNorth, kEast,
-  // 	kSouth, kEast, kEast, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kWest,
-  // 	kWest, kSouth, kWest, kNorth, kWest, kNorth, kWest, kNorth, kNorth, kEast, kSouth, kEast, kEast,
-  // 	kNorth, kNorth, kWest, kNorth, kWest, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth,
-  // 	kWest, kSouth, kWest, kSouth, kSouth, kEast, kSouth, kEast, kEast, kNorth, kEast,kNorth, kEast, kNorth, kEast, kNorth, kEast, kNorth,
-  // 	kWest};
+//int main(int argc, const char * argv[])
+//{
+//	//all-japan 2015 test case: blue
+//  // Compass8 paddy[] = {kNorth, kEast, kSouth, kEast, kEast, kEast, kEast, kNorth, kEast, kEast, kSouth, kEast, kNorth, kEast, kEast, kSouth,kEast,kEast, kNorth, kEast,
+//  // 	kSouth, kEast, kEast, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kWest,
+//  // 	kWest, kSouth, kWest, kNorth, kWest, kNorth, kWest, kNorth, kNorth, kEast, kSouth, kEast, kEast,
+//  // 	kNorth, kNorth, kWest, kNorth, kWest, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth,
+//  // 	kWest, kSouth, kWest, kSouth, kSouth, kEast, kSouth, kEast, kEast, kNorth, kEast,kNorth, kEast, kNorth, kEast, kNorth, kEast, kNorth,
+//  // 	kWest};
+//
+//  //all-japan 2015 test case: green
+//
+//
+//	//diagonal test case
+//  //Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kNorth};
+//
+//  //diagonal cornering test case
+//  //Compass8 paddy[] = {kEast, kEast, kSouth, kEast, kNorth, kEast, kEast};
+//
+//  //
+//  Compass8 paddy[] = {kNorth, kEast, kNorth};
+//  int length = sizeof(paddy)/sizeof(Compass8);
+//  Serial.println(length);
+//  FakePath fpath(paddy, length);
+//  PathParser joe(&fpath);
+//  joe.getMoveList();
+//}
 
-  //all-japan 2015 test case: green
 
 
-	//diagonal test case
-  //Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kNorth};
-
-  //diagonal cornering test case
-  //Compass8 paddy[] = {kEast, kEast, kSouth, kEast, kNorth, kEast, kEast};
-
-  //
-  Compass8 paddy[] = {kNorth, kEast, kNorth};
-  int length = sizeof(paddy)/sizeof(Compass8);
-  std::cout<<length<<"\n";
-  FakePath fpath(paddy, length);
-  PathParser joe(&fpath);
-  joe.getMoveList();
-}
-
-
-
-PathParser::PathParser(FakePath *abspath) : path(NULL, 0)
+PathParser::PathParser(Path<16, 16> *abspath) : path(NULL, 0)
 {
 	lastMoveFlag = false;
   Compass8 movement_direction, next_direction, decision_direction;
@@ -135,7 +150,7 @@ PathParser::PathParser(FakePath *abspath) : path(NULL, 0)
   beginDecision();
 }
 
-void PathParser::buildRelativePath(FakePath *abspath){
+void PathParser::buildRelativePath(Path<16, 16> *abspath){
 	//assume moving into the first cell of path
 	dir = abspath->nextDirection();
 	while(!abspath->isEmpty()){
@@ -173,7 +188,7 @@ std::queue<int> PathParser::getMoveList()
   while(!move_list.empty()){
     int m = move_list.front();
     move_list.pop();
-    std::string s;
+    const char* s;
     switch(m){
       case (forward):
         s = "forward";
@@ -224,7 +239,7 @@ std::queue<int> PathParser::getMoveList()
         break;
 
     }
-    std::cout << s << "\n";
+    Serial.println(s);
   }
   return move_list;
 }
