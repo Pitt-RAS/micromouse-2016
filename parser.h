@@ -20,29 +20,28 @@ namespace std {
 }
 
 enum Move {
+  //half a cell to set up for 90
+  half = 0,
 	//1 cell edge
-  forward = 0,
+  forward = 1,
   //2 cell edges for straight - 1 cell edge on a diagonal??
-  left_90 = 1,
-  right_90 = 2,
+  left_90 = 2,
+  right_90 = 3,
   //through 3 cell edges
-  left_180 = 3,
-  right_180 = 4,
+  left_180 = 4,
+  right_180 = 5,
   //through 1 cell edge
-  setup_left_diag = 5,
-  setup_right_diag = 6,
+  left_45 = 6,
+  right_45 = 7,
   //through 1 cell edge
-  diag = 7,
-  //take you through 1 cell edge
-  exit_right_diag = 8,
-  exit_left_diag = 9,
+  diag = 8,
   //pivots take you through 0 cell edges
-  pivot_right_90 = 10,
-  pivot_left_90 = 11,
-  pivot_180 = 12,
+  pivot_right_90 = 9,
+  pivot_left_90 = 10,
+  pivot_180 = 11,
   //assuming 135 take you through 2 cell edges
-  right_135 = 13,
-  left_135 = 14
+  right_135 = 12,
+  left_135 = 13
 };
 
 
@@ -190,6 +189,9 @@ std::queue<int> PathParser::getMoveList()
     move_list.pop();
     const char* s;
     switch(m){
+      case(half):
+        s = "half";
+        break;
       case (forward):
         s = "forward";
         break;
@@ -205,20 +207,14 @@ std::queue<int> PathParser::getMoveList()
       case(right_180):
         s = "right_180";
         break;
-      case(setup_left_diag):
-        s = "setup_left_diag";
+      case(left_45):
+        s = "left_45";
         break;
-      case(setup_right_diag):
-        s = "setup_right_diag";
+      case(right_45):
+        s = "right_45";
         break;
       case (diag):
         s = "diag";
-        break;
-      case (exit_right_diag):
-        s = "exit_right_diag";
-        break;
-      case (exit_left_diag):
-        s = "exit_left_diag";
         break;
       case (pivot_180):
         s = "pivot_180";
@@ -279,7 +275,9 @@ void PathParser::beginDecision(){
 
 void PathParser::rightDecisions(){
 	if(path.isEmpty()){
+		move_list.push(half);
 		move_list.push(right_90);
+		move_list.push(half);
 		return;
 	}
   decision_dir = path.nextDirection();
@@ -287,7 +285,9 @@ void PathParser::rightDecisions(){
     //forward move
     case kNorth:
       //set motion corner
+      move_list.push(half);
       move_list.push(right_90);
+      move_list.push(half);
 
       dir = path.peek();
       if(dir == kNorth){
@@ -349,7 +349,7 @@ void PathParser::rightDecisions(){
     //left move
     case kWest:
       //diagonal move
-      move_list.push(setup_right_diag);
+      move_list.push(right_45);
       move_list.push(diag);
       diagonalDecisions(true);
       break;
@@ -360,7 +360,9 @@ void PathParser::rightDecisions(){
 
 void PathParser::leftDecisions(){
 	if(path.isEmpty()){
+		move_list.push(half);
 		move_list.push(left_90);
+		move_list.push(half);
 		return;
 	}
   decision_dir = path.nextDirection();
@@ -370,7 +372,9 @@ void PathParser::leftDecisions(){
     case kNorth:
       //set motion corner
       //dir = kNorth;
+      move_list.push(half);
       move_list.push(left_90);
+      move_list.push(half);
       dir = path.peek();
       if(dir == kNorth){
       	move_list.push(forward);
@@ -380,7 +384,7 @@ void PathParser::leftDecisions(){
     //right move
     case kEast:
       //diagonal move
-      move_list.push(setup_left_diag);
+      move_list.push(left_45);
       move_list.push(diag);
       diagonalDecisions(false);
       break;
@@ -452,9 +456,9 @@ void PathParser::diagonalDecisions(bool approachRight){
     {
       case kNorth:
         if(approachRight)
-          move_list.push(exit_left_diag);
+          move_list.push(left_45);
         else
-          move_list.push(exit_right_diag);
+          move_list.push(left_45);
 
         return;
         break;
