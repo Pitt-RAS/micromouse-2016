@@ -302,6 +302,8 @@ class ContinuousRobotDriverRefactor : public Driver, public Turnable
 
     void proceed(Compass8 dir, int distance);
 
+    float search_velocity_;
+
   public:
     ContinuousRobotDriverRefactor();
 
@@ -316,12 +318,11 @@ class KaosDriver
   private:
     static float turn_velocity_;
     static float max_forward_velocity_;
+    static float max_accel_;
+    static float max_decel_;
   public:
     KaosDriver();
     void execute(std::queue<int> move_list);
-
-    static void setTurnVelocity(float velocity);
-    static void setForwardVelocity(float velocity);
 };
 
 #endif // #ifndef COMPILE_FOR_PC

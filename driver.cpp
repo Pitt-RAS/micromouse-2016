@@ -951,13 +951,13 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
 
   switch(relativeDir(dir)) {
     case kNorth:
-      motion_forward(MM_PER_BLOCK, SEARCH_VELOCITY, SEARCH_VELOCITY);
+      motion_forward(MM_PER_BLOCK, search_velocity_, search_velocity_);
       break;
     case kSouth:
       wall_behind = isWall(absoluteDir(kNorth));
       is_left_wall = isWall(absoluteDir(kWest));
       is_right_wall = isWall(absoluteDir(kEast));
-      motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
+      motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0.0);
 
       if (is_right_wall) {
         motion_rotate(90);
@@ -997,22 +997,22 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
         enc_right_front_write(0);
         Orientation::getInstance()->resetHeading();
 
-        motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, SEARCH_VELOCITY);
+        motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, search_velocity_);
 
       } else {
-        motion_forward(MM_PER_BLOCK / 2, 0.0, SEARCH_VELOCITY);
+        motion_forward(MM_PER_BLOCK / 2, 0.0, search_velocity_);
       }
 
       break;
     case kEast:
-      motion_forward(10, SEARCH_VELOCITY, SEARCH_VELOCITY);
-      motion_corner(kRightTurn90, SEARCH_VELOCITY, 160./180);
-      motion_forward(10, SEARCH_VELOCITY, SEARCH_VELOCITY);
+      motion_forward(10, search_velocity_, search_velocity_);
+      motion_corner(kRightTurn90, search_velocity_, 160./180);
+      motion_forward(10, search_velocity_, search_velocity_);
       break;
     case kWest:
-      motion_forward(10, SEARCH_VELOCITY, SEARCH_VELOCITY);
-      motion_corner(kLeftTurn90, SEARCH_VELOCITY, 160./180);
-      motion_forward(10, SEARCH_VELOCITY, SEARCH_VELOCITY);
+      motion_forward(10, search_velocity_, search_velocity_);
+      motion_corner(kLeftTurn90, search_velocity_, 160./180);
+      motion_forward(10, search_velocity_, search_velocity_);
       break;
     default:
       freakOut("BAG1");
@@ -1022,7 +1022,7 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
 void ContinuousRobotDriverRefactor::beginFromCenter(Compass8 dir)
 {
   turn_in_place(dir);
-  motion_forward(MM_PER_BLOCK / 2, 0.0, SEARCH_VELOCITY);
+  motion_forward(MM_PER_BLOCK / 2, 0.0, search_velocity_);
 
   switch(dir) {
     case kNorth:
@@ -1053,7 +1053,7 @@ void ContinuousRobotDriverRefactor::beginFromBack(Compass8 dir, int distance)
     setDir(dir);
 
     if (distance > 0) {
-      motion_forward(MM_PER_BLOCK / 2, 0, SEARCH_VELOCITY);
+      motion_forward(MM_PER_BLOCK / 2, 0, search_velocity_);
 
       switch(dir) {
         case kNorth:
@@ -1078,7 +1078,7 @@ void ContinuousRobotDriverRefactor::beginFromBack(Compass8 dir, int distance)
     }
   } else {
     if (distance > 0) {
-      motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, SEARCH_VELOCITY);
+      motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, search_velocity_);
 
       switch(dir) {
         case kNorth:
@@ -1109,7 +1109,7 @@ void ContinuousRobotDriverRefactor::beginFromBack(Compass8 dir, int distance)
 
 void ContinuousRobotDriverRefactor::stop(Compass8 dir)
 {
-  motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
+  motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0.0);
   turn_in_place(dir);
   motion_hold(10);
 
@@ -1121,7 +1121,7 @@ void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
   turn_while_moving(dir);
 
   if (distance > 1)
-    motion_forward(MM_PER_BLOCK * (distance - 1), SEARCH_VELOCITY, SEARCH_VELOCITY);
+    motion_forward(MM_PER_BLOCK * (distance - 1), search_velocity_, search_velocity_);
 
   switch(dir) {
     case kNorth:
@@ -1147,7 +1147,17 @@ void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
 ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor() : moving_(false),
     left_back_wall_(false)
 {
-  // Nothing here for now
+  uint16_t loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_VEL_LOCATION) << 8;
+  loaded_int |= EEPROM.read(EEPROM_SEARCH_VEL_LOCATION + 1);
+  search_velocity_ = (float)loaded_int / 100;
+
+  loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION) << 8;
+  loaded_int |= EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION + 1);
+  motion_set_maxAccel_straight((float)loaded_int / 10);
+
+  loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION) << 8;
+  loaded_int |= EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION + 1);
+  motion_set_maxDecel_straight(-(float)loaded_int / 10);
 }
 
 void ContinuousRobotDriverRefactor::turn(Compass8 dir)
@@ -1240,13 +1250,37 @@ KaosDriver::KaosDriver()
 
 float KaosDriver::turn_velocity_ = KAOS_TURN_VEL;
 float KaosDriver::max_forward_velocity_ = KAOS_FORWARD_VEL;
+float KaosDriver::max_accel_ = 0;
+float KaosDriver::max_decel_ = 0;
 
 void KaosDriver::execute(std::queue<int> move_list)
 {
   if (move_list.empty()) return;
 
+  uint16_t loaded_int = 0;
+
+  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION) << 8;
+  loaded_int |= EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION + 1);
+  turn_velocity_ = (float)loaded_int / 100;
+
+  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION) << 8;
+  loaded_int |= EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION + 1);
+  max_forward_velocity_ = (float)loaded_int / 100;
+
+  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION) << 8;
+  loaded_int |= EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION + 1);
+  max_accel_ = (float)loaded_int / 10;
+
+  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_DECEL_LOCATION) << 8;
+  loaded_int |= EEPROM.read(EEPROM_KAOS_DECEL_LOCATION + 1);
+  max_decel_ = -(float)loaded_int / 10;
+
   float old_max_velocity = motion_get_maxVel_straight();
   motion_set_maxVel_straight(max_forward_velocity_);
+  float old_max_accel = motion_get_maxAccel_straight();
+  motion_set_maxAccel_straight(max_accel_);
+  float old_max_decel = motion_get_maxDecel_straight();
+  motion_set_maxDecel_straight(max_decel_);
 
   int next_move = move_list.front();
   float len = 0;
@@ -1350,16 +1384,8 @@ void KaosDriver::execute(std::queue<int> move_list)
   motion_forward(MM_PER_BLOCK / 2, turn_velocity_, 0);
 
   motion_set_maxVel_straight(old_max_velocity);
-}
-
-void KaosDriver::setTurnVelocity(float velocity)
-{
-  turn_velocity_ = velocity;
-}
-
-void KaosDriver::setForwardVelocity(float velocity)
-{
-  max_forward_velocity_ = velocity;
+  motion_set_maxAccel_straight(old_max_accel);
+  motion_set_maxDecel_straight(old_max_decel);
 }
 
 #endif // #ifndef COMPILE_FOR_PC
