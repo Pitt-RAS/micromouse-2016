@@ -113,18 +113,18 @@ int Menu::getInt(int min, int max, int initial, int d) {
   }
 
   if (okPressed) {
-    delay(50);
+    delay(100);
     while (buttonOkPressed()) {
       // Wait for button release
     }
-    delay(50);
+    delay(100);
     return result;
   } else {
-    delay(50);
+    delay(100);
     while (buttonBackPressed()) {
       // Wait for button release
     }
-    delay(50);
+    delay(100);
     return initial;
   }
 }
@@ -170,18 +170,18 @@ size_t Menu::getString(char* strings[], size_t strings_len, size_t chars, size_t
   }
 
   if (okPressed) {
-    delay(50);
+    delay(100);
     while (buttonOkPressed()) {
       // Wait for button release
     }
-    delay(50);
+    delay(100);
     return result;
   } else {
-    delay(50);
+    delay(100);
     while (buttonBackPressed()) {
       // Wait for button release
     }
-    delay(50);
+    delay(100);
     return initial;
   }
 }
