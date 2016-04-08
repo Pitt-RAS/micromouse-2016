@@ -144,7 +144,7 @@ void startMelody() {
 void playNote(int note_frequency, int note_duration) {
 
   if (note_frequency > 0) {
-    int pause_between_notes = 5;
+    int pause_between_notes = 4;
     tone( BUZZER_PIN , note_frequency);
     delay(note_duration - pause_between_notes); // duration in millis
     noTone(BUZZER_PIN);

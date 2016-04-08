@@ -2,6 +2,7 @@
 #define DRIVER_H
 
 #include "data.h"
+#include <queue>
 
 #ifdef COMPILE_FOR_PC
 #include <fstream>
@@ -9,6 +10,8 @@
 
 #ifndef COMPILE_FOR_PC
 #include <Arduino.h>
+
+#include "conf.h"
 #endif
 
 // This class is a highly portable interface between a high-level algorithm and
@@ -306,6 +309,19 @@ class ContinuousRobotDriverRefactor : public Driver, public Turnable
 
     bool isWall(Compass8 dir);
     void move(Compass8 dir, int distance);
+};
+
+class KaosDriver
+{
+  private:
+    static float turn_velocity_;
+    static float max_forward_velocity_;
+  public:
+    KaosDriver();
+    void execute(std::queue<int> move_list);
+
+    static void setTurnVelocity(float velocity);
+    static void setForwardVelocity(float velocity);
 };
 
 #endif // #ifndef COMPILE_FOR_PC

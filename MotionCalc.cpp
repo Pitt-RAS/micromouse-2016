@@ -19,7 +19,7 @@ MotionCalc::MotionCalc (float temp_dTot, float temp_vMax, float temp_vStart, flo
     max_decel *= -1;
   }
 
-  // turn dTot into meters
+  // turn dTot int32_to meters
   dTot /= 1000;
 
   // set constants from global.  Do this a different way later to reference conf.h
@@ -90,7 +90,7 @@ MotionCalc::MotionCalc (float temp_dTot, float temp_vMax, float temp_vStart, flo
   tEnd =  (1000000 * (vEnd - vMax) / aEnd);
 }
 
-float MotionCalc::idealDistance (int elapsedTime) {
+float MotionCalc::idealDistance (int32_t elapsedTime) {
   if (elapsedTime < tStart) {
     return (elapsedTime / 1000 * (vStart + .5 * aStart * elapsedTime / 1000000));
   }
@@ -106,7 +106,7 @@ float MotionCalc::idealDistance (int elapsedTime) {
   }
 }
 
-float MotionCalc::idealVelocity (int elapsedTime) {
+float MotionCalc::idealVelocity (int32_t elapsedTime) {
   if (elapsedTime <= tStart) {
     return (vStart + aStart * elapsedTime / 1000000);
   }
@@ -121,7 +121,7 @@ float MotionCalc::idealVelocity (int elapsedTime) {
   }
 }
 
-float MotionCalc::idealAccel (int elapsedTime) {
+float MotionCalc::idealAccel (int32_t elapsedTime) {
   if (elapsedTime <= tStart) {
     return (aStart);
   }
@@ -134,4 +134,8 @@ float MotionCalc::idealAccel (int elapsedTime) {
   else {
     return (0);
   }
+}
+
+int32_t MotionCalc::getTotalTime () {
+  return tStart + tConst + tEnd;
 }

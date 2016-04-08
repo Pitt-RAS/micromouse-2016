@@ -86,7 +86,7 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
   orientation->handler_update_ = false;
 
   // execute motion
-  while (idealDistance != distance - drift) {
+  while (moveTime < motionCalc.getTotalTime()) {
     orientation->update();
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = motionCalc.idealDistance(moveTime);
@@ -221,7 +221,7 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
   orientation->handler_update_ = false;
 
   // execute motion
-  while (idealDistance != distance - drift) {
+  while (moveTime < motionCalc.getTotalTime()) {
     orientation->update();
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = motionCalc.idealDistance(moveTime);
@@ -322,6 +322,7 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
   motor_rb.Set(0, current_right_velocity);
   motor_lb.Set(0, current_left_velocity);
 }
+
 void motion_collect(float distance, float current_speed, float exit_speed){
   float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
   float currentFrontRight, currentFrontLeft, currentBackRight, currentBackLeft;

@@ -1,5 +1,7 @@
 #include "driver.h"
 
+#include <queue>
+
 #ifdef COMPILE_FOR_PC
 #include <fstream>
 #include <iostream>
@@ -11,6 +13,7 @@
 #include <EEPROM.h>
 #include "data.h"
 #include "motion.h"
+#include "parser.h"
 #include "conf.h"
 #include "sensors_encoders.h"
 #include "sensors_orientation.h"
@@ -944,24 +947,39 @@ void ContinuousRobotDriverRefactor::turn_in_place(Compass8 dir)
 void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
 {
   bool wall_behind = false;
+  bool is_left_wall, is_right_wall;
 
   switch(relativeDir(dir)) {
     case kNorth:
       motion_forward(MM_PER_BLOCK, SEARCH_VELOCITY, SEARCH_VELOCITY);
       break;
     case kSouth:
+      wall_behind = isWall(absoluteDir(kNorth));
+      is_left_wall = isWall(absoluteDir(kWest));
+      is_right_wall = isWall(absoluteDir(kEast));
       motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
-      if (isWall(absoluteDir(kNorth))) {
-        wall_behind = true;
-      }
 
-      if (isWall(absoluteDir(kEast))) {
+      if (is_right_wall) {
         motion_rotate(90);
         motion_hold_range(MOTION_RESET_HOLD_DISTANCE, 500);
+
+        enc_left_back_write(0);
+        enc_right_back_write(0);
+        enc_left_front_write(0);
+        enc_right_front_write(0);
+        Orientation::getInstance()->resetHeading();
+
         motion_rotate(90);
-      } else if (isWall(absoluteDir(kWest))) {
+      } else if (is_left_wall) {
         motion_rotate(-90);
         motion_hold_range(MOTION_RESET_HOLD_DISTANCE, 500);
+
+        enc_left_back_write(0);
+        enc_right_back_write(0);
+        enc_left_front_write(0);
+        enc_right_front_write(0);
+        Orientation::getInstance()->resetHeading();
+
         motion_rotate(-90);
       } else {
         motion_rotate(180);
@@ -1059,28 +1077,33 @@ void ContinuousRobotDriverRefactor::beginFromBack(Compass8 dir, int distance)
         proceed(dir, distance - 1);
     }
   } else {
-    motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, SEARCH_VELOCITY);
+    if (distance > 0) {
+      motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, SEARCH_VELOCITY);
 
-    switch(dir) {
-      case kNorth:
-        setY(getY() + 1);
-        break;
-      case kSouth:
-        setY(getY() - 1);
-        break;
-      case kEast:
-        setX(getX() + 1);
-        break;
-      case kWest:
-        setX(getX() - 1);
-        break;
-      default:
-        freakOut("BAG3");
-        break;
+      switch(dir) {
+        case kNorth:
+          setY(getY() + 1);
+          break;
+        case kSouth:
+          setY(getY() - 1);
+          break;
+        case kEast:
+          setX(getX() + 1);
+          break;
+        case kWest:
+          setX(getX() - 1);
+          break;
+        default:
+          freakOut("BAG3");
+          break;
+      }
+
+      if (distance > 1)
+        proceed(dir, distance - 1);
+
+    } else {
+      motion_forward(MM_FROM_BACK_TO_CENTER, 0, 0);
     }
-
-    if (distance > 1)
-      proceed(dir, distance - 1);
   }
 }
 
@@ -1209,6 +1232,134 @@ void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
   }
 
   moving_ = will_end_moving;
+}
+
+KaosDriver::KaosDriver()
+{
+}
+
+float KaosDriver::turn_velocity_ = KAOS_TURN_VEL;
+float KaosDriver::max_forward_velocity_ = KAOS_FORWARD_VEL;
+
+void KaosDriver::execute(std::queue<int> move_list)
+{
+  if (move_list.empty()) return;
+
+  float old_max_velocity = motion_get_maxVel_straight();
+  motion_set_maxVel_straight(max_forward_velocity_);
+
+  int next_move = move_list.front();
+  float len = 0;
+  move_list.pop();
+
+  motion_forward(MM_FROM_BACK_TO_CENTER, 0, turn_velocity_);
+  enc_left_front_write(0);
+  enc_left_back_write(0);
+  enc_right_front_write(0);
+  enc_right_back_write(0);
+  Orientation::getInstance()->resetHeading();
+
+  while (!move_list.empty()) {
+    switch (next_move) {
+      case quarter:
+      case half:
+      case forward:
+        len = 0;
+        do {
+          if (next_move == half)
+            len += 0.5;
+          else if(next_move == quarter)
+            len += 0.25;
+          else
+            len += 1;
+          next_move = move_list.front();
+          move_list.pop();
+        } while (!move_list.empty() && (next_move == forward || next_move == half || next_move == quarter));
+        motion_forward(MM_PER_BLOCK * len, turn_velocity_, turn_velocity_);
+        break;
+      case left_90:
+        motion_corner(kLeftTurn90, turn_velocity_);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      case right_90:
+        motion_corner(kRightTurn90, turn_velocity_);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      case left_180:
+        motion_corner(kLeftTurn180, turn_velocity_);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      case right_180:
+        motion_corner(kRightTurn180, turn_velocity_);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      case left_45:
+        motion_corner(kLeftTurn45, turn_velocity_, 0.75);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      case right_45:
+        motion_corner(kRightTurn45, turn_velocity_, 0.75);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      case diag:
+        len = 0;
+        do {
+          len++;
+          next_move = move_list.front();
+          move_list.pop();
+        } while (!move_list.empty() && next_move == diag);
+        motion_forward_diag(MM_PER_BLOCK / sqrt(2) * len, turn_velocity_, turn_velocity_);
+        break;
+      case pivot_180:
+        motion_rotate(180);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      case pivot_left_90:
+        motion_rotate(-90);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      case pivot_right_90:
+        motion_rotate(90);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      case right_135:
+        motion_corner(kRightTurn135, turn_velocity_);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      case left_135:
+        motion_corner(kLeftTurn135, turn_velocity_);
+        next_move = move_list.front();
+        move_list.pop();
+        break;
+      default:
+        freakOut("DAMN");
+        break;
+    }
+  }
+
+  motion_forward(MM_PER_BLOCK / 2, turn_velocity_, 0);
+
+  motion_set_maxVel_straight(old_max_velocity);
+}
+
+void KaosDriver::setTurnVelocity(float velocity)
+{
+  turn_velocity_ = velocity;
+}
+
+void KaosDriver::setForwardVelocity(float velocity)
+{
+  max_forward_velocity_ = velocity;
 }
 
 #endif // #ifndef COMPILE_FOR_PC

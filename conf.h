@@ -129,7 +129,7 @@
 // EEPROM save location
 #define EEPROM_MAZE_LOCATION 2
 #define EEPROM_MAZE_FLAG_LOCATION 1
-#define EEPROM_INITIAL_DIRECTION_LOCATION 0
+#define EEPROM_INITIAL_DIRECTION_LOCATION 2000
 
 // Motion control paremeters
 #define MM_PER_BLOCK 180
@@ -146,7 +146,7 @@
 #define KI_ROTATION 0.00000000//85
 #define KD_ROTATION 05//9
 
-#define KP_RANGE 3
+#define KP_RANGE 4.5
 #define KI_RANGE 0
 #define KD_RANGE 5000
 
@@ -181,7 +181,7 @@
 
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
-#define MAX_VEL_STRAIGHT 0.4 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_STRAIGHT 0.3 // m/s   limited by the maximum velocity at which motors can deliver max accel
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
@@ -201,9 +201,12 @@
 //    if this max velocity is higher than max straight velocity then use max straight velocity
 #define MAX_VEL_ROTATE .5 // m/s
 
+#define KAOS_TURN_VEL 0.4
+#define KAOS_FORWARD_VEL 0.4
+
 #define MOTION_RESET_BACKUP_VEL 0.05
 #define MOTION_RESET_BACKUP_DISTANCE 50
-#define MOTION_RESET_HOLD_DISTANCE 28
+#define MOTION_RESET_HOLD_DISTANCE 22
 
 // Zll forward speeds should be the same, and should be the maximum turn speed.  
 // All max angular accelerations can be the same, but don't have to be
@@ -222,6 +225,6 @@
 #define SWEPT_TURN_180_FORWARD_SPEED 0.935
 #define SWEPT_TURN_180_ANGLE 180.0
 
-#define SEARCH_VELOCITY 0.4
+#define SEARCH_VELOCITY 0.3
 
 #endif
