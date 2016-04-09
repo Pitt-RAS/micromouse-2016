@@ -25,19 +25,38 @@ static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 static float max_vel_corner = MAX_VEL_CORNER;
 
-void motion_forward(float distance, float exit_speed) {
-  float errorRight, errorLeft, rotationOffset;
+//NEW//GYRO// static Orientation* orientation = NULL;
+
+void motion_forward(float distance, float current_speed, float exit_speed) {
+  float currentRight, currentLeft;
+  float setpointRight, setpointLeft;
+  float correctionRight, correctionLeft;
+  float rotationOffset;
+  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealDistance, idealVelocity;
   elapsedMicros moveTime;
 
-  float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
-  MotionCalc motionCalc (distance, max_vel_straight, current_speed, exit_speed, max_accel_straight,
+  float currentExtrapolation = (enc_left_extrapolate() + enc_right_extrapolate()) / 2;
+  
+    float drift = currentExtrapolation;
+    
+    enc_left_write(0);
+    enc_right_write(0);
+    
+  MotionCalc motionCalc (distance-drift, max_vel_straight, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
+    
+  /* NEW GYRO
+   if (orientation == NULL) {
+   orientation = Orientation::getInstance();
+   }
+   */
 
   PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
 
   PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
+    //NEW//GYRO//  PIDController gyro_PID (KP_GYRO_FWD, KI_GYRO_FWD, KD_GYRO_FWD);
 
   // zero clock before move
   moveTime = 0;
@@ -45,9 +64,12 @@ void motion_forward(float distance, float exit_speed) {
   RangeSensors.updateReadings();
   float savedError = 0;
   bool passedMiddle = false;
+  //NEW//GYRO//orientation->handler_update_ = false;
 
   // execute motion
-  while (idealDistance != distance) {
+  while (idealDistance != distance - drift) {
+    //NEW//GYRO//orientation->update();
+
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
@@ -63,10 +85,25 @@ void motion_forward(float distance, float exit_speed) {
     // Add error from rangefinder data. Positive error is when it is too close
     // to the left wall, requiring a positive angle to fix it.
     RangeSensors.updateReadings();
-    rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter());
+    rotationOffset = rotation_PID.Calculate(RangeSensors.errorFromCenter(),0);
 
-    errorLeft = enc_left_extrapolate() - idealDistance - rotationOffset;
-    errorRight = enc_right_extrapolate() - idealDistance + rotationOffset;
+      /*NEW GYRO
+      gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
+      
+      if (abs(orientation->getHeading()) > 60) {
+          freakOut("FACK");
+      }
+      */
+      
+      currentLeft = enc_left_extrapolate();
+      currentRight = enc_right_extrapolate();
+      
+      setpointLeft = idealDistance; //NEW//GYRO + gyroOffset;
+      setpointRight = idealDistance; //NEW//GYRO - gyroOffset;
+      
+      correctionLeft = left_PID.Calculate(currentLeft, setpointLeft);
+      correctionRight = right_PID.Calculate(currentRight, setpointRight);
+      
 
     // Save isWall state for use by high-level code.
     if (!passedMiddle && position > distance / MM_PER_BLOCK - 0.5) {
@@ -74,28 +111,47 @@ void motion_forward(float distance, float exit_speed) {
 	    passedMiddle = true;
     }
 
+      /* OLD
     if (-0.25 < difference && difference < 0.25)
       rotationOffset = savedError;
     else
       savedError = rotationOffset;
-
+       */
+      
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
 
-    motor_l.Set(motionCalc.idealAccel(moveTime) + left_PID.Calculate(errorLeft), idealVelocity);
-    motor_r.Set(motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight), idealVelocity);
+    motor_l.Set(motionCalc.idealAccel(moveTime) + correctionLeft, idealVelocity);
+    motor_r.Set(motionCalc.idealAccel(moveTime) + correctionRight, idealVelocity);
   }
+    /* NEW GYRO
+    uint8_t old_SREG = SREG;
+    noInterrupts();
+    orientation->update();
+    orientation->handler_update_ = true;
+    SREG = old_SREG;
+     */
 
   enc_left_write(0);
   enc_right_write(0);
+    
+  motor_l.Set(0, enc_left_velocity());
+  motor_l.Set(0, enc_left_velocity());
+
 }
 
-void motion_collect(float distance, float exit_speed){
+/*
+void motion_collect(float distance, float current_speed, float exit_speed){
     float errorRight, errorLeft;
-  float idealDistance, idealVelocity;
-  elapsedMicros moveTime;
+    float currentRight, currentLeft;
+    float setpointRight, setpointLeft;
+    float correctionRight, correctionLeft;
+    float rotationOffset;
+    float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+    float idealDistance, idealVelocity;
+    elapsedMicros moveTime;
 
-  float current_speed = (enc_left_velocity() + enc_right_velocity()) / 2;
+
   MotionCalc motionCalc (distance, max_vel_straight, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
 
@@ -231,15 +287,22 @@ void motion_collect(float distance, float exit_speed){
 
       reading_counter++;
     }
+    
+    currentLeft = enc_left_extrapolate();
+    currentRight = enc_right_extrapolate();
+      
+      setpointLeft = idealDistance; //NEW//GYRO// + rotationOffset;
+      setpointRight = idealDistance; //NEW//GYRO// - rotationOffset;
+      
+      correctionLeft = left_PID.Calculate(currentLeft, setpointLeft);
+      correctionRight = left_PID.Calculate(currentRight, setpointRight);
 
-    errorLeft = enc_left_extrapolate() - idealDistance;
-    errorRight = enc_right_extrapolate() - idealDistance;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
 
-    motor_l.Set(motionCalc.idealAccel(moveTime) + left_PID.Calculate(errorLeft), idealVelocity);
-    motor_r.Set(motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight), idealVelocity);
+    motor_l.Set(motionCalc.idealAccel(moveTime) + correctionLeft, idealVelocity);
+    motor_r.Set(motionCalc.idealAccel(moveTime) + correctionRight, idealVelocity);
   }
 
   enc_left_write(0);
@@ -276,47 +339,95 @@ void motion_collect(float distance, float exit_speed){
     Serial.println();
   }
 }
+*/
 
 // clockwise angle is positive, angle is in degrees
 void motion_rotate(float angle) {
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+    
   float idealLinearDistance, idealLinearVelocity;
-  float errorLeft, errorRight;
+  float currentRight, currentLeft;
+  float setpointRight, setpointLeft;
+  float correctionRight, correctionLeft;
+   //NEW//GYRO//float gyro_correction;
   float linearDistance = distancePerDegree * angle;
   elapsedMicros moveTime;
 
-  float current_speed = (enc_left_velocity() - enc_right_velocity()) / 2;
-  MotionCalc motionCalc (linearDistance, max_vel_rotate, current_speed, 0, max_accel_rotate,
+float current_speed = (enc_left_velocity() - enc_right_velocity())/2;
+    
+    //float currentExtrapolation = (enc_left_extrapolate() - enc_right_extrapolate())/2;
+
+    float drift = 0;
+    
+  MotionCalc motionCalc (linearDistance - drift, max_vel_rotate, current_speed, 0, max_accel_rotate,
                          max_decel_rotate);
+    
+    /*NEW GYRO
+    if (orientation == NULL) {
+        orientation = Orientation::getInstance();
+    }*/
 
   PIDController left_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_PID (KP_POSITION, KI_POSITION, KD_POSITION);
+  //NEW//GYRO//PIDController gyro_PID (KP_GYRO, KI_GYRO, KD_GYRO);
 
   // zero encoders and clock before move
   moveTime = 0;
 
   // the right will always be the negative of the left in order to rotate on a point.
-  while (idealLinearDistance != linearDistance) {
+  //NEW//GYRO//orientation ->handler_update_ = false;
+  while (idealLinearDistance != linearDistance - drift) {
+      /* NEW GYRO
+      orientation->update();
+      if (orientation->getHeading() > 180)
+          break;*/
+      
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
-    errorLeft = enc_left_extrapolate() - idealLinearDistance;
-    errorRight = enc_right_extrapolate() + idealLinearDistance;
+      /* GYRO NEW
+      gyro_correction = gyro_PID.Calculate(
+                                           orientation->getHeading() * distancePerDegree,
+                                           idealLinearDistance);
+      
+      if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
+          freakOut("FUCK");
+      }*/
+      
+      currentLeft = enc_left_extrapolate();
+      currentRight = enc_right_extrapolate();
+      
+      setpointLeft = idealLinearDistance; //NEW//GYRO + gyroOffset;
+      setpointRight = -idealLinearDistance; //NEW//GYRO - gyroOffset;
+      
+      correctionLeft = left_PID.Calculate(currentLeft, setpointLeft);
+      correctionRight = right_PID.Calculate(currentRight, setpointRight);
+      
 
-    motor_l.Set(motionCalc.idealAccel(moveTime) + left_PID.Calculate(errorLeft),
+    motor_l.Set(motionCalc.idealAccel(moveTime) + correctionLeft,
                 idealLinearVelocity);
-    motor_r.Set(-motionCalc.idealAccel(moveTime) + right_PID.Calculate(errorRight),
-                idealLinearVelocity);
+    motor_r.Set(-motionCalc.idealAccel(moveTime) + correctionRight,
+                -idealLinearVelocity);
 
     //run PID loop here.  new PID loop will add or subtract from a predetermined PWM value that was calculated with the motor curve and current ideal speed
 
   }
-
-  enc_left_write(0);
-  enc_right_write(0);
+    /* NEW GYRO
+     uint8_t old_SREG = SREG;
+     noInterrupts();
+     orientation->update();
+     orientation->handler_update_ = true;
+     SREG = old_SREG;
+     */
+    
+    enc_left_write(0);
+    enc_right_write(0);
+    
+    motor_l.Set(0, enc_left_velocity());
+    motor_l.Set(0, enc_left_velocity());
 }
-
+/*
 void motion_corner(float angle, float radius, float exit_speed) {
   float errorRight, errorLeft;
   float leftFraction, rightFraction;
@@ -379,7 +490,7 @@ void motion_corner(float angle, float radius, float exit_speed) {
   enc_left_write(0);
   enc_right_write(0);
 }
-
+*/
 void motion_hold(unsigned int time) {
   float errorRight, errorLeft;
   float rightOutput, leftOutput;
@@ -390,12 +501,18 @@ void motion_hold(unsigned int time) {
 
   currentTime = 0;
 
+    /*NEW GYRO
+    if (orientation == NULL) {
+        orientation = Orientation::getInstance();
+    }*/
+    
   while (currentTime / 1000 < time) {
+    //NEW//GYRO//orientation->update();
     errorLeft = enc_left_extrapolate();
     errorRight = enc_right_extrapolate();
 
-    leftOutput = left_PID.Calculate(errorLeft);
-    rightOutput = right_PID.Calculate(errorRight);
+    leftOutput = left_PID.Calculate(errorLeft,0);
+    rightOutput = right_PID.Calculate(errorRight,0);
 
     motor_l.Set(leftOutput, 0);
     motor_r.Set(rightOutput, 0);
@@ -405,19 +522,18 @@ void motion_hold(unsigned int time) {
   motor_r.Set(0, 0);
 }
 
+/*
 void motion_hold_range(int setpoint, unsigned int time) {
-  float errorRight, errorLeft;
   float rightOutput, leftOutput;
   elapsedMicros currentTime;
 
-  digitalWrite(13, HIGH);
+  digitalWrite(13, HIGH); //WHATTHEFUCK
 
   PIDController left_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
   PIDController right_PID (KP_HOLD_RANGE, KI_HOLD_RANGE, KD_HOLD_RANGE);
 
   currentTime = 0;
-
-  float off_reading1, off_reading2, on_reading1, on_reading2;
+    
   while (currentTime / 1000 < time) {
     off_reading1 = analogRead(RANGE3_PIN);
     digitalWrite(EMITTER3_PIN, HIGH);
@@ -440,7 +556,7 @@ void motion_hold_range(int setpoint, unsigned int time) {
     errorLeft = on_reading1 - on_reading2;
     errorRight = on_reading2 - on_reading1;
 
-    leftOutput = left_PID.Calculate(errorLeft);
+    leftOutput = left_PID.Calculate(on_reading1, on_reading2);
     rightOutput = right_PID.Calculate(errorRight);
 
     motor_l.Set(leftOutput, 0);
@@ -450,7 +566,7 @@ void motion_hold_range(int setpoint, unsigned int time) {
   motor_l.Set(0, 0);
   motor_r.Set(0, 0);
 }
-
+*/
 // functions to set max velocity variables
 void motion_set_maxAccel_straight(float temp_max_accel_straight) {
   max_accel_straight = temp_max_accel_straight;

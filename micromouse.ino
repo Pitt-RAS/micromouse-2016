@@ -46,5 +46,8 @@ void loop()
   enc_left_write(0);
   enc_right_write(0);
 
-  navigator.runDevelopmentCode();
+  //motion_forward(MM_PER_BLOCK * 10, 0, 0);
+  motion_rotate(90);
+  motion_hold(10);
+  //navigator.runDevelopmentCode();
 }

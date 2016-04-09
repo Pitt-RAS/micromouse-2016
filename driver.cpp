@@ -14,8 +14,6 @@
 #endif
 
 
-
-
 float Driver::getXFloat()
 {
   return x_;
@@ -252,12 +250,13 @@ void CanvasDriver::init()
   int i;
   std::string strings[4] = {"north", "east", "south", "west"};
 
-  for (x = 0; x < real_maze_.getXSize(); x++)
-  for (y = 0; y < real_maze_.getYSize(); y++)
-  for (i = 0; i < 4; i++) {
-    if (real_maze_.isWall(x, y, (Compass8) (2 * i))) {
-      file_ << "wall " << x << " " << y << " " 
-          << strings[i] << std::endl;
+    for (x = 0; x < real_maze_.getXSize(); x++) {
+      for (y = 0; y < real_maze_.getYSize(); y++) {
+       for (i = 0; i < 4; i++) {
+        if (real_maze_.isWall(x, y, (Compass8) (2 * i))) {
+         file_ << "wall " << x << " " << y << " " << strings[i] << std::endl;
+       }
+     }
     }
   }
 }
@@ -451,16 +450,14 @@ void RobotDriver::move(Compass8 dir, int distance)
       break;
   }
 
-  distance_to_move = hypot(destination_x - getXFloat(),
-                            destination_y - getYFloat());
+  distance_to_move = hypot(destination_x - getXFloat(), destination_y - getYFloat());
 
-  motion_forward(MM_PER_BLOCK * distance_to_move, 0);
+  motion_forward(MM_PER_BLOCK * distance_to_move, 0, 0);
   motion_hold(10);
 
   setX(destination_x);
   setY(destination_y);
 }
-
 
 
 
