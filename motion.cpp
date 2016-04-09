@@ -43,6 +43,8 @@ IdealSweptTurns turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
                               SWEPT_TURN_180_ANGLE, 0.001);
 
 void motion_forward(float distance, float current_speed, float exit_speed) {
+  // HACK
+  distance *= 1.02;
   float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
   float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
   float correctionFrontRight, correctionBackRight, correctionFrontLeft, correctionBackLeft;
@@ -107,7 +109,7 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
     gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
 
     if (abs(orientation->getHeading()) > 60) {
-      freakOut("FACK");
+      freakOut("BADD");
     }
 
     currentFrontLeft = enc_left_front_extrapolate();
@@ -191,11 +193,6 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
 
   float drift = currentExtrapolation;
 
-  enc_left_front_write(0);
-  enc_right_front_write(0);
-  enc_left_back_write(0);
-  enc_right_back_write(0);
-
   //instantiate with distance - the amount of drift between motion commands
   MotionCalc motionCalc (distance-drift, max_vel_straight, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
@@ -239,16 +236,22 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
     // to the left wall, requiring a positive angle to fix it.
     RangeSensors.updateReadings();
     //rangeOffset = range_PID.Calculate(RangeSensors.errorFromCenter(), 0);
-    if (RangeSensors.frontRightSensor.getRange() < 185) {
-      rangeOffset = RangeSensors.frontRightSensor.getRange() - 185;
-    } else if (RangeSensors.frontLeftSensor.getRange() < 185) {
-      rangeOffset = 185 - RangeSensors.frontLeftSensor.getRange();
+    if (RangeSensors.frontRightSensor.getRange() < 150) {
+      if (RangeSensors.frontLeftSensor.getRange() < 150) {
+        rangeOffset = 0;
+      } else {
+        rangeOffset = RangeSensors.frontRightSensor.getRange() - 150;
+      }
+    } else if (RangeSensors.frontLeftSensor.getRange() < 150) {
+      rangeOffset = 150 - RangeSensors.frontLeftSensor.getRange();
+    } else {
+      rangeOffset = 0;
     }
-    rangeOffset *= 1;
+    rangeOffset *= KP_DIAG_RANGE;
     gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
 
     if (abs(orientation->getHeading()) > 60) {
-      freakOut("FACK");
+      freakOut("BADD");
       //menu.showString("FACK", 4);
       //delay(3000);
       //char buf[5];
@@ -535,7 +538,7 @@ void motion_rotate(float angle) {
         idealLinearDistance);
 
     if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
-      freakOut("FUCK");
+      freakOut("BADD");
     }
 
     currentFrontLeft = enc_left_front_extrapolate();
@@ -629,7 +632,7 @@ void motion_gyro_rotate(float angle) {
     Serial.println(rotation_correction);
 
     if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
-      freakOut("FUCK");
+      freakOut("BADD");
     }
 
     // run PID loop here.  new PID loop will add or subtract from a predetermined
@@ -760,7 +763,7 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
         rotation_offset);
 
     if (abs(orientation->getHeading() - rotation_offset / distancePerDegree) > 60) {
-      freakOut("FUCK");
+      freakOut("BADD");
     }
 
     currentFrontLeft = enc_left_front_extrapolate();
@@ -793,8 +796,8 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
     motor_lb.Set(left_back_PID.Calculate(currentBackLeft, setpointBackLeft),
                  enc_left_back_velocity());
 
-    logger.logMotionType('s');
-    logger.nextCycle();
+    //logger.logMotionType('s');
+    //logger.nextCycle();
   }
 
   uint8_t old_SREG = SREG;
@@ -896,6 +899,15 @@ void motion_hold_range(int setpoint, unsigned int time) {
         -RangeSensors.frontRightSensor.getRange(),
         -setpoint);
 
+    if (leftFrontOutput > 10) leftFrontOutput = 10;
+    if (leftFrontOutput < -10) leftFrontOutput = -10;
+    if (rightFrontOutput > 10) rightFrontOutput = 10;
+    if (rightFrontOutput < -10) rightFrontOutput = -10;
+    if (leftBackOutput > 10) leftBackOutput = 10;
+    if (leftBackOutput < -10) leftBackOutput = -10;
+    if (rightBackOutput > 10) rightBackOutput = 10;
+    if (rightBackOutput < -10) rightBackOutput = -10;
+
     motor_lf.Set(leftFrontOutput, 0);
     motor_rf.Set(rightFrontOutput, 0);
     motor_rb.Set(rightBackOutput, 0);
@@ -904,6 +916,11 @@ void motion_hold_range(int setpoint, unsigned int time) {
     logger.logMotionType('r');
     logger.nextCycle();
   }
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
 
   motor_lf.Set(0, 0);
   motor_rf.Set(0, 0);

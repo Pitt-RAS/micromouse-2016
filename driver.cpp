@@ -957,9 +957,11 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
 
   switch(relativeDir(dir)) {
     case kNorth:
+      pivot_turns_in_a_row_ = 0;
       motion_forward(MM_PER_BLOCK, search_velocity_, search_velocity_);
       break;
     case kSouth:
+      pivot_turns_in_a_row_ = 0;
       wall_behind = isWall(absoluteDir(kNorth));
       is_left_wall = isWall(absoluteDir(kWest));
       is_right_wall = isWall(absoluteDir(kEast));
@@ -1011,14 +1013,74 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
 
       break;
     case kEast:
-      motion_forward(10, search_velocity_, search_velocity_);
-      motion_corner(kRightTurn90, search_velocity_, 160./180);
-      motion_forward(10, search_velocity_, search_velocity_);
+      if (pivot_turns_in_a_row_ > 30000) {
+        bool hold_front = isWall(absoluteDir(kNorth));
+        bool backup = isWall(absoluteDir(kWest));
+        motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0);
+        if (hold_front) motion_hold_range(MM_PER_BLOCK / 2, 500);
+        motion_rotate(90);
+        if (backup) {
+          float old_max_vel = motion_get_maxVel_straight();
+          motion_set_maxVel_straight(MOTION_RESET_BACKUP_VEL);
+          motion_forward(-MM_FROM_BACK_TO_CENTER - MOTION_RESET_BACKUP_DISTANCE, 0, 0);
+          motion_set_maxVel_straight(old_max_vel);
+
+          enc_left_back_write(0);
+          enc_right_back_write(0);
+          enc_left_front_write(0);
+          enc_right_front_write(0);
+          Orientation::getInstance()->resetHeading();
+
+          motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, search_velocity_);
+        } else {
+          motion_forward(MM_PER_BLOCK / 2, 0, search_velocity_);
+        }
+        pivot_turns_in_a_row_ = 0;
+      }
+      else {
+        motion_forward(10, search_velocity_, search_velocity_);
+        motion_corner(kRightTurn90, search_velocity_, 160./180);
+        motion_forward(10, search_velocity_, search_velocity_);
+        pivot_turns_in_a_row_++;
+      }
+      //motion_forward(10, search_velocity_, search_velocity_);
+      //motion_corner(kRightTurn90, search_velocity_, 160./180);
+      //motion_forward(10, search_velocity_, search_velocity_);
       break;
     case kWest:
-      motion_forward(10, search_velocity_, search_velocity_);
-      motion_corner(kLeftTurn90, search_velocity_, 160./180);
-      motion_forward(10, search_velocity_, search_velocity_);
+      if (pivot_turns_in_a_row_ > 30000) {
+        bool hold_front = isWall(absoluteDir(kNorth));
+        bool backup = isWall(absoluteDir(kEast));
+        motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0);
+        if (hold_front) motion_hold_range(MM_PER_BLOCK / 2, 500);
+        motion_rotate(-90);
+        if (backup) {
+          float old_max_vel = motion_get_maxVel_straight();
+          motion_set_maxVel_straight(MOTION_RESET_BACKUP_VEL);
+          motion_forward(-MM_FROM_BACK_TO_CENTER - MOTION_RESET_BACKUP_DISTANCE, 0, 0);
+          motion_set_maxVel_straight(old_max_vel);
+
+          enc_left_back_write(0);
+          enc_right_back_write(0);
+          enc_left_front_write(0);
+          enc_right_front_write(0);
+          Orientation::getInstance()->resetHeading();
+
+          motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, search_velocity_);
+        } else {
+          motion_forward(MM_PER_BLOCK / 2, 0, search_velocity_);
+        }
+        pivot_turns_in_a_row_ = 0;
+      }
+      else {
+        motion_forward(10, search_velocity_, search_velocity_);
+        motion_corner(kLeftTurn90, search_velocity_, 160./180);
+        motion_forward(10, search_velocity_, search_velocity_);
+        pivot_turns_in_a_row_++;
+      }
+      //motion_forward(10, search_velocity_, search_velocity_);
+      //motion_corner(kLeftTurn90, search_velocity_, 160./180);
+      //motion_forward(10, search_velocity_, search_velocity_);
       break;
     default:
       freakOut("BAG1");
@@ -1150,7 +1212,7 @@ void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
   setDir(dir);
 }
 
-ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(int x, int y, Compass8 direction) : moving_(false),
+ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(int x, int y, Compass8 direction) : moving_(false), last_direction_(kNorth), moves_in_this_direction_(0), pivot_turns_in_a_row_(0),
     left_back_wall_(false)
 {
   setX(x);
@@ -1252,6 +1314,22 @@ void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
   }
 
   moving_ = will_end_moving;
+
+  if (dir == last_direction_) {
+      moves_in_this_direction_++;
+  }
+  else {
+      moves_in_this_direction_ = 0;
+  }
+  if (moves_in_this_direction_ > 17) {
+      //motion_forward(30.0, search_velocity_, search_velocity_);
+  }
+  last_direction_ == dir;
+}
+
+void ContinuousRobotDriverRefactor::move(Path<16, 16>* path)
+{
+  Driver::move(*path);
 }
 
 KaosDriver::KaosDriver()
@@ -1303,9 +1381,14 @@ void KaosDriver::execute(std::queue<int> move_list)
   enc_right_back_write(0);
   Orientation::getInstance()->resetHeading();
 
-  Move last_move = move_list.back();
+  bool should_continue = true;
+  while (!move_list.empty() || should_continue) {
+    if (move_list.empty()) {
+      should_continue = false;
+    }
 
-  while (!move_list.empty()) {
+    tone(BUZZER_PIN, 2000, 100);
+
     switch (next_move) {
       case quarter:
       case half:
@@ -1318,74 +1401,150 @@ void KaosDriver::execute(std::queue<int> move_list)
             len += 0.25;
           else
             len += 1;
-          next_move = move_list.front();
-          move_list.pop();
+          if (!move_list.empty()) {
+            next_move = move_list.front();
+            move_list.pop();
+          }
         } while (!move_list.empty() && (next_move == forward || next_move == half || next_move == quarter));
         motion_forward(MM_PER_BLOCK * len, turn_velocity_, turn_velocity_);
         break;
       case left_90:
         motion_corner(kLeftTurn90, turn_velocity_);
-        next_move = move_list.front();
-        move_list.pop();
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
       case right_90:
         motion_corner(kRightTurn90, turn_velocity_);
-        next_move = move_list.front();
-        move_list.pop();
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
+        break;
+      case diag_left_90:
+        motion_corner(kLeftTurn90, turn_velocity_, 1/sqrt(2));
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
+        break;
+      case diag_right_90:
+        motion_corner(kRightTurn90, turn_velocity_, 1/sqrt(2));
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
       case left_180:
         motion_corner(kLeftTurn180, turn_velocity_);
-        next_move = move_list.front();
-        move_list.pop();
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
       case right_180:
         motion_corner(kRightTurn180, turn_velocity_);
-        next_move = move_list.front();
-        move_list.pop();
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
-      case left_45:
-        motion_corner(kLeftTurn45, turn_velocity_, 0.75);
-        next_move = move_list.front();
-        move_list.pop();
+      case enter_left_45:
+        //motion_forward(MM_PER_BLOCK * (0.75 - 0.25 / (sqrt(2) - 1)), turn_velocity_, turn_velocity_);
+        motion_corner(kLeftTurn45, turn_velocity_, (sqrt(2) / 2 / (sqrt(2) - 1)));
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
-      case right_45:
-        motion_corner(kRightTurn45, turn_velocity_, 0.75);
-        next_move = move_list.front();
-        move_list.pop();
+      case enter_right_45:
+        //motion_forward(MM_PER_BLOCK * (0.75 - 0.25 / (sqrt(2) - 1)), turn_velocity_, turn_velocity_);
+        motion_corner(kRightTurn45, turn_velocity_, (sqrt(2) / 2 / (sqrt(2) - 1)));
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
+        break;
+      case exit_left_45:
+        motion_corner(kLeftTurn45, turn_velocity_, (sqrt(2) / 2 / (sqrt(2) - 1)));
+        //motion_forward(MM_PER_BLOCK * (0.75 - 0.25 / (sqrt(2) - 1)), turn_velocity_, turn_velocity_);
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
+        break;
+      case exit_right_45:
+        motion_corner(kRightTurn45, turn_velocity_, (sqrt(2) / 2 / (sqrt(2) - 1)));
+        //motion_forward(MM_PER_BLOCK * (0.75 - 0.25 / (sqrt(2) - 1)), turn_velocity_, turn_velocity_);
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
       case diag:
         len = 0;
         do {
           len++;
-          next_move = move_list.front();
-          move_list.pop();
+          if (!move_list.empty()) {
+            next_move = move_list.front();
+            move_list.pop();
+          }
         } while (!move_list.empty() && next_move == diag);
-        motion_forward_diag(MM_PER_BLOCK / sqrt(2) * len, turn_velocity_, turn_velocity_);
+        motion_forward_diag(MM_PER_BLOCK * 0.707 * len, turn_velocity_, turn_velocity_);
         break;
       case pivot_180:
         motion_rotate(180);
-        next_move = move_list.front();
-        move_list.pop();
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
       case pivot_left_90:
         motion_rotate(-90);
-        next_move = move_list.front();
-        move_list.pop();
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
       case pivot_right_90:
         motion_rotate(90);
-        next_move = move_list.front();
-        move_list.pop();
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
-      case right_135:
-        motion_corner(kRightTurn135, turn_velocity_);
-        next_move = move_list.front();
-        move_list.pop();
+      case enter_right_135:
+        motion_forward(MM_PER_BLOCK * (.75 - .75/(sqrt(2) + 1)), turn_velocity_, turn_velocity_);
+        motion_corner(kRightTurn135, turn_velocity_, TURN_135_SCALING*(3 * sqrt(2) / 2 / (sqrt(2) + 1)));
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
-      case left_135:
-        motion_corner(kLeftTurn135, turn_velocity_);
-        next_move = move_list.front();
-        move_list.pop();
+      case enter_left_135:
+        motion_forward(MM_PER_BLOCK * (.75 - .75/(sqrt(2) + 1)), turn_velocity_, turn_velocity_);
+        motion_corner(kLeftTurn135, turn_velocity_, TURN_135_SCALING*(3 * sqrt(2) / 2 / (sqrt(2) + 1)));
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
+        break;
+      case exit_right_135:
+        motion_corner(kRightTurn135, turn_velocity_, TURN_135_SCALING*(3 * sqrt(2) / 2 / (sqrt(2) + 1)));
+        motion_forward(MM_PER_BLOCK * (.75 - .75/(sqrt(2) + 1)), turn_velocity_, turn_velocity_);
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
+        break;
+      case exit_left_135:
+        motion_corner(kLeftTurn135, turn_velocity_, TURN_135_SCALING*(3 * sqrt(2) / 2 / (sqrt(2) + 1)));
+        motion_forward(MM_PER_BLOCK * (.75 - .75/(sqrt(2) + 1)), turn_velocity_, turn_velocity_);
+        if (!move_list.empty()) {
+          next_move = move_list.front();
+          move_list.pop();
+        }
         break;
       default:
         freakOut("DAMN");
@@ -1393,7 +1552,9 @@ void KaosDriver::execute(std::queue<int> move_list)
     }
   }
 
+  digitalWrite(13, 1);
   motion_forward(MM_PER_BLOCK / 6, turn_velocity_, 0);
+  motion_forward(-MM_PER_BLOCK / 6, 0, 0);
 
   motion_set_maxVel_straight(old_max_velocity);
   motion_set_maxAccel_straight(old_max_accel);

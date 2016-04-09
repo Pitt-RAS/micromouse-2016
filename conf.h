@@ -77,7 +77,7 @@
 #define FRONT_RIGHT_HIGH_THRESHOLD 201
 
 // Range sensor middle readings
-#define RANGE_DIAG_LEFT_MIDDLE 201
+#define RANGE_DIAG_LEFT_MIDDLE 185
 #define RANGE_DIAG_RIGHT_MIDDLE 209
 
 // Range sensor front value at which we stop using diagonal sensors
@@ -124,7 +124,7 @@
 #define HAND_SWIPE_DIAG_RANGE 85
 
 // Logging configuration
-#define LOG_SIZE 500
+#define LOG_SIZE 1
 
 // EEPROM save location
 #define EEPROM_MAZE_LOCATION 2
@@ -156,6 +156,8 @@
 #define KP_RANGE 4.5
 #define KI_RANGE 0
 #define KD_RANGE 5000
+
+#define KP_DIAG_RANGE 3
 
 #define KP_GYRO 0.10
 #define KI_GYRO 0.00000800
@@ -231,6 +233,8 @@
 
 #define SWEPT_TURN_180_FORWARD_SPEED 0.935
 #define SWEPT_TURN_180_ANGLE 180.0
+
+#define TURN_135_SCALING 1.1
 
 #define SEARCH_VELOCITY 0.3
 

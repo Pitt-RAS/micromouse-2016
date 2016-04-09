@@ -49,17 +49,10 @@ void setup()
 
   Serial.begin(BAUD);
 
-  //while (!menu.buttonOkPressed()) {}
-  //delay(1000);
-  //motion_forward(180, 0, 0.4);
-  //motion_corner(kLeftTurn45, 0.4, 0.75);
-  //motion_forward(180*sqrt(2), 0.4, 0);
-  //while (1) {}
-
   menu.begin();
 }
 
-char* primary_options[] = {
+const char* primary_options[] = {
   "RUN",
   "KAOS",
   "TURN",
@@ -67,19 +60,19 @@ char* primary_options[] = {
   "OPT"
 };
 
-char* secondary_options[] = {
+const char* secondary_options[] = {
   "CLR",
   "SDIR",
   "SPDS",
   "BACK"
 };
 
-char* direction_options[] = {
+const char* direction_options[] = {
   "NRTH",
   "EAST"
 };
 
-char* speed_options[] = {
+const char* speed_options[] = {
   "SVEL",
   "SACC",
   "SDEC",
@@ -111,8 +104,7 @@ void loop()
     }
     case 1: { // KAOS
       if (knowsBestPath()) {
-        int absolute_start_direction, absolute_end_direction;
-        int relative_end_direction,
+        Compass8 absolute_end_direction;
 
         ContinuousRobotDriverRefactor maze_load_driver;
         Maze<16, 16> maze;
@@ -125,29 +117,47 @@ void loop()
         menu.waitForHand();
         speedRunMelody();
 
-        absolute_start_direction = driver.getDirIMadeThisPublic();
-        relative_end_direction = parser.getEndDirection();
-        absolute_end_direction = (int) absolute_start_direction
-                                        + (int) relative_end_direction;
-        if (absolute_end_direction > 7)
-          absolute_end_direction -= 8;
+        absolute_end_direction = parser.getEndDirection();
 
         driver.execute(parser.getMoveList());
+        char buf[5];
 
+        snprintf(buf, 5, "%02d%02d", parser.end_x, parser.end_y);
+        menu.showString(buf, 4);
         searchFinishMelody();
 
-        ContinuousRobotDriverRefactor return_driver(parser.end_x, parser.end_y,
-                                            (Compass8) absolute_end_direction);
-        return_driver.loadState(maze);
-        FloodFillPath<16, 16> return_path (maze, 8, 8, 0, 0);
-        KnownPath<16, 16> return_best_path (maze, 8, 8, 0, 0, return_path);
-        return_driver.move(return_best_path);
+        ContinuousRobotDriverRefactor other_driver(parser.end_x, parser.end_y, absolute_end_direction);
+
+    {
+      FloodFillPath<16, 16>
+        flood_path(maze, other_driver.getX(), other_driver.getY(), 0, 0);
+
+      KnownPath<16, 16>
+        known_path(maze, other_driver.getX(), other_driver.getY(), 0, 0, flood_path);
+
+      if (known_path.isEmpty())
+        break;
+
+      other_driver.move(&known_path);
+
+        snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
+        menu.showString(buf, 4);
+       
+    }
+
+  other_driver.move(kNorth, 0);
+        //ContinuousRobotDriverRefactor return_driver(parser.end_x, parser.end_y,
+        //                                    absolute_end_direction);
+        //return_driver.loadState(maze);
+        //FloodFillPath<16, 16> return_path (maze, 8, 8, 0, 0);
+        //KnownPath<16, 16> return_best_path (maze, 8, 8, 0, 0, return_path);
+        //return_driver.move(&return_best_path);
       }
       break;
     }
     case 2: { // TURN (goes out of the start cell, turns around, and comes back)
       menu.waitForHand();
-      playNote(2000, 0.2);
+      playNote(2000, 200);
       delay(1000);
 
       enc_left_front_write(0);
@@ -198,6 +208,7 @@ void loop()
               break;
             }
           }
+          break;
         }
         case 2: { // SPDS
           while (1) {

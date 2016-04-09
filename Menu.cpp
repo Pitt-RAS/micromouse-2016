@@ -35,7 +35,7 @@ void Menu::showInt(int value, int d) {
   }
 }
 
-void Menu::showString(char* s, int chars, bool left_align) {
+void Menu::showString(const char* s, int chars, bool left_align) {
   int len = strlen(s);
 
   if (chars < 0) {
@@ -129,7 +129,7 @@ int Menu::getInt(int min, int max, int initial, int d) {
   }
 }
 
-size_t Menu::getString(char* strings[], size_t strings_len, size_t chars, size_t initial, bool left_align) {
+size_t Menu::getString(const char* strings[], size_t strings_len, size_t chars, size_t initial, bool left_align) {
   float distance_between_options = MENU_STEP_ANGLE * DEG_TO_RAD * WHEEL_RADIUS;
   size_t result = initial;
   enc_left_back_write(0);

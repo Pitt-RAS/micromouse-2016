@@ -99,7 +99,8 @@ Compass8 PathParser::getEndDirection(){
   int angle = 0;
   Move m;
   for(i = 0; i<size;i++){
-    m = move_list.pop();
+    m = (Move)move_list.front();
+    move_list.pop();
     switch(m){
       case (half):
       case(forward):
@@ -174,17 +175,17 @@ std::queue<int> PathParser::getMoveList()
   //    case (right_90):
   //      s = "right_90";
   //      break;
+  //    case (diag_left_90):
+  //      s = "diag_left_90";
+  //      break;
+  //    case (diag_right_90):
+  //      s = "diag_right_90";
+  //      break;
   //    case (left_180):
   //      s = "left_180";
   //      break;
   //    case(right_180):
   //      s = "right_180";
-  //      break;
-  //    case(left_45):
-  //      s = "left_45";
-  //      break;
-  //    case(right_45):
-  //      s = "right_45";
   //      break;
   //    case (diag):
   //      s = "diag";
@@ -198,15 +199,32 @@ std::queue<int> PathParser::getMoveList()
   //    case (pivot_right_90):
   //      s = "pivot_right_90";
   //      break;
-  //    case (right_135):
-  //      s = "right_135";
+  //    case (enter_right_135):
+  //      s = "enter_right_135";
   //      break;
-  //    case (left_135):
-  //      s = "left_135";
+  //    case (enter_left_135):
+  //      s = "enter_left_135";
+  //      break;
+  //    case (exit_right_135):
+  //      s = "exit_right_135";
+  //      break;
+  //    case (exit_left_135):
+  //      s = "exit_left_135";
+  //      break;
+  //    case (enter_right_45):
+  //      s = "enter_right_45";
+  //      break;
+  //    case (enter_left_45):
+  //      s = "enter_left_45";
+  //      break;
+  //    case (exit_right_45):
+  //      s = "exit_right_45";
+  //      break;
+  //    case (exit_left_45):
+  //      s = "exit_left_45";
   //      break;
   //    default:
   //      break;
-
   //  }
   //  Serial.println(s);
   //}
@@ -441,6 +459,8 @@ void PathParser::diagonalDecisions(bool approachRight){
         } else {
           move_list.push(exit_right_45);
         }
+        if(path.isEmpty())
+            move_list.push(forward);
         return;
         break;
       case kEast:
@@ -460,6 +480,7 @@ void PathParser::diagonalDecisions(bool approachRight){
             move_list.push(exit_right_135);
           }else{
             move_list.push(diag_right_90);
+            move_list.push(diag);
             diagonalDecisions(true);
           }
           return;

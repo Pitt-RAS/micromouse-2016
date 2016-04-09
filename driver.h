@@ -306,6 +306,11 @@ class ContinuousRobotDriverRefactor : public Driver, public Turnable
 
     float search_velocity_;
 
+    bool last_direction_;
+    int moves_in_this_direction_;
+
+    int pivot_turns_in_a_row_;
+
   public:
     ContinuousRobotDriverRefactor(int x=0, int y=0, Compass8 direction=kNorth);
 
@@ -313,6 +318,7 @@ class ContinuousRobotDriverRefactor : public Driver, public Turnable
 
     bool isWall(Compass8 dir);
     void move(Compass8 dir, int distance);
+    void move(Path<16, 16>* path);
 };
 
 class KaosDriver
