@@ -257,6 +257,7 @@ void PathParser::rightDecisions(){
     case kWest:
       //diagonal move
       move_list.push(enter_right_45);
+      move_list.push(diag);
       diagonalDecisions(true);
       break;
     default:
@@ -291,6 +292,7 @@ void PathParser::leftDecisions(){
     case kEast:
       //diagonal move
       move_list.push(enter_left_45);
+      move_list.push(diag);
       diagonalDecisions(false);
       break;
     //left move
