@@ -9,7 +9,7 @@
 enum Move {
   //half a cell to set up for 90
   half = 0,
-	//1 cell edge
+  //1 cell edge
   forward = 1,
   //2 cell edges for straight - 1 cell edge on a diagonal??
   left_90 = 2,
@@ -18,18 +18,26 @@ enum Move {
   left_180 = 4,
   right_180 = 5,
   //through 1 cell edge
-  left_45 = 6,
-  right_45 = 7,
+  enter_left_45 = 6,
+  enter_right_45 = 7, 
+  exit_left_45 = 8,
+  exit_right_45 = 9,
   //through 1 cell edge
-  diag = 8,
+  diag = 10,
   //pivots take you through 0 cell edges
-  pivot_right_90 = 9,
-  pivot_left_90 = 10,
-  pivot_180 = 11,
+  pivot_right_90 = 11,
+  pivot_left_90 = 12,
+  pivot_180 = 13,
   //assuming 135 take you through 2 cell edges
-  right_135 = 12,
-  left_135 = 13,
-  quarter = 14
+  //enter is straight to diagonal
+  enter_right_135 = 14,
+  enter_left_135 = 15,
+  //exit is diagonal to straight
+  exit_right_135 = 16,
+  exit_left_135 = 17,
+  quarter = 18
+  diag_left_90 = 19,
+  diag_right_90 = 20
 };
 
 

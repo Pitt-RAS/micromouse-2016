@@ -245,8 +245,7 @@ void PathParser::rightDecisions(){
 
           break;
         case kWest:
-          move_list.push(half);
-          move_list.push(right_135);
+          move_list.push(enter_right_135);
           move_list.push(diag);
           diagonalDecisions(true);
           break;
@@ -257,9 +256,7 @@ void PathParser::rightDecisions(){
     //left move
     case kWest:
       //diagonal move
-      move_list.push(half);
-      move_list.push(right_45);
-      move_list.push(diag);
+      move_list.push(enter_right_45);
       diagonalDecisions(true);
       break;
     default:
@@ -293,9 +290,7 @@ void PathParser::leftDecisions(){
     //right move
     case kEast:
       //diagonal move
-      move_list.push(half);
-      move_list.push(left_45);
-      move_list.push(diag);
+      move_list.push(enter_left_45);
       diagonalDecisions(false);
       break;
     //left move
@@ -322,7 +317,7 @@ void PathParser::leftDecisions(){
           break;
         case kEast:
             move_list.push(half);
-          move_list.push(left_135);
+          move_list.push(enter_left_135);
           move_list.push(diag);
           diagonalDecisions(false);
           break;
@@ -371,12 +366,10 @@ void PathParser::diagonalDecisions(bool approachRight){
     {
       case kNorth:
         if(approachRight) {
-          move_list.push(left_45);
+          move_list.push(exit_left_45);
         } else {
-          move_list.push(right_45);
+          move_list.push(exit_right_45);
         }
-        move_list.push(half);
-
         return;
         break;
       case kEast:
@@ -387,17 +380,15 @@ void PathParser::diagonalDecisions(bool approachRight){
         }
         else{
           if(path.isEmpty()){
-            move_list.push(right_135);
+            move_list.push(exit_right_135);
             return;
           }
           decision_dir = path.nextDirection();
           //135 to straighten out or 90 to go to continue diagonal
           if(decision_dir != kWest) {
-            move_list.push(right_135);
-            move_list.push(half);
+            move_list.push(exit_right_135);
           }else{
-            move_list.push(right_90);
-            move_list.push(diag);
+            move_list.push(diag_right_90);
             diagonalDecisions(true);
           }
           return;
@@ -406,18 +397,16 @@ void PathParser::diagonalDecisions(bool approachRight){
       case kWest:
         if(approachRight){
           if(path.isEmpty()){
-            move_list.push(left_135);
-            move_list.push(half);
+            move_list.push(exit_left_135);
             return;
           }
           decision_dir = path.nextDirection();
 
           //135 to straighten out or 90 to go to continue diagonal
           if(decision_dir != kEast) {
-            move_list.push(left_135);
-            move_list.push(half);
+            move_list.push(exit_left_135);
           }else{
-            move_list.push(left_90);
+            move_list.push(diag_left_90);
             move_list.push(diag);
             diagonalDecisions(false);
           }
