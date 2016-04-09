@@ -303,16 +303,20 @@ class Path
 };
 
 //stupid getters
-Path::getStartX(){
+template <size_t x_size, size_t y_size>
+size_t Path<x_size, y_size>::getStartX() {
   return start_x_;
 }
-Path::getStartY(){
+template <size_t x_size, size_t y_size>
+size_t Path<x_size, y_size>::getStartY() {
   return start_y_;
 }
-Path::getEndX(){
+template <size_t x_size, size_t y_size>
+size_t Path<x_size, y_size>::getEndX() {
   return finish_x_;
 }
-Path::getEndY(){
+template <size_t x_size, size_t y_size>
+size_t Path<x_size, y_size>::getEndY() {
   return finish_y_;
 }
 

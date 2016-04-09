@@ -162,6 +162,8 @@ class Turnable
   public:
     Turnable();
 
+    Compass8 getDirIMadeThisPublic();
+
     // Sets the default initial direction for all instances of this class
     static void setDefaultInitialDirection(Compass8 dir);
 };
@@ -305,7 +307,7 @@ class ContinuousRobotDriverRefactor : public Driver, public Turnable
     float search_velocity_;
 
   public:
-    ContinuousRobotDriverRefactor();
+    ContinuousRobotDriverRefactor(int x=0, int y=0, Compass8 direction=kNorth);
 
     void turn(Compass8 dir);
 

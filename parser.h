@@ -35,7 +35,7 @@ enum Move {
   //exit is diagonal to straight
   exit_right_135 = 16,
   exit_left_135 = 17,
-  quarter = 18
+  quarter = 18,
   diag_left_90 = 19,
   diag_right_90 = 20
 };
@@ -71,6 +71,7 @@ class PathParser {
    std::queue<int> move_list;
    PathParser(Path<16, 16> *abspath);
    std::queue<int> getMoveList();
+   Compass8 getEndDirection();
 //   std::queue<int> cleanPath();
     size_t start_x, start_y;
     size_t end_x, end_y;

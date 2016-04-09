@@ -239,6 +239,11 @@ Compass8 Turnable::getDir()
   return (Compass8) ( (((int) dir_ + 45 / 2) % 360) / 45 );
 }
 
+Compass8 Turnable::getDirIMadeThisPublic()
+{
+  return getDir();
+}
+
 float Turnable::getDirF()
 {
   return dir_;

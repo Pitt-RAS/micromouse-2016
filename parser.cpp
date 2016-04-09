@@ -93,7 +93,7 @@ void PathParser::buildRelativePath(Path<16, 16> *abspath){
 //  return cleanedPath;
 //}
 
-Compass8 PathParser::getDirection(){
+Compass8 PathParser::getEndDirection(){
   int size = move_list.size();
   int i;
   int angle = 0;
@@ -130,14 +130,13 @@ Compass8 PathParser::getDirection(){
       case(exit_right_45):
         angle+=45;
         break;
-
-      case(enter_right_135):
-      case(exit_right_135):
-        angle+=135;
-        break;
       case(enter_left_135):
       case(exit_left_135):
         angle-=135;
+        break;
+      case(enter_right_135):
+      case(exit_right_135):
+        angle+=135;
         break;
     }
     move_list.push(m);
@@ -148,7 +147,12 @@ Compass8 PathParser::getDirection(){
   if(angle<0)
     angle+=360;
 
+  if (angle == 360)
+    angle = 0;
 
+  angle /= 45;
+
+  return (Compass8) angle;
 }
 
 std::queue<int> PathParser::getMoveList()

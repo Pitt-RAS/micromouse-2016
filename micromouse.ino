@@ -111,6 +111,9 @@ void loop()
     }
     case 1: { // KAOS
       if (knowsBestPath()) {
+        int absolute_start_direction, absolute_end_direction;
+        int relative_end_direction,
+
         ContinuousRobotDriverRefactor maze_load_driver;
         Maze<16, 16> maze;
         maze_load_driver.loadState(maze);
@@ -122,11 +125,19 @@ void loop()
         menu.waitForHand();
         speedRunMelody();
 
+        absolute_start_direction = driver.getDirIMadeThisPublic();
+        relative_end_direction = parser.getEndDirection();
+        absolute_end_direction = (int) absolute_start_direction
+                                        + (int) relative_end_direction;
+        if (absolute_end_direction > 7)
+          absolute_end_direction -= 8;
+
         driver.execute(parser.getMoveList());
 
         searchFinishMelody();
 
-        ContinuousRobotDriverRefactor return_driver(parser.end_x, parser.end_y, parser.end_direction);
+        ContinuousRobotDriverRefactor return_driver(parser.end_x, parser.end_y,
+                                            (Compass8) absolute_end_direction);
         return_driver.loadState(maze);
         FloodFillPath<16, 16> return_path (maze, 8, 8, 0, 0);
         KnownPath<16, 16> return_best_path (maze, 8, 8, 0, 0, return_path);
