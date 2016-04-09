@@ -123,6 +123,14 @@ void loop()
         speedRunMelody();
 
         driver.execute(parser.getMoveList());
+
+        searchFinishMelody();
+
+        ContinuousRobotDriverRefactor return_driver(parser.end_x, parser.end_y, parser.end_direction);
+        return_driver.loadState(maze);
+        FloodFillPath<16, 16> return_path (maze, 8, 8, 0, 0);
+        KnownPath<16, 16> return_best_path (maze, 8, 8, 0, 0, return_path);
+        return_driver.move(return_best_path);
       }
       break;
     }

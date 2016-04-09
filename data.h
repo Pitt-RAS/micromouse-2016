@@ -276,6 +276,11 @@ class Path
     void setSolutionExists();
 
   public:
+    size_t getStartX();
+    size_t getStartY();
+    size_t getEndX();
+    size_t getEndY();
+
     // Some functionality must be implemented in a derived class constructor.
 
     // The derived constructor is responsible for populating the directions_
@@ -294,7 +299,23 @@ class Path
     // and so on. The final call returns the direction from the second to last
     // box to the finish.
     Compass8 nextDirection();
+
 };
+
+//stupid getters
+Path::getStartX(){
+  return start_x_;
+}
+Path::getStartY(){
+  return start_y_;
+}
+Path::getEndX(){
+  return finish_x_;
+}
+Path::getEndY(){
+  return finish_y_;
+}
+
 
 // Path that uses the flood fill algorithm
 template <size_t x_size, size_t y_size>

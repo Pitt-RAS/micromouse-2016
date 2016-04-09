@@ -530,6 +530,7 @@ ContinuousRobotDriver::ContinuousRobotDriver() :
   // Initialize whatever we need to.
 }
 
+
 int ContinuousRobotDriver::getX()
 {
   float x;
@@ -1144,9 +1145,13 @@ void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
   setDir(dir);
 }
 
-ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor() : moving_(false),
+ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(int x, int y, Compass8 direction) : moving_(false),
     left_back_wall_(false)
 {
+  setX(x);
+  setY(y);
+  setDir(direction);
+
   uint16_t loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_VEL_LOCATION) << 8;
   loaded_int |= EEPROM.read(EEPROM_SEARCH_VEL_LOCATION + 1);
   search_velocity_ = (float)loaded_int / 100;
@@ -1293,6 +1298,8 @@ void KaosDriver::execute(std::queue<int> move_list)
   enc_right_back_write(0);
   Orientation::getInstance()->resetHeading();
 
+  Move last_move = move_list.back();
+
   while (!move_list.empty()) {
     switch (next_move) {
       case quarter:
@@ -1381,7 +1388,7 @@ void KaosDriver::execute(std::queue<int> move_list)
     }
   }
 
-  motion_forward(MM_PER_BLOCK / 2, turn_velocity_, 0);
+  motion_forward(MM_PER_BLOCK / 6, turn_velocity_, 0);
 
   motion_set_maxVel_straight(old_max_velocity);
   motion_set_maxAccel_straight(old_max_accel);

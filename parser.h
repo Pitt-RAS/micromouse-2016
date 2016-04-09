@@ -72,6 +72,9 @@ class PathParser {
    PathParser(Path<16, 16> *abspath);
    std::queue<int> getMoveList();
 //   std::queue<int> cleanPath();
+    size_t start_x, start_y;
+    size_t end_x, end_y;
+    Compass8 end_direction;
 };
 
 //int main(int argc, const char * argv[])

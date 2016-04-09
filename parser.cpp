@@ -45,6 +45,11 @@ Compass8 FakePath::peek(){
 
 PathParser::PathParser(Path<16, 16> *abspath) : path(NULL, 0)
 {
+  start_x = abspath->getStartX();
+  start_y = abspath->getStartY();
+  end_x = abspath->getEndX();
+  end_y = abspath->getEndY();
+
   lastMoveFlag = false;
   Compass8 movement_direction, next_direction, decision_direction;
   //dir = next_direction = abspath->nextDirection();
@@ -61,6 +66,9 @@ void PathParser::buildRelativePath(Path<16, 16> *abspath){
     Compass8 rel_dir = relativeDir(next_direction, dir);
     dir = next_direction;
     path.push(rel_dir);
+    if(abspath->isEmpty()){
+      end_direction = next_direction;
+    }
   }
   //final forward into last cell
   //path.push(kNorth);
@@ -84,6 +92,64 @@ void PathParser::buildRelativePath(Path<16, 16> *abspath){
 //  }
 //  return cleanedPath;
 //}
+
+Compass8 PathParser::getDirection(){
+  int size = move_list.size();
+  int i;
+  int angle = 0;
+  Move m;
+  for(i = 0; i<size;i++){
+    m = move_list.pop();
+    switch(m){
+      case (half):
+      case(forward):
+      case(quarter):
+      case(diag):
+        angle+=0;
+        break;
+      case(left_90):
+      case(pivot_left_90):
+      case(diag_left_90):
+        angle-=90;
+        break;
+      case(right_90):
+      case(pivot_right_90):
+      case(diag_right_90):
+        angle+=90;
+        break;
+      case(right_180):
+      case(left_180):
+      case(pivot_180):
+        angle+=180;
+        break;
+      case(enter_left_45):
+      case(exit_left_45):
+        angle-=45;
+        break;
+      case(enter_right_45):
+      case(exit_right_45):
+        angle+=45;
+        break;
+
+      case(enter_right_135):
+      case(exit_right_135):
+        angle+=135;
+        break;
+      case(enter_left_135):
+      case(exit_left_135):
+        angle-=135;
+        break;
+    }
+    move_list.push(m);
+  }
+
+  angle%=360;
+
+  if(angle<0)
+    angle+=360;
+
+
+}
 
 std::queue<int> PathParser::getMoveList()
 {
@@ -318,7 +384,6 @@ void PathParser::leftDecisions(){
            }
           break;
         case kEast:
-            move_list.push(half);
           move_list.push(enter_left_135);
           move_list.push(diag);
           diagonalDecisions(false);
