@@ -262,6 +262,7 @@ void PathParser::beginDecision(){
         break;
     }
   }
+  move_list.push(forward);
 }
 
 void PathParser::rightDecisions(){
@@ -460,7 +461,7 @@ void PathParser::diagonalDecisions(bool approachRight){
           move_list.push(exit_right_45);
         }
         if(path.isEmpty())
-            move_list.push(forward);
+            //move_list.push(forward);
         return;
         break;
       case kEast:
