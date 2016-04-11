@@ -276,6 +276,11 @@ class Path
     void setSolutionExists();
 
   public:
+    size_t getStartX();
+    size_t getStartY();
+    size_t getEndX();
+    size_t getEndY();
+
     // Some functionality must be implemented in a derived class constructor.
 
     // The derived constructor is responsible for populating the directions_
@@ -294,7 +299,27 @@ class Path
     // and so on. The final call returns the direction from the second to last
     // box to the finish.
     Compass8 nextDirection();
+
 };
+
+//stupid getters
+template <size_t x_size, size_t y_size>
+size_t Path<x_size, y_size>::getStartX() {
+  return start_x_;
+}
+template <size_t x_size, size_t y_size>
+size_t Path<x_size, y_size>::getStartY() {
+  return start_y_;
+}
+template <size_t x_size, size_t y_size>
+size_t Path<x_size, y_size>::getEndX() {
+  return finish_x_;
+}
+template <size_t x_size, size_t y_size>
+size_t Path<x_size, y_size>::getEndY() {
+  return finish_y_;
+}
+
 
 // Path that uses the flood fill algorithm
 template <size_t x_size, size_t y_size>
@@ -781,26 +806,26 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
       continue;
     }
 
-    if (!this->maze_.isWall(x, y, kNorth)
-          && y + 1 < y_size && boxes_[y + 1][x] == 0) {
+    if (y + 1 < y_size && !this->maze_.isWall(x, y, kNorth)
+          && boxes_[y + 1][x] == 0) {
       paint_queue.enqueue(&boxes_[y + 1][x]);
       next_layer_size++;
     }
 
-    if (!this->maze_.isWall(x, y, kSouth)
-          && y - 1 >= 0 && boxes_[y - 1][x] == 0) {
+    if (y >= 1 && !this->maze_.isWall(x, y, kSouth)
+          && boxes_[y - 1][x] == 0) {
       paint_queue.enqueue(&boxes_[y - 1][x]);
       next_layer_size++;
     }
 
-    if (!this->maze_.isWall(x, y, kEast)
-          && x + 1 < x_size && boxes_[y][x + 1] == 0) {
+    if (x + 1 < x_size && !this->maze_.isWall(x, y, kEast)
+          && boxes_[y][x + 1] == 0) {
       paint_queue.enqueue(&boxes_[y][x + 1]);
       next_layer_size++;
     }
 
-    if (!this->maze_.isWall(x, y, kWest)
-          && x - 1 >= 0 && boxes_[y][x - 1] == 0) {
+    if (x >= 1 && !this->maze_.isWall(x, y, kWest)
+          && boxes_[y][x - 1] == 0) {
       paint_queue.enqueue(&boxes_[y][x - 1]);
       next_layer_size++;
     }
@@ -832,23 +857,23 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
   while (x != this->finish_x_ || y != this->finish_y_) {
     distance = boxes_[y][x];
 
-    if (!this->maze_.isWall(x, y, kNorth)
-          && y + 1 < y_size && boxes_[y + 1][x] < distance) {
+    if (y + 1 < y_size && !this->maze_.isWall(x, y, kNorth)
+          && boxes_[y + 1][x] < distance) {
       distance = boxes_[y + 1][x];
     }
 
-    if (!this->maze_.isWall(x, y, kSouth)
-          && y >= 1 && boxes_[y - 1][x] < distance) {
+    if (y >= 1 && !this->maze_.isWall(x, y, kSouth)
+          && boxes_[y - 1][x] < distance) {
       distance = boxes_[y - 1][x];
     }
 
-    if (!this->maze_.isWall(x, y, kEast)
-          && x + 1 < x_size && boxes_[y][x + 1] < distance) {
+    if (x + 1 < x_size && !this->maze_.isWall(x, y, kEast)
+          && boxes_[y][x + 1] < distance) {
       distance = boxes_[y][x + 1];
     }
 
-    if (!this->maze_.isWall(x, y, kWest)
-          && x >= 1 && boxes_[y][x - 1] < distance) {
+    if (x >= 1 && !this->maze_.isWall(x, y, kWest)
+          && boxes_[y][x - 1] < distance) {
       distance = boxes_[y][x - 1];
     }
 

@@ -2,6 +2,7 @@
 #define DRIVER_H
 
 #include "data.h"
+#include <queue>
 
 #ifdef COMPILE_FOR_PC
 #include <fstream>
@@ -9,6 +10,8 @@
 
 #ifndef COMPILE_FOR_PC
 #include <Arduino.h>
+
+#include "conf.h"
 #endif
 
 // This class is a highly portable interface between a high-level algorithm and
@@ -159,6 +162,8 @@ class Turnable
   public:
     Turnable();
 
+    Compass8 getDirIMadeThisPublic();
+
     // Sets the default initial direction for all instances of this class
     static void setDefaultInitialDirection(Compass8 dir);
 };
@@ -299,13 +304,33 @@ class ContinuousRobotDriverRefactor : public Driver, public Turnable
 
     void proceed(Compass8 dir, int distance);
 
+    float search_velocity_;
+
+    bool last_direction_;
+    int moves_in_this_direction_;
+
+    int pivot_turns_in_a_row_;
+
   public:
-    ContinuousRobotDriverRefactor();
+    ContinuousRobotDriverRefactor(int x=0, int y=0, Compass8 direction=kNorth);
 
     void turn(Compass8 dir);
 
     bool isWall(Compass8 dir);
     void move(Compass8 dir, int distance);
+    void move(Path<16, 16>* path);
+};
+
+class KaosDriver
+{
+  private:
+    static float turn_velocity_;
+    static float max_forward_velocity_;
+    static float max_accel_;
+    static float max_decel_;
+  public:
+    KaosDriver();
+    void execute(std::queue<int> move_list);
 };
 
 #endif // #ifndef COMPILE_FOR_PC

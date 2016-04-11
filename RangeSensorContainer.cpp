@@ -19,23 +19,22 @@ void RangeSensorContainer::updateReadings() {
 }
 
 bool RangeSensorContainer::isWall(Direction wallToCheck) {
-	
-	switch (wallToCheck) {
-	case left:
-		return diagLeftSensor.isWall();
-		break;
-	case front:
-		return frontLeftSensor.isWall();
-		break;
-	case right:
-		return diagRightSensor.isWall();
-		break;
-	case back:
-		return false;
-		break;
-	}
-
-	return false;
+  switch (wallToCheck) {
+    case left:
+      return diagLeftSensor.isWall();
+      break;
+    case front:
+      return frontLeftSensor.getRange() + frontRightSensor.getRange() < FRONT_LEFT_LOW_THRESHOLD * 2;
+      break;
+    case right:
+      return diagRightSensor.isWall();
+      break;
+    case back:
+      return false;
+      break;
+  }
+  
+  return false;
 }
 
 void RangeSensorContainer::saveIsWall()

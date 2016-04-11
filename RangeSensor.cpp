@@ -52,14 +52,14 @@ void RangeSensor::updateRange() {
 
   if (last_raw_reading_ < constants_.v0) {
     if (last_raw_reading_ - constants_.b1 < 0) {
-      sensed_distance = INFINITY;
+      sensed_distance = 2880;
     } else {
       sensed_distance = (constants_.a1 * pow(last_raw_reading_
             - constants_.b1, constants_.c1) + constants_.d1) + constants_.e;
     }
   } else {
     if (last_raw_reading_ - constants_.b2 < 0) {
-      sensed_distance = INFINITY;
+      sensed_distance = 2880;
     } else {
       sensed_distance = (constants_.a2 * pow(last_raw_reading_
             - constants_.b2, constants_.c2) + constants_.d2) + constants_.e;

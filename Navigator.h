@@ -3,7 +3,9 @@
 
 #include "data.h"
 #include "driver.h"
+#include "parser.h"
 #include "Menu.h"
+#include "PlayMelodies.h"
 
 // Everything in this file MUST be portable code.
 //
@@ -162,10 +164,10 @@ void Navigator<driver_type>::findBox(int x, int y)
 template <typename driver_type>
 void Navigator<driver_type>::runDevelopmentCode()
 {
-  nod();
+  findBox(8, 8);
+  searchFinishMelody();
+  findBox(0, 0);
+  stopMelody();
 }
-
-
-
 
 #endif

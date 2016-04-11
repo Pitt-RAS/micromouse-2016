@@ -7,15 +7,16 @@ class MotionCalc {
     float vStart, vEnd, vMax;
     float dStart, dEnd, dTot;
     float aStart, aEnd;
-    int tStart, tConst, tEnd;
+    int32_t tStart, tConst, tEnd;
 
   public:
     MotionCalc (float temp_dTot, float temp_vMax, float temp_vStart, float temp_vEnd,
                 float temp_max_accel, float temp_max_decel);
     
-    float idealDistance(int elapsedTime);
-    float idealVelocity(int elapsedTime);
-    float idealAccel(int elapsedTime);
+    float idealDistance(int32_t elapsedTime);
+    float idealVelocity(int32_t elapsedTime);
+    float idealAccel(int32_t elapsedTime);
+    int32_t getTotalTime();
 };
 
 #endif
