@@ -32,6 +32,7 @@ void setup()
   digitalWrite(EMITTER4_PIN, LOW);
   digitalWrite(EMITTER5_PIN, LOW);
 
+  pinMode(BUTTON2_PIN, INPUT);
   pinMode(BUTTON1_PIN, INPUT);
 }
 
@@ -40,14 +41,15 @@ void loop()
   Navigator<RobotDriver> navigator;
 
   // Wait for button press.
-  while (digitalRead(BUTTON1_PIN) == LOW);
+  while (digitalRead(BUTTON2_PIN) == LOW && digitalRead(BUTTON1_PIN) == LOW);
   delay(1000);
   
   enc_left_write(0);
   enc_right_write(0);
 
-  //motion_forward(MM_PER_BLOCK * 10, 0, 0);
-  motion_rotate(90);
-  motion_hold(10);
-  //navigator.runDevelopmentCode();
+  //motion_forward(MM_PER_BLOCK * 3, 0, 0);
+  //motion_rotate(180);
+  //motion_forward(MM_PER_BLOCK * 3, 0, 0);
+  //motion_hold(10);
+  navigator.runDevelopmentCode();
 }

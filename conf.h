@@ -56,24 +56,24 @@
 #define RANGE_LEFT_OFFSET 15
 #define RANGE_RIGHT_OFFSET 15
 #define RANGE_FRONT_OFFSET 30
-
+/*
 // Range sensor wall thresholds
 #define RANGE_DIAG_LEFT_WALL_THRESHOLD 75
 #define RANGE_DIAG_RIGHT_WALL_THRESHOLD 75
 #define RANGE_LEFT_WALL_THRESHOLD 70
 #define RANGE_RIGHT_WALL_THRESHOLD 70
 #define RANGE_FRONT_WALL_THRESHOLD 125
-
-#define LEFT_LOW_THRESHOLD 100
-#define LEFT_HIGH_THRESHOLD 100
-#define RIGHT_LOW_THRESHOLD 100
-#define RIGHT_HIGH_THRESHOLD 100
+*/
+#define LEFT_LOW_THRESHOLD 140
+#define LEFT_HIGH_THRESHOLD 140
+#define RIGHT_LOW_THRESHOLD 130
+#define RIGHT_HIGH_THRESHOLD 130
 #define FRONT_LOW_THRESHOLD 90
 #define FRONT_HIGH_THRESHOLD 90
 
 // Range sensor middle readings
-#define RANGE_DIAG_LEFT_MIDDLE 68
-#define RANGE_DIAG_RIGHT_MIDDLE 68
+#define RANGE_DIAG_LEFT_MIDDLE 73
+#define RANGE_DIAG_RIGHT_MIDDLE 77
 #define RANGE_LEFT_MIDDLE 100
 #define RANGE_RIGHT_MIDDLE 100
 #define RANGE_FRONT_MIDDLE 100
@@ -87,7 +87,7 @@
 #define KI_POSITION 0
 #define KD_POSITION 0
 
-#define KP_ROTATION 0.3
+#define KP_ROTATION 0.4
 #define KI_ROTATION 0
 #define KD_ROTATION 0
 
@@ -97,7 +97,7 @@
 
 // Robot characteristics
 #define ROBOT_MASS .226 // kilograms
-#define MM_BETWEEN_WHEELS 85.5 // millimeters
+#define MM_BETWEEN_WHEELS 83 // millimeters
 #define NUMBER_OF_MOTORS 2
 #define STEPS_PER_MOTOR_REV 12// the number of encoder steps we get per wheel revolution
 #define BATTERY_VOLTAGE 8.1 // Volts
@@ -128,7 +128,7 @@
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
-#define MAX_VEL_ROTATE 0.6 // m/s
+#define MAX_VEL_ROTATE 0.3 // m/s
 #define MAX_VEL_CORNER .5 // m/s
 
 #endif

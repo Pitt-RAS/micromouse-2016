@@ -80,7 +80,13 @@ void RangeSensor::updateRange() {
 
 
 int RangeSensor::getRange() {
-
+  if(sawWall) {
+  sawWall = last_reading_ < high_threshold_;
+  }
+  else {
+  sawWall = last_reading_ < low_threshold_;
+  }
+  
   return last_reading_;
 }
 

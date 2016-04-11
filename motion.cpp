@@ -94,12 +94,19 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
           freakOut("FACK");
       }
       */
+
+      if (-0.3 < difference && difference < 0.05) {
+         rotationOffset = savedError;
+      } 
+      else {
+        savedError = rotationOffset;
+      }
       
       currentLeft = enc_left_extrapolate();
       currentRight = enc_right_extrapolate();
       
-      setpointLeft = idealDistance; //NEW//GYRO + gyroOffset;
-      setpointRight = idealDistance; //NEW//GYRO - gyroOffset;
+      setpointLeft = idealDistance + rotationOffset; //NEW//GYRO + gyroOffset;
+      setpointRight = idealDistance - rotationOffset; //NEW//GYRO - gyroOffset;
       
       correctionLeft = left_PID.Calculate(currentLeft, setpointLeft);
       correctionRight = right_PID.Calculate(currentRight, setpointRight);
@@ -110,13 +117,6 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
 	    RangeSensors.saveIsWall();
 	    passedMiddle = true;
     }
-
-      /* OLD
-    if (-0.25 < difference && difference < 0.25)
-      rotationOffset = savedError;
-    else
-      savedError = rotationOffset;
-       */
       
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorLeft and errorRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
