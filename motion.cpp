@@ -109,7 +109,7 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
     gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
 
     if (abs(orientation->getHeading()) > 60) {
-      freakOut("BADD");
+      freakOut("BAD1");
     }
 
     currentFrontLeft = enc_left_front_extrapolate();
@@ -251,7 +251,7 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
     gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
 
     if (abs(orientation->getHeading()) > 60) {
-      freakOut("BADD");
+      freakOut("BAD2");
       //menu.showString("FACK", 4);
       //delay(3000);
       //char buf[5];
@@ -538,7 +538,7 @@ void motion_rotate(float angle) {
         idealLinearDistance);
 
     if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
-      freakOut("BADD");
+      freakOut("BAD3");
     }
 
     currentFrontLeft = enc_left_front_extrapolate();
@@ -632,7 +632,7 @@ void motion_gyro_rotate(float angle) {
     Serial.println(rotation_correction);
 
     if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
-      freakOut("BADD");
+      freakOut("BAD4");
     }
 
     // run PID loop here.  new PID loop will add or subtract from a predetermined
@@ -763,7 +763,7 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
         rotation_offset);
 
     if (abs(orientation->getHeading() - rotation_offset / distancePerDegree) > 60) {
-      freakOut("BADD");
+      freakOut("BAD5");
     }
 
     currentFrontLeft = enc_left_front_extrapolate();
