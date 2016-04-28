@@ -42,6 +42,8 @@ class Navigator
   public:
     Navigator();
 
+    void updateMaze();
+
     void nod();
 
     void driveBox2UnitsLeftTurns();
@@ -67,6 +69,33 @@ class Navigator
 template <typename driver_type>
 Navigator<driver_type>::Navigator() : derived_driver(), driver(derived_driver)
 {
+}
+
+template <typename driver_type>
+void Navigator<driver_type>::updateMaze()
+{
+  if (driver.isWall(kNorth)) {
+    maze.addWall(driver.getX(), driver.getY(), kNorth);
+    driver.updateState(maze, driver.getX(), driver.getY() + 1);
+  }
+
+  if (driver.isWall(kSouth)) {
+    maze.addWall(driver.getX(), driver.getY(), kSouth);
+    driver.updateState(maze, driver.getX(), driver.getY() - 1);
+  }
+
+  if (driver.isWall(kEast)) {
+    maze.addWall(driver.getX(), driver.getY(), kEast);
+    driver.updateState(maze, driver.getX() + 1, driver.getY());
+  }
+
+  if (driver.isWall(kWest)) {
+    maze.addWall(driver.getX(), driver.getY(), kWest);
+    driver.updateState(maze, driver.getX() - 1, driver.getY());
+  }
+
+  maze.visit(driver.getX(), driver.getY());
+  driver.updateState(maze, driver.getX(), driver.getY());
 }
 
 template <typename driver_type>
@@ -121,28 +150,7 @@ void Navigator<driver_type>::findBox(int x, int y)
   }
 
   while (driver.getX() != x || driver.getY() != y) {
-    if (driver.isWall(kNorth)) {
-      maze.addWall(driver.getX(), driver.getY(), kNorth);
-      driver.updateState(maze, driver.getX(), driver.getY() + 1);
-    }
-
-    if (driver.isWall(kSouth)) {
-      maze.addWall(driver.getX(), driver.getY(), kSouth);
-      driver.updateState(maze, driver.getX(), driver.getY() - 1);
-    }
-
-    if (driver.isWall(kEast)) {
-      maze.addWall(driver.getX(), driver.getY(), kEast);
-      driver.updateState(maze, driver.getX() + 1, driver.getY());
-    }
-
-    if (driver.isWall(kWest)) {
-      maze.addWall(driver.getX(), driver.getY(), kWest);
-      driver.updateState(maze, driver.getX() - 1, driver.getY());
-    }
-
-    maze.visit(driver.getX(), driver.getY());
-    driver.updateState(maze, driver.getX(), driver.getY());
+    updateMaze();
 
     {
       FloodFillPath<16, 16>
@@ -158,6 +166,7 @@ void Navigator<driver_type>::findBox(int x, int y)
     }
   }
 
+  updateMaze();
   driver.move(kNorth, 0);
 }
 
