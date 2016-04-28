@@ -952,8 +952,7 @@ void ContinuousRobotDriverRefactor::turn_in_place(Compass8 dir)
 
 void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
 {
-  bool wall_behind = false;
-  bool is_left_wall, is_right_wall;
+  bool is_front_wall, is_left_wall, is_right_wall;
 
   switch(relativeDir(dir)) {
     case kNorth:
@@ -962,10 +961,20 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
       break;
     case kSouth:
       pivot_turns_in_a_row_ = 0;
-      wall_behind = isWall(absoluteDir(kNorth));
+      is_front_wall = isWall(absoluteDir(kNorth));
       is_left_wall = isWall(absoluteDir(kWest));
       is_right_wall = isWall(absoluteDir(kEast));
       motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0.0);
+
+      if (is_front_wall) {
+        motion_hold_range(MOTION_RESET_HOLD_DISTANCE, 500);
+
+        enc_left_back_write(0);
+        enc_right_back_write(0);
+        enc_left_front_write(0);
+        enc_right_front_write(0);
+        Orientation::getInstance()->resetHeading();
+      }
 
       if (is_right_wall) {
         motion_rotate(90);
@@ -993,23 +1002,7 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
         motion_rotate(180);
       }
 
-      if (wall_behind) {
-        float old_max_vel = motion_get_maxVel_straight();
-        motion_set_maxVel_straight(MOTION_RESET_BACKUP_VEL);
-        motion_forward(-MM_FROM_BACK_TO_CENTER - MOTION_RESET_BACKUP_DISTANCE, 0, 0);
-        motion_set_maxVel_straight(old_max_vel);
-
-        enc_left_back_write(0);
-        enc_right_back_write(0);
-        enc_left_front_write(0);
-        enc_right_front_write(0);
-        Orientation::getInstance()->resetHeading();
-
-        motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, search_velocity_);
-
-      } else {
-        motion_forward(MM_PER_BLOCK / 2, 0.0, search_velocity_);
-      }
+      motion_forward(MM_PER_BLOCK / 2, 0.0, search_velocity_);
 
       break;
     case kEast:
