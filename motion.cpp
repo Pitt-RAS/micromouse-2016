@@ -44,7 +44,7 @@ IdealSweptTurns turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
 
 void motion_forward(float distance, float current_speed, float exit_speed) {
   // HACK
-  distance *= 1.02;
+  //distance *= 1.01;
   float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
   float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
   float correctionFrontRight, correctionBackRight, correctionFrontLeft, correctionBackLeft;
