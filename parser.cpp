@@ -262,7 +262,8 @@ void PathParser::beginDecision(){
         break;
     }
   }
-  move_list.push(forward);
+  //if ( condition to be determined )
+  //  move_list.push(forward);
 }
 
 void PathParser::rightDecisions(){
