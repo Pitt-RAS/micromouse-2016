@@ -1215,6 +1215,7 @@ ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(int x, int y, Compa
   uint16_t loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_VEL_LOCATION) << 8;
   loaded_int |= EEPROM.read(EEPROM_SEARCH_VEL_LOCATION + 1);
   search_velocity_ = (float)loaded_int / 100;
+  motion_set_maxVel_straight(search_velocity_);
 
   loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION) << 8;
   loaded_int |= EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION + 1);
