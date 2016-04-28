@@ -1205,7 +1205,7 @@ void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
   setDir(dir);
 }
 
-ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(int x, int y, Compass8 direction) : moving_(false), last_direction_(kNorth), moves_in_this_direction_(0), pivot_turns_in_a_row_(0),
+ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(int x, int y, Compass8 direction, bool begin_from_back) : moving_(false), last_direction_(kNorth), moves_in_this_direction_(0), pivot_turns_in_a_row_(0),
     left_back_wall_(false)
 {
   setX(x);
@@ -1224,6 +1224,9 @@ ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(int x, int y, Compa
   loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION) << 8;
   loaded_int |= EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION + 1);
   motion_set_maxDecel_straight(-(float)loaded_int / 10);
+
+  if (!begin_from_back)
+    left_back_wall_ = true;
 }
 
 void ContinuousRobotDriverRefactor::turn(Compass8 dir)

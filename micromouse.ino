@@ -126,7 +126,7 @@ void loop()
         menu.showString(buf, 4);
         searchFinishMelody();
 
-        ContinuousRobotDriverRefactor other_driver(parser.end_x, parser.end_y, absolute_end_direction);
+        ContinuousRobotDriverRefactor other_driver(parser.end_x, parser.end_y, absolute_end_direction, false);
 
     {
       FloodFillPath<16, 16>

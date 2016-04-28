@@ -312,7 +312,8 @@ class ContinuousRobotDriverRefactor : public Driver, public Turnable
     int pivot_turns_in_a_row_;
 
   public:
-    ContinuousRobotDriverRefactor(int x=0, int y=0, Compass8 direction=kNorth);
+    ContinuousRobotDriverRefactor(int x=0, int y=0, Compass8 direction=kNorth,
+                                                  bool begin_from_back=true);
 
     void turn(Compass8 dir);
 
