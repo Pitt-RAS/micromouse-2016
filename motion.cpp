@@ -28,6 +28,7 @@ static float max_accel_corner = MAX_ACCEL_CORNER;
 static float max_decel_corner = MAX_DECEL_CORNER;
 
 static float max_vel_straight = MAX_VEL_STRAIGHT;
+static float max_vel_diag = MAX_VEL_DIAG;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 
 static Orientation* orientation = NULL;
@@ -194,7 +195,7 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
   float drift = currentExtrapolation;
 
   //instantiate with distance - the amount of drift between motion commands
-  MotionCalc motionCalc (distance-drift, max_vel_straight, current_speed, exit_speed, max_accel_straight,
+  MotionCalc motionCalc (distance-drift, max_vel_diag, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
 
   if (orientation == NULL) {
@@ -953,6 +954,9 @@ void motion_set_maxDecel_corner(float temp_max_decel_corner) {
 void motion_set_maxVel_straight(float temp_max_vel_straight) {
   max_vel_straight = temp_max_vel_straight;
 }
+void motion_set_maxVel_diag(float temp_max_vel_diag) {
+  max_vel_diag = temp_max_vel_diag;
+}
 void motion_set_maxVel_rotate(float temp_max_vel_rotate) {
   max_vel_rotate = temp_max_vel_rotate;
 }
@@ -980,6 +984,9 @@ float motion_get_maxDecel_corner() {
 
 float motion_get_maxVel_straight() {
   return max_vel_straight;
+}
+float motion_get_maxVel_diag() {
+  return max_vel_diag;
 }
 float motion_get_maxVel_rotate() {
   return max_vel_rotate;

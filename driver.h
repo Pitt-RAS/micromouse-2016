@@ -326,7 +326,8 @@ class KaosDriver
 {
   private:
     static float turn_velocity_;
-    static float max_forward_velocity_;
+    static float max_vel_straight_;
+    static float max_vel_diag_;
     static float max_accel_;
     static float max_decel_;
   public:

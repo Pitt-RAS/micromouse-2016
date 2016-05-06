@@ -137,6 +137,7 @@
 #define EEPROM_KAOS_TURN_VEL_LOCATION 508
 #define EEPROM_KAOS_ACCEL_LOCATION 510
 #define EEPROM_KAOS_DECEL_LOCATION 512
+#define EEPROM_KAOS_DIAG_VEL_LOCATION 514
 
 // Motion control paremeters
 #define MM_PER_BLOCK 180
@@ -191,6 +192,7 @@
 
 #define GEAR_RATIO 9.96 // gear ratio between motor and wheels
 #define MAX_VEL_STRAIGHT 0.3 // m/s   limited by the maximum velocity at which motors can deliver max accel
+#define MAX_VEL_DIAG 0.3 // m/s
 #define PWM_SPEED_STEPS 1023 // maximum PWM value for the system
 
 // Motor spec sheet parameters
@@ -209,9 +211,6 @@
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
 //    if this max velocity is higher than max straight velocity then use max straight velocity
 #define MAX_VEL_ROTATE .5 // m/s
-
-#define KAOS_TURN_VEL 0.4
-#define KAOS_FORWARD_VEL 0.4
 
 #define MOTION_RESET_BACKUP_VEL 0.05
 #define MOTION_RESET_BACKUP_DISTANCE 50

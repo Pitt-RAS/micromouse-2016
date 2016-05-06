@@ -1333,8 +1333,9 @@ KaosDriver::KaosDriver()
 {
 }
 
-float KaosDriver::turn_velocity_ = KAOS_TURN_VEL;
-float KaosDriver::max_forward_velocity_ = KAOS_FORWARD_VEL;
+float KaosDriver::turn_velocity_ = 0;
+float KaosDriver::max_vel_straight_  = 0;
+float KaosDriver::max_vel_diag_  = 0;
 float KaosDriver::max_accel_ = 0;
 float KaosDriver::max_decel_ = 0;
 
@@ -1344,13 +1345,17 @@ void KaosDriver::execute(std::queue<int> move_list)
 
   uint16_t loaded_int = 0;
 
+  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION) << 8;
+  loaded_int |= EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION + 1);
+  max_vel_straight_ = (float)loaded_int / 100;
+
+  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION) << 8;
+  loaded_int |= EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION + 1);
+  max_vel_diag_ = (float)loaded_int / 100;
+
   loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION) << 8;
   loaded_int |= EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION + 1);
   turn_velocity_ = (float)loaded_int / 100;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION + 1);
-  max_forward_velocity_ = (float)loaded_int / 100;
 
   loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION) << 8;
   loaded_int |= EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION + 1);
@@ -1360,8 +1365,10 @@ void KaosDriver::execute(std::queue<int> move_list)
   loaded_int |= EEPROM.read(EEPROM_KAOS_DECEL_LOCATION + 1);
   max_decel_ = -(float)loaded_int / 10;
 
-  float old_max_velocity = motion_get_maxVel_straight();
-  motion_set_maxVel_straight(max_forward_velocity_);
+  float old_max_vel_straight = motion_get_maxVel_straight();
+  motion_set_maxVel_straight(max_vel_straight_);
+  float old_max_vel_diag = motion_get_maxVel_diag();
+  motion_set_maxVel_diag(max_vel_diag_);
   float old_max_accel = motion_get_maxAccel_straight();
   motion_set_maxAccel_straight(max_accel_);
   float old_max_decel = motion_get_maxDecel_straight();
@@ -1552,7 +1559,8 @@ void KaosDriver::execute(std::queue<int> move_list)
   motion_forward(MM_PER_BLOCK / 6, turn_velocity_, 0);
   motion_forward(-MM_PER_BLOCK / 6, 0, 0);
 
-  motion_set_maxVel_straight(old_max_velocity);
+  motion_set_maxVel_straight(old_max_vel_straight);
+  motion_set_maxVel_diag(old_max_vel_diag);
   motion_set_maxAccel_straight(old_max_accel);
   motion_set_maxDecel_straight(old_max_decel);
 }

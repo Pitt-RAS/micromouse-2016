@@ -77,6 +77,7 @@ const char* speed_options[] = {
   "SACC",
   "SDEC",
   "K FV",
+  "K DV",
   "K TV",
   "KACC",
   "KDEC",
@@ -246,7 +247,15 @@ void loop()
                 EEPROM.write(EEPROM_KAOS_FORWARD_VEL_LOCATION + 1, result & 0xFF);
                 break;
               }
-              case 4: { // KAOS TURN VELOCITY
+              case 4: { // KAOS DIAGONAL VELOCITY
+                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION) << 8;
+                result |= EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION + 1);
+                result = menu.getInt(0, 9999, result, 4);
+                EEPROM.write(EEPROM_KAOS_DIAG_VEL_LOCATION, result >> 8);
+                EEPROM.write(EEPROM_KAOS_DIAG_VEL_LOCATION + 1, result & 0xFF);
+                break;
+              }
+              case 5: { // KAOS TURN VELOCITY
                 uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION) << 8;
                 result |= EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION + 1);
                 result = menu.getInt(0, 9999, result, 4);
@@ -254,7 +263,7 @@ void loop()
                 EEPROM.write(EEPROM_KAOS_TURN_VEL_LOCATION + 1, result & 0xFF);
                 break;
               }
-              case 5: { // KAOS FORWARD ACCEL
+              case 6: { // KAOS FORWARD ACCEL
                 uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION) << 8;
                 result |= EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION + 1);
                 result = menu.getInt(0, 9999, result, 4);
@@ -262,7 +271,7 @@ void loop()
                 EEPROM.write(EEPROM_KAOS_ACCEL_LOCATION + 1, result & 0xFF);
                 break;
               }
-              case 6: { // KAOS DECEL
+              case 7: { // KAOS DECEL
                 uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_DECEL_LOCATION) << 8;
                 result |= EEPROM.read(EEPROM_KAOS_DECEL_LOCATION + 1);
                 result = menu.getInt(0, 9999, result, 4);
@@ -270,7 +279,7 @@ void loop()
                 EEPROM.write(EEPROM_KAOS_DECEL_LOCATION + 1, result & 0xFF);
                 break;
               }
-              case 7: { // BACK
+              case 8: { // BACK
                 back = true;
                 break;
               }

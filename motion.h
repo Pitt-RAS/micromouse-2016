@@ -24,6 +24,7 @@ void motion_set_maxDecel_rotate(float temp_max_decel_rotate);
 void motion_set_maxAccel_corner(float temp_max_accel_corner);
 void motion_set_maxDecel_corner(float temp_max_decel_corner);
 void motion_set_maxVel_straight(float temp_max_vel_straight);
+void motion_set_maxVel_diag(float temp_max_vel_diag);
 void motion_set_maxVel_rotate(float temp_max_vel_rotate);
 void motion_set_maxVel_corner(float temp_max_vel_corner);
 float motion_get_maxAccel_straight();
@@ -33,6 +34,7 @@ float motion_get_maxDecel_rotate();
 float motion_get_maxAccel_corner();
 float motion_get_maxDecel_corner();
 float motion_get_maxVel_straight();
+float motion_get_maxVel_diag();
 float motion_get_maxVel_rotate();
 float motion_get_maxVel_corner();
 
