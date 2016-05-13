@@ -1210,8 +1210,9 @@ void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
   setDir(dir);
 }
 
-ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(int x, int y, Compass8 direction, bool begin_from_back) : moving_(false), last_direction_(kNorth), moves_in_this_direction_(0), pivot_turns_in_a_row_(0),
-    left_back_wall_(false)
+ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(
+    int x, int y, Compass8 direction, bool begin_from_back)
+    : moving_(false), left_back_wall_(false), pivot_turns_in_a_row_(0)
 {
   setX(x);
   setY(y);
@@ -1309,17 +1310,6 @@ void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
   }
 
   moving_ = will_end_moving;
-
-  if (dir == last_direction_) {
-      moves_in_this_direction_++;
-  }
-  else {
-      moves_in_this_direction_ = 0;
-  }
-  if (moves_in_this_direction_ > 17) {
-      //motion_forward(30.0, search_velocity_, search_velocity_);
-  }
-  last_direction_ == dir;
 }
 
 void ContinuousRobotDriverRefactor::move(Path<16, 16>* path)
