@@ -284,7 +284,7 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
     motor_lb.Set(motionCalc.idealAccel(moveTime) + correctionBackLeft,
                  idealVelocity);
 
-    logger.logMotionType('f');
+    logger.logMotionType('d');
     logger.nextCycle();
   }
 
@@ -776,8 +776,8 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
     motor_lb.Set(left_back_PID.Calculate(currentBackLeft, setpointBackLeft),
                  enc_left_back_velocity());
 
-    //logger.logMotionType('s');
-    //logger.nextCycle();
+    logger.logMotionType('s');
+    logger.nextCycle();
   }
 
   uint8_t old_SREG = SREG;
