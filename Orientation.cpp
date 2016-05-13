@@ -1,4 +1,4 @@
-#include "sensors_orientation.h"
+#include "Orientation.h"
 #include "conf.h"
 #include "FreakOut.h"
 #include "Logger.h"

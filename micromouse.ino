@@ -12,7 +12,7 @@
 #include "RangeSensorContainer.h"
 #include "motors.h"
 #include "sensors_encoders.h"
-#include "sensors_orientation.h"
+#include "Orientation.h"
 #include "EncoderMod.h"
 #include "IdealSweptTurns.h"
 #include <I2Cdev.h>

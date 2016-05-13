@@ -15,7 +15,7 @@
 #include "parser.h"
 #include "conf.h"
 #include "sensors_encoders.h"
-#include "sensors_orientation.h"
+#include "Orientation.h"
 #include "FreakOut.h"
 #include "PersistantStorage.h"
 #include "RangeSensorContainer.h"

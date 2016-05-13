@@ -3,7 +3,7 @@
 #include "conf.h"
 #include "motors.h"
 #include "sensors_encoders.h"
-#include "sensors_orientation.h"
+#include "Orientation.h"
 #include "FreakOut.h"
 #include "Menu.h"
 #include "Logger.h"
