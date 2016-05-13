@@ -1,6 +1,5 @@
 #include <Arduino.h>
 
-#include <EEPROM.h>
 #include <LedDisplay.h>
 #include "conf.h"
 #include "data.h"
@@ -9,6 +8,7 @@
 #include "Navigator.h"
 #include "Menu.h"
 #include "motion.h"
+#include "PersistantStorage.h"
 #include "RangeSensorContainer.h"
 #include "motors.h"
 #include "sensors_encoders.h"
@@ -50,6 +50,7 @@ void setup()
   Serial.begin(BAUD);
 
   menu.begin();
+  Turnable::setDefaultInitialDirection(PersistantStorage::getDefaultDirection());
 }
 
 const char* primary_options[] = {
@@ -197,12 +198,12 @@ void loop()
           switch (menu.getString(direction_options, 2, 4)) {
             case 0: { // NORTH
               Turnable::setDefaultInitialDirection(kNorth);
-              menu.storeDefaultDirection(kNorth);
+              PersistantStorage::setDefaultDirection(kNorth);
               break;
             }
             case 1: { // EAST
               Turnable::setDefaultInitialDirection(kEast);
-              menu.storeDefaultDirection(kEast);
+              PersistantStorage::setDefaultDirection(kEast);
               break;
             }
             default: {
@@ -216,67 +217,51 @@ void loop()
             bool back = false;
             switch (menu.getString(speed_options, 8, 4)) {
               case 0: { // SEARCH VELOCITY
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_SEARCH_VEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_SEARCH_VEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawSearchVelocity();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_SEARCH_VEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_SEARCH_VEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawSearchVelocity(result);
                 break;
               }
               case 1: { // SEARCH FORWARD ACCEL
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawSearchAccel();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_SEARCH_ACCEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_SEARCH_ACCEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawSearchAccel(result);
                 break;
               }
               case 2: { // SEARCH DECEL
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawSearchDecel();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_SEARCH_DECEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_SEARCH_DECEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawSearchDecel(result);
                 break;
               }
               case 3: { // KAOS FORWARD VELOCITY
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawKaosForwardVelocity();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_KAOS_FORWARD_VEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_KAOS_FORWARD_VEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawKaosForwardVelocity(result);
                 break;
               }
               case 4: { // KAOS DIAGONAL VELOCITY
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawKaosDiagVelocity();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_KAOS_DIAG_VEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_KAOS_DIAG_VEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawKaosDiagVelocity(result);
                 break;
               }
               case 5: { // KAOS TURN VELOCITY
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawKaosTurnVelocity();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_KAOS_TURN_VEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_KAOS_TURN_VEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawKaosTurnVelocity(result);
                 break;
               }
               case 6: { // KAOS FORWARD ACCEL
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawKaosAccel();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_KAOS_ACCEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_KAOS_ACCEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawKaosAccel(result);
                 break;
               }
               case 7: { // KAOS DECEL
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_DECEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_KAOS_DECEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawKaosDecel();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_KAOS_DECEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_KAOS_DECEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawKaosDecel(result);
                 break;
               }
               case 8: { // BACK

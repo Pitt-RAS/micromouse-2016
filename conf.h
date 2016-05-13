@@ -139,6 +139,11 @@
 #define EEPROM_KAOS_DECEL_LOCATION 512
 #define EEPROM_KAOS_DIAG_VEL_LOCATION 514
 
+// Storage settings
+// Number of digits stored after the decimal point
+#define PERSISTANT_STORAGE_VELOCITY_DIGITS 2
+#define PERSISTANT_STORAGE_ACCEL_DIGITS 1
+
 // Motion control paremeters
 #define MM_PER_BLOCK 180
 #define MM_FROM_BACK_TO_CENTER 30

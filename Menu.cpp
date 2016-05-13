@@ -1,11 +1,8 @@
 #include "Menu.h"
 
 #include <Arduino.h>
-#include <EEPROM.h>
 
 #include "conf.h"
-#include "data.h"
-#include "driver.h"
 #include "motors.h"
 #include "PIDController.h"
 #include "PlayMelodies.h"
@@ -68,7 +65,6 @@ void Menu::begin() {
     display_.setBrightness(DISPLAY_BRIGHTNESS);
     display_.begin();
     initialized_ = true;
-    Turnable::setDefaultInitialDirection(loadDefaultDirection());
   }
 }
 
@@ -290,12 +286,4 @@ void Menu::waitForHand()
   }
   
   delay(100);
-}
-
-void Menu::storeDefaultDirection(Compass8 dir) {
-  EEPROM.write(EEPROM_INITIAL_DIRECTION_LOCATION, (uint8_t)dir);
-}
-
-Compass8 Menu::loadDefaultDirection() {
-  return (Compass8) EEPROM.read(EEPROM_INITIAL_DIRECTION_LOCATION);
 }

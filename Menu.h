@@ -4,8 +4,6 @@
 #include <Arduino.h>
 #include <LedDisplay.h>
 
-#include "data.h"
-
 class Menu {
  private:
   LedDisplay display_;
@@ -31,9 +29,6 @@ class Menu {
   void soundBuzzer(int frequency);
   void checkBattery();
   void waitForHand();
-
-  void storeDefaultDirection(Compass8 dir);
-  Compass8 loadDefaultDirection();
 };
 
 extern Menu menu;

@@ -10,7 +10,6 @@
 
 #ifndef COMPILE_FOR_PC
 #include <Arduino.h>
-#include <EEPROM.h>
 #include "data.h"
 #include "motion.h"
 #include "parser.h"
@@ -18,6 +17,7 @@
 #include "sensors_encoders.h"
 #include "sensors_orientation.h"
 #include "FreakOut.h"
+#include "PersistantStorage.h"
 #include "RangeSensorContainer.h"
 #include "Menu.h"
 #endif
@@ -103,7 +103,6 @@ void Driver::saveState(Maze<16, 16>& maze) {
 #ifdef COMPILE_FOR_PC
   std::ofstream out_file;
   out_file.open("saved_state.maze");
-#endif
 
   for (int x = 0; x < 16; x++) {
     for (int y = 0; y < 16; y++) {
@@ -113,18 +112,13 @@ void Driver::saveState(Maze<16, 16>& maze) {
       out |= maze.isWall(x, y, kSouth) << 2;
       out |= maze.isWall(x, y, kWest) << 3;
       out |= maze.isVisited(x, y) << 4;
-#ifdef COMPILE_FOR_PC
       out_file << out;
-#else
-      EEPROM.write(EEPROM_MAZE_LOCATION + 16*x + y, out);
-#endif
     }
   }
 
-#ifdef COMPILE_FOR_PC
   out_file.close();
 #else
-  EEPROM.write(EEPROM_MAZE_FLAG_LOCATION, 1);
+  PersistantStorage::saveMaze(maze);
 #endif
 }
 
@@ -132,16 +126,11 @@ void Driver::loadState(Maze<16, 16>& maze) {
 #ifdef COMPILE_FOR_PC
   std::ifstream in_file;
   in_file.open("saved_state.maze");
-#endif
 
   for (int x = 0; x < 16; x++) {
     for (int y = 0; y < 16; y++) {
       uint8_t in;
-#ifdef COMPILE_FOR_PC
       std::ifstream >> in;
-#else
-      in = EEPROM.read(EEPROM_MAZE_LOCATION + 16*x + y);
-#endif
 
       if (in & (1 << 0)) {
         maze.addWall(x, y, kNorth);
@@ -175,12 +164,14 @@ void Driver::loadState(Maze<16, 16>& maze) {
     }
   }
 
-#ifdef COMPILE_FOR_PC
   in_file.close();
+#else
+  PersistantStorage::loadSavedMaze(maze);
 #endif
 }
 
 void Driver::updateState(Maze<16, 16>& maze, size_t x, size_t y) {
+#ifdef COMPILE_FOR_PC
   uint8_t out = 0;
   out |= maze.isWall(x, y, kNorth) << 0;
   out |= maze.isWall(x, y, kEast) << 1;
@@ -188,14 +179,13 @@ void Driver::updateState(Maze<16, 16>& maze, size_t x, size_t y) {
   out |= maze.isWall(x, y, kWest) << 3;
   out |= maze.isVisited(x, y) << 4;
 
-#ifdef COMPILE_FOR_PC
   std::fstream out_file;
   out_file.open("saved_state.maze");
   out_file.seekp(16*x + y);
   out_file << out;
   out_file.close();
 #else
-  EEPROM.write(EEPROM_MAZE_LOCATION + 16*x + y, out);
+  PersistantStorage::updateSavedMaze(maze, x, y);
 #endif
 }
 
@@ -203,16 +193,13 @@ void Driver::clearState() {
 #ifdef COMPILE_FOR_PC
   remove("saved_state.maze");
 #else
-  Maze<16, 16> maze;
-  saveState(maze);
-  EEPROM.write(EEPROM_MAZE_FLAG_LOCATION, 0);
+  PersistantStorage::clearSavedMaze();
 #endif
 }
 
 void Driver::resetState() {
 #ifndef COMPILE_FOR_PC
-  Maze<16, 16> maze;
-  saveState(maze);
+  PersistantStorage::resetSavedMaze();
 #endif
 }
 
@@ -227,7 +214,7 @@ bool Driver::hasStoredState() {
     return false;
   }
 #else
-  return EEPROM.read(EEPROM_MAZE_FLAG_LOCATION) != 0;
+  return PersistantStorage::hasSavedMaze();
 #endif
 }
 
@@ -1212,18 +1199,11 @@ ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(int x, int y, Compa
   setY(y);
   setDir(direction);
 
-  uint16_t loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_VEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_SEARCH_VEL_LOCATION + 1);
-  search_velocity_ = (float)loaded_int / 100;
+  search_velocity_ = PersistantStorage::getSearchVelocity();
   motion_set_maxVel_straight(search_velocity_);
 
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION + 1);
-  motion_set_maxAccel_straight((float)loaded_int / 10);
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION + 1);
-  motion_set_maxDecel_straight(-(float)loaded_int / 10);
+  motion_set_maxAccel_straight(PersistantStorage::getSearchAccel());
+  motion_set_maxDecel_straight(-PersistantStorage::getSearchDecel());
 
   if (!begin_from_back)
     left_back_wall_ = true;
@@ -1343,27 +1323,11 @@ void KaosDriver::execute(std::queue<int> move_list)
 {
   if (move_list.empty()) return;
 
-  uint16_t loaded_int = 0;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION + 1);
-  max_vel_straight_ = (float)loaded_int / 100;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION + 1);
-  max_vel_diag_ = (float)loaded_int / 100;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION + 1);
-  turn_velocity_ = (float)loaded_int / 100;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION + 1);
-  max_accel_ = (float)loaded_int / 10;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_DECEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_DECEL_LOCATION + 1);
-  max_decel_ = -(float)loaded_int / 10;
+  max_vel_straight_ = PersistantStorage::getKaosForwardVelocity();
+  max_vel_diag_ = PersistantStorage::getKaosDiagVelocity();
+  turn_velocity_ = PersistantStorage::getKaosTurnVelocity();
+  max_accel_ = PersistantStorage::getKaosAccel();
+  max_decel_ = -PersistantStorage::getKaosDecel();
 
   float old_max_vel_straight = motion_get_maxVel_straight();
   motion_set_maxVel_straight(max_vel_straight_);
