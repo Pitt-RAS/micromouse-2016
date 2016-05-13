@@ -916,6 +916,10 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
             }
             break;
           }
+          default: {
+            // this will never happen, because we set last_direction_ptr ourselves
+            break;
+          }
         }
       }
 
@@ -1012,6 +1016,9 @@ KnownPath<x_size, y_size>::KnownPath(
       case kWest:
         this->directions_.enqueue(&this->directions_data_[3]);
         x--;
+        break;
+      default:
+        // do nothing
         break;
     }
   }

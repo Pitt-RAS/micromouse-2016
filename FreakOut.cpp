@@ -5,7 +5,7 @@
 #include "PlayMelodies.h"
 #include "motors.h"
 
-void freakOut(char* msg) {
+void freakOut(const char* msg) {
   motor_lf.Set(0, 0);
   motor_lb.Set(0, 0);
   motor_rf.Set(0, 0);

@@ -1,5 +1,4 @@
 #include "Arduino.h"
-#include "stdio.h"
 
 #include "conf.h"
 #include "motors.h"
@@ -49,7 +48,8 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
   float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
   float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
   float correctionFrontRight, correctionBackRight, correctionFrontLeft, correctionBackLeft;
-  float rangeOffset, gyroOffset;
+  float rangeOffset;
+  float gyroOffset = 0;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealDistance, idealVelocity;
   elapsedMicros moveTime;
@@ -84,7 +84,8 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
   moveTime = 0;
 
   RangeSensors.updateReadings();
-  float savedError = 0;
+
+  //float lastRangeError = 0;
   bool passedMiddle = false;
   orientation->handler_update_ = false;
 
@@ -95,13 +96,9 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
-    float leftReading, rightReading, position, nearestWhole, difference;
-
-    leftReading = enc_left_front_extrapolate();
-    rightReading = enc_right_front_extrapolate();
-    position = (leftReading + rightReading) / 2 / MM_PER_BLOCK;
-    nearestWhole = (int) (position + 0.5);
-    difference = position - nearestWhole;
+    float leftReading = enc_left_front_extrapolate();
+    float rightReading = enc_right_front_extrapolate();
+    float position = (leftReading + rightReading) / 2 / MM_PER_BLOCK;
 
     // Add error from rangefinder data. Positive error is when it is too close
     // to the left wall, requiring a positive angle to fix it.
@@ -138,10 +135,14 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
 	    passedMiddle = true;
     }
 
-    //if (-0.25 < difference && difference < 0.25)
-    //  rangeOffset = savedError;
-    //else
-    //  savedError = rangeOffset;
+    // Only use range sensor correction in the middle half of a cell
+//    float nearestWhole = (int) (position + 0.5);
+//    float difference = position - nearestWhole;
+//
+//    if (-0.25 < difference && difference < 0.25)
+//      rangeOffset = lastRangeError;
+//    else
+//      lastRangeError = rangeOffset;
 
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorFrontLeft and errorFrontRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
@@ -184,7 +185,8 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
   float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
   float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
   float correctionFrontRight, correctionBackRight, correctionFrontLeft, correctionBackLeft;
-  float rangeOffset, gyroOffset;
+  float rangeOffset;
+  float gyroOffset = 0;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float idealDistance, idealVelocity;
   elapsedMicros moveTime;
@@ -214,8 +216,7 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
   moveTime = 0;
 
   RangeSensors.updateReadings();
-  float savedError = 0;
-  bool passedMiddle = false;
+
   orientation->handler_update_ = false;
 
   // execute motion
@@ -224,14 +225,6 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
-
-    float leftReading, rightReading, position, nearestWhole, difference;
-
-    leftReading = enc_left_front_extrapolate();
-    rightReading = enc_right_front_extrapolate();
-    position = (leftReading + rightReading) / 2 / MM_PER_BLOCK;
-    nearestWhole = (int) (position + 0.5);
-    difference = position - nearestWhole;
 
     // Add error from rangefinder data. Positive error is when it is too close
     // to the left wall, requiring a positive angle to fix it.
@@ -279,17 +272,6 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
     correctionBackRight = right_back_PID.Calculate(currentBackRight,
                                                    setpointBackRight);
 
-    // Save isWall state for use by high-level code.
-    if (!passedMiddle && position > distance / MM_PER_BLOCK - 0.5) {
-	    RangeSensors.saveIsWall();
-	    passedMiddle = true;
-    }
-
-    //if (-0.25 < difference && difference < 0.25)
-    //  rangeOffset = savedError;
-    //else
-    //  savedError = rangeOffset;
-
     // Run PID to determine the offset that should be added/subtracted to the left/right wheels to fix the error.  Remember to remove or at the very least increase constraints on the I term
     // the offsets that are less than an encoder tick need to be added/subtracted from errorFrontLeft and errorFrontRight instead of encoderWrite being used.  Maybe add a third variable to the error calculation for these and other offsets
 
@@ -328,7 +310,6 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
 }
 
 void motion_collect(float distance, float current_speed, float exit_speed){
-  float errorFrontRight, errorFrontLeft, errorBackRight, errorBackLeft;
   float currentFrontRight, currentFrontLeft, currentBackRight, currentBackLeft;
   float setpointFrontRight, setpointFrontLeft, setpointBackRight, setpointBackLeft;
   float correctionFrontRight, correctionFrontLeft, correctionBackRight, correctionBackLeft;
@@ -352,7 +333,6 @@ void motion_collect(float distance, float current_speed, float exit_speed){
   }
   rotationOffset = 0;
 
-  float value_L, value_R, value_DL, value_DR;
   int num_range_value = distance/MOTION_COLLECT_MM_PER_READING;
   int num_readings = 1;
   int i;
@@ -501,10 +481,9 @@ void motion_rotate(float angle) {
 
   float current_speed = ((enc_left_front_velocity() + enc_left_back_velocity()) - (enc_right_front_velocity() + enc_right_back_velocity()))/4;
   
-  float currentExtrapolation = (enc_left_front_extrapolate() + enc_left_front_extrapolate()
-                                  - enc_right_front_extrapolate() - enc_right_back_extrapolate())/2;
-
-  float drift = 0;
+  float drift = (enc_left_front_extrapolate() + enc_left_front_extrapolate()
+                 - enc_right_front_extrapolate() - enc_right_back_extrapolate())/2;
+  drift = 0;
 
   //instantiate with distance - the amount of drift between motion commands 
   MotionCalc motionCalc (linearDistance - drift, max_vel_rotate, current_speed, 0, max_accel_rotate,
@@ -668,27 +647,24 @@ void motion_gyro_rotate(float angle) {
 }
 
 void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
-  float sign;
+  int sign = 1;
   float currentFrontRight, currentFrontLeft, currentBackRight, currentBackLeft;
   float setpointFrontRight, setpointFrontLeft, setpointBackRight, setpointBackLeft;
   float idealDistance;
   float rotation_offset;
   float gyro_correction;
-  float time_scaling;
-  float gyro_offset;
+  float time_scaling = 1;
   int move_time_scaled = 0;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float total_time;
-  IdealSweptTurns* turn_table;
+  IdealSweptTurns* turn_table = NULL;
 
   if (orientation == NULL) {
     orientation = Orientation::getInstance();
   }
 
-  float currentExtrapolation = (enc_left_front_extrapolate() + enc_right_front_extrapolate()
-                                 + enc_left_back_extrapolate() + enc_right_back_extrapolate())/4;
-
-  float drift = currentExtrapolation;
+  //float drift = (enc_left_front_extrapolate() + enc_right_front_extrapolate()
+  //               + enc_left_back_extrapolate() + enc_right_back_extrapolate())/4;
 
   switch (turn_type) {
     case kLeftTurn45:
@@ -730,6 +706,9 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
       turn_table = &turn_180_table;
       time_scaling = speed / SWEPT_TURN_180_FORWARD_SPEED;
       sign = 1;
+      break;
+    default:
+      freakOut("OOPS");
       break;
   }
 

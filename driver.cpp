@@ -618,6 +618,10 @@ void ContinuousRobotDriver::turn(Compass8 dir)
         case kWest:
           setX(getXFloat() - 0.5);
           break;
+        default:
+          // we should never get a diagonal direction here
+          freakOut("OOPS");
+          break;
       }
 
       switch (dir) {
@@ -632,6 +636,10 @@ void ContinuousRobotDriver::turn(Compass8 dir)
           break;
         case kWest:
           setX(getXFloat() - 0.5);
+          break;
+        default:
+          // we should never get a diagonal direction here
+          freakOut("OOPS");
           break;
       }
     }
@@ -722,6 +730,11 @@ void ContinuousRobotDriver::move(Compass8 dir, int distance)
         case kWest:
           setX(getXFloat() - 0.5);
           break;
+
+        default:
+          // we should never get a diagonal direction here
+          freakOut("OOPS");
+          break;
       }
       turn(dir);
       return;
@@ -775,6 +788,11 @@ void ContinuousRobotDriver::move(Compass8 dir, int distance)
 
     case kWest:
       setX(getXFloat() - distance_to_add);
+      break;
+
+    default:
+      // we should never get a diagonal direction here
+      freakOut("OOPS");
       break;
   }
 }

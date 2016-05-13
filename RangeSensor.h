@@ -18,8 +18,8 @@ class RangeSensor {
   struct TranslationConstants {
     float a1, b1, c1, d1;
     float a2, b2, c2, d2;
-    int v0;
-    int e;
+    float v0;
+    float e;
   };
 
   TranslationConstants constants_;

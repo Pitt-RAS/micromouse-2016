@@ -136,6 +136,6 @@ float MotionCalc::idealAccel (int32_t elapsedTime) {
   }
 }
 
-int32_t MotionCalc::getTotalTime () {
+uint32_t MotionCalc::getTotalTime () {
   return tStart + tConst + tEnd;
 }
