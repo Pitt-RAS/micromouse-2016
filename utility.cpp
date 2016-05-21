@@ -8,7 +8,7 @@
 #include "driver.h"
 
 bool knowsBestPath(size_t target_x, size_t target_y) {
-  ContinuousRobotDriverRefactor driver;
+  ContinuousRobotDriver driver;
   Maze<16, 16> maze;
   bool success = true;
   if (driver.hasStoredState()) {

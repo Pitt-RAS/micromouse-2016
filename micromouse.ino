@@ -100,7 +100,7 @@ void loop()
 {
   switch (menu.getString(primary_options, 5, 4)) {
     case 0: { // RUN
-      Navigator<ContinuousRobotDriverRefactor> navigator;
+      Navigator<ContinuousRobotDriver> navigator;
       Orientation* orientation = Orientation::getInstance();
 
       menu.waitForHand();
@@ -125,7 +125,7 @@ void loop()
       if (knowsBestPath(target_x, target_y)) {
         Compass8 absolute_end_direction;
 
-        ContinuousRobotDriverRefactor maze_load_driver;
+        ContinuousRobotDriver maze_load_driver;
         Maze<16, 16> maze;
         maze_load_driver.loadState(maze);
         FloodFillPath<16, 16> flood_path (maze, 0, 0, target_x, target_y);
@@ -145,7 +145,7 @@ void loop()
         menu.showString(buf, 4);
         searchFinishMelody();
 
-        ContinuousRobotDriverRefactor other_driver(parser.end_x, parser.end_y, absolute_end_direction, false);
+        ContinuousRobotDriver other_driver(parser.end_x, parser.end_y, absolute_end_direction, false);
 
         {
           FloodFillPath<16, 16>
@@ -165,7 +165,7 @@ void loop()
         }
 
         other_driver.move(kNorth, 0);
-        //ContinuousRobotDriverRefactor return_driver(parser.end_x, parser.end_y,
+        //ContinuousRobotDriver return_driver(parser.end_x, parser.end_y,
         //                                    absolute_end_direction);
         //return_driver.loadState(maze);
         //FloodFillPath<16, 16> return_path (maze, 8, 8, 0, 0);
