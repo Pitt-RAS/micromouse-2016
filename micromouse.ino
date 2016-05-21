@@ -14,11 +14,10 @@
 #include "sensors_encoders.h"
 #include "Orientation.h"
 #include "EncoderMod.h"
+#include "utility.h"
 #include "IdealSweptTurns.h"
 #include <I2Cdev.h>
 #include <MPU9150.h>
-
-bool knowsBestPath();
 
 void setup()
 {
@@ -65,6 +64,7 @@ const char* secondary_options[] = {
   "CLR",
   "SDIR",
   "SPDS",
+  "TRGT",
   "BACK"
 };
 
@@ -85,6 +85,12 @@ const char* speed_options[] = {
   "BACK"
 };
 
+const char* cell_options[] = {
+  "X",
+  "Y",
+  "BACK"
+};
+
 void loop()
 {
   switch (menu.getString(primary_options, 5, 4)) {
@@ -101,18 +107,24 @@ void loop()
       enc_right_back_write(0);
       orientation->resetHeading();
 
-      navigator.runDevelopmentCode();
+      navigator.findBox(PersistantStorage::getTargetXLocation(),
+                        PersistantStorage::getTargetYLocation());
+      searchFinishMelody();
+      navigator.findBox(0, 0);
+      stopMelody();
       break;
     }
     case 1: { // KAOS
-      if (knowsBestPath()) {
+      uint8_t target_x = PersistantStorage::getTargetXLocation();
+      uint8_t target_y = PersistantStorage::getTargetYLocation();
+      if (knowsBestPath(target_x, target_y)) {
         Compass8 absolute_end_direction;
 
         ContinuousRobotDriverRefactor maze_load_driver;
         Maze<16, 16> maze;
         maze_load_driver.loadState(maze);
-        FloodFillPath<16, 16> flood_path (maze, 0, 0, 8, 8);
-        KnownPath<16, 16> known_path (maze, 0, 0, 8, 8, flood_path);
+        FloodFillPath<16, 16> flood_path (maze, 0, 0, target_x, target_y);
+        KnownPath<16, 16> known_path (maze, 0, 0, target_x, target_y, flood_path);
         PathParser parser (&known_path);
         KaosDriver driver;
 
@@ -130,24 +142,24 @@ void loop()
 
         ContinuousRobotDriverRefactor other_driver(parser.end_x, parser.end_y, absolute_end_direction, false);
 
-    {
-      FloodFillPath<16, 16>
-        flood_path(maze, other_driver.getX(), other_driver.getY(), 0, 0);
+        {
+          FloodFillPath<16, 16>
+            flood_path(maze, other_driver.getX(), other_driver.getY(), 0, 0);
 
-      KnownPath<16, 16>
-        known_path(maze, other_driver.getX(), other_driver.getY(), 0, 0, flood_path);
+          KnownPath<16, 16>
+            known_path(maze, other_driver.getX(), other_driver.getY(), 0, 0, flood_path);
 
-      if (known_path.isEmpty())
-        break;
+          if (known_path.isEmpty())
+            break;
 
-      other_driver.move(&known_path);
+          other_driver.move(&known_path);
 
-        snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
-        menu.showString(buf, 4);
-       
-    }
+            snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
+            menu.showString(buf, 4);
 
-  other_driver.move(kNorth, 0);
+        }
+
+        other_driver.move(kNorth, 0);
         //ContinuousRobotDriverRefactor return_driver(parser.end_x, parser.end_y,
         //                                    absolute_end_direction);
         //return_driver.loadState(maze);
@@ -175,7 +187,9 @@ void loop()
       break;
     }
     case 3: { // CHK (checks if entire path has been discovered)
-      if (knowsBestPath()) {
+      uint8_t target_x = PersistantStorage::getTargetXLocation();
+      uint8_t target_y = PersistantStorage::getTargetYLocation();
+      if (knowsBestPath(target_x, target_y)) {
         menu.showString("YES", 4);
       } else {
         menu.showString("NO", 4);
@@ -273,7 +287,32 @@ void loop()
           }
           break;
         }
-        case 3: // BACK
+        case 3: { // TRGT
+          while (1) {
+            bool back = false;
+            switch (menu.getString(cell_options, 8, 4)) {
+              case 0: { // X LOCATION
+                uint8_t result = PersistantStorage::getTargetXLocation();
+                result = menu.getInt(0, 15, result, 4);
+                PersistantStorage::setTargetXLocation(result);
+                break;
+              }
+              case 1: { // Y LOCATION
+                uint8_t result = PersistantStorage::getTargetYLocation();
+                result = menu.getInt(0, 15, result, 4);
+                PersistantStorage::setTargetYLocation(result);
+                break;
+              }
+              case 2: { // BACK
+                back = true;
+                break;
+              }
+            }
+            if (back) break;
+          }
+          break;
+        }
+        case 4: // BACK
         default: {
           break;
         }
@@ -284,34 +323,4 @@ void loop()
       break;
     }
   }
-}
-
-bool knowsBestPath() {
-  ContinuousRobotDriverRefactor driver;
-  Maze<16, 16> maze;
-  bool success = true;
-  if (driver.hasStoredState()) {
-    driver.loadState(maze);
-    FloodFillPath<16, 16> flood_path1 (maze, 0, 0, 8, 8);
-    FloodFillPath<16, 16> flood_path2 (maze, 0, 0, 8, 8);
-    KnownPath<16, 16> known_path (maze, 0, 0, 8, 8, flood_path1);
-
-    if (flood_path2.isEmpty()) {
-      success = false;
-    }
-
-    while (!flood_path2.isEmpty()) {
-      if (known_path.isEmpty()) {
-        success = false;
-        break;
-      }
-      if (flood_path2.nextDirection() != known_path.nextDirection()) {
-        success = false;
-        break;
-      }
-    }
-  } else {
-    success = false;
-  }
-  return success;
 }

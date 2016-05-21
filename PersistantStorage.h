@@ -35,6 +35,11 @@ class PersistantStorage {
     static Compass8 getDefaultDirection();
     static void setDefaultDirection(Compass8 dir);
 
+    static uint8_t getTargetXLocation();
+    static void setTargetXLocation(uint8_t x);
+    static uint8_t getTargetYLocation();
+    static void setTargetYLocation(uint8_t y);
+
     // The following provide access to all of the velocity and acceration settings
     static float getSearchVelocity();
     static void setSearchVelocity(float velocity);

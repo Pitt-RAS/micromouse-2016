@@ -101,6 +101,26 @@ void PersistantStorage::setDefaultDirection(Compass8 dir) {
   EEPROM.write(EEPROM_INITIAL_DIRECTION_LOCATION, (uint8_t)dir);
 }
 
+uint8_t PersistantStorage::getTargetXLocation() {
+  return EEPROM.read(EEPROM_TARGET_X_LOCATION);
+}
+
+void PersistantStorage::setTargetXLocation(uint8_t x) {
+  if (x < 16) {
+    EEPROM.write(EEPROM_TARGET_X_LOCATION, x);
+  }
+}
+
+uint8_t PersistantStorage::getTargetYLocation() {
+  return EEPROM.read(EEPROM_TARGET_Y_LOCATION);
+}
+
+void PersistantStorage::setTargetYLocation(uint8_t y) {
+  if (y < 16) {
+    EEPROM.write(EEPROM_TARGET_Y_LOCATION, y);
+  }
+}
+
 float PersistantStorage::getSearchVelocity() {
   return getRawSearchVelocity() / pow(10, PERSISTANT_STORAGE_VELOCITY_DIGITS);
 }
