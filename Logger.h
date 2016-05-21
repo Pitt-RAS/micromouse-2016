@@ -1,6 +1,9 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
+#include <Arduino.h>
+
+// Dependencies within Micromouse
 #include "conf.h"
 
 template<typename T, size_t capacity>

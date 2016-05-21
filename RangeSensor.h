@@ -1,6 +1,7 @@
-#ifndef RANGESENSOR_H
-#define RANGESENSOR_H
+#ifndef MICROMOUSE_RANGESENSOR_H_
+#define MICROMOUSE_RANGESENSOR_H_
 
+// Dependencies within Micromouse
 #include "conf.h"
 
 class RangeSensor {

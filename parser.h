@@ -1,10 +1,11 @@
-#ifndef PARSER_H
-#define PARSER_H
-//#define COMPILE_FOR_PC
-#include "data.h"
+#ifndef MICROMOUSE_PARSER_H_
+#define MICROMOUSE_PARSER_H_
+
+// External libraries
 #include <queue>
 
-#include <Arduino.h>
+// Dependencies within Micromouse
+#include "data.h"
 
 enum Move {
   //half a cell to set up for 90

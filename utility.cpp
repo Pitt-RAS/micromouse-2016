@@ -1,9 +1,11 @@
-#include <Arduino.h>
-#include "RangeSensorContainer.h"
-#include "Menu.h"
-#include "driver.h"
-
 #include "utility.h"
+
+#include <Arduino.h>
+
+// Dependencies within Micromouse
+#include "Menu.h"
+#include "RangeSensorContainer.h"
+#include "driver.h"
 
 bool knowsBestPath(size_t target_x, size_t target_y) {
   ContinuousRobotDriverRefactor driver;

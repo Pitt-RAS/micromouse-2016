@@ -10,16 +10,18 @@
 
 #ifndef COMPILE_FOR_PC
 #include <Arduino.h>
+
+// Dependencies within Micromouse
+#include "FreakOut.h"
+#include "Menu.h"
+#include "Orientation.h"
+#include "PersistantStorage.h"
+#include "RangeSensorContainer.h"
+#include "conf.h"
 #include "data.h"
 #include "motion.h"
 #include "parser.h"
-#include "conf.h"
 #include "sensors_encoders.h"
-#include "Orientation.h"
-#include "FreakOut.h"
-#include "PersistantStorage.h"
-#include "RangeSensorContainer.h"
-#include "Menu.h"
 #endif
 
 

@@ -1,5 +1,11 @@
+#include "sensors_encoders.h"
+
 #include <Arduino.h>
+
+// External libraries
 #include <EncoderMod.h>
+
+// Dependencies within Micromouse
 #include "conf.h"
 
 Encoder left_front_encoder(ENCODER_LF1_PIN, ENCODER_LF2_PIN);

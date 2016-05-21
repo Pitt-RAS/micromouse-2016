@@ -11,6 +11,7 @@
 #ifndef COMPILE_FOR_PC
 #include <Arduino.h>
 
+// Dependencies within Micromouse
 #include "conf.h"
 #endif
 

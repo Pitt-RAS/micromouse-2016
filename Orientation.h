@@ -3,8 +3,10 @@
 
 #include <Arduino.h>
 
+// External libraries
 #include <MPU9150.h>
 
+// Dependencies within Micromouse
 #include "conf.h"
 
 class Orientation {

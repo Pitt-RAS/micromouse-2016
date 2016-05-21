@@ -1,19 +1,20 @@
-#include "Arduino.h"
+#include "motion.h"
 
+#include <Arduino.h>
+
+// Dependencies within Micromouse
+#include "FreakOut.h"
+#include "IdealSweptTurns.h"
+#include "Logger.h"
+#include "Menu.h"
+#include "MotionCalc.h"
+#include "Orientation.h"
+#include "PIDController.h"
+#include "RangeSensor.h"
+#include "RangeSensorContainer.h"
 #include "conf.h"
 #include "motors.h"
 #include "sensors_encoders.h"
-#include "Orientation.h"
-#include "FreakOut.h"
-#include "Menu.h"
-#include "Logger.h"
-#include "MotionCalc.h"
-#include "PIDController.h"
-#include "RangeSensorContainer.h"
-#include "RangeSensor.h"
-#include "motion.h"
-#include "IdealSweptTurns.h"
-#include "Menu.h"
 
 static float max_accel_straight = MAX_ACCEL_STRAIGHT;
 static float max_decel_straight = MAX_DECEL_STRAIGHT;

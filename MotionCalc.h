@@ -1,6 +1,8 @@
 #ifndef MOTION_CALC_H
 #define MOTION_CALC_H
 
+#include <Arduino.h>
+
 class MotionCalc {
   private:
     float max_accel, max_decel;

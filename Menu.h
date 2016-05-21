@@ -2,6 +2,8 @@
 #define MENU_H
 
 #include <Arduino.h>
+
+// External libraries
 #include <LedDisplay.h>
 
 class Menu {

@@ -1,7 +1,9 @@
-#include "Arduino.h"
-
-#include "conf.h"
 #include "RangeSensor.h"
+
+#include <Arduino.h>
+
+// Dependencies within Micromouse
+#include "conf.h"
 
 RangeSensor::RangeSensor(int temp_pin, int lowT, int highT) {
   pin_ = temp_pin;

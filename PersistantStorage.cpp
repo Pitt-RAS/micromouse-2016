@@ -1,8 +1,10 @@
 #include "PersistantStorage.h"
 
-#include "conf.h"
-
+// External libraries
 #include <EEPROM.h>
+
+// Dependencies within Micromouse
+#include "conf.h"
 
 int PersistantStorage::loadIntFromLocation(uint16_t high_byte_location) {
   uint16_t result = (uint16_t)EEPROM.read(high_byte_location) << 8;

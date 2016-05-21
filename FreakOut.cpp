@@ -1,5 +1,8 @@
+#include "FreakOut.h"
+
 #include <Arduino.h>
 
+// Dependencies within Micromouse
 #include "Logger.h"
 #include "Menu.h"
 #include "PlayMelodies.h"

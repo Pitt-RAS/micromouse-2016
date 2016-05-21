@@ -2,13 +2,14 @@
 
 #include <Arduino.h>
 
-#include "conf.h"
-#include "motors.h"
+// Dependencies within Micromouse
+#include "Orientation.h"
 #include "PIDController.h"
 #include "PlayMelodies.h"
 #include "RangeSensorContainer.h"
+#include "conf.h"
+#include "motors.h"
 #include "sensors_encoders.h"
-#include "Orientation.h"
 
 Menu menu;
 

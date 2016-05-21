@@ -1,11 +1,9 @@
 #ifndef MICROMOUSE_NAV_H_
 #define MICROMOUSE_NAV_H_
 
+// Dependencies within Micromouse
 #include "data.h"
 #include "driver.h"
-#include "parser.h"
-#include "Menu.h"
-#include "PlayMelodies.h"
 
 // Everything in this file MUST be portable code.
 //
@@ -174,9 +172,7 @@ template <typename driver_type>
 void Navigator<driver_type>::runDevelopmentCode()
 {
   findBox(8, 8);
-  searchFinishMelody();
   findBox(0, 0);
-  stopMelody();
 }
 
 #endif

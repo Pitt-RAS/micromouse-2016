@@ -1,12 +1,15 @@
 #include "Orientation.h"
-#include "conf.h"
-#include "FreakOut.h"
-#include "Logger.h"
 
 #include <Arduino.h>
 
+// External libraries
 #include <I2Cdev.h>
 #include <MPU9150.h>
+
+// Dependencies within Micromouse
+#include "FreakOut.h"
+#include "Logger.h"
+#include "conf.h"
 
 volatile bool Orientation::mpu_interrupt_ = false;
 Orientation* Orientation::instance_ = NULL;

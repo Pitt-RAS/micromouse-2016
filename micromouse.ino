@@ -1,23 +1,28 @@
 #include <Arduino.h>
 
+// External libraries
+#include <I2Cdev.h>
 #include <LedDisplay.h>
+#include <MPU9150.h>
+
+// Dependencies within Micromouse
+#include "EncoderMod.h"
+#include "IdealSweptTurns.h"
+#include "Logger.h"
+#include "Menu.h"
+#include "Navigator.h"
+#include "Orientation.h"
+#include "PersistantStorage.h"
+#include "PlayMelodies.h"
+#include "RangeSensorContainer.h"
 #include "conf.h"
 #include "data.h"
 #include "driver.h"
-#include "Logger.h"
-#include "Navigator.h"
-#include "Menu.h"
 #include "motion.h"
-#include "PersistantStorage.h"
-#include "RangeSensorContainer.h"
 #include "motors.h"
+#include "parser.h"
 #include "sensors_encoders.h"
-#include "Orientation.h"
-#include "EncoderMod.h"
 #include "utility.h"
-#include "IdealSweptTurns.h"
-#include <I2Cdev.h>
-#include <MPU9150.h>
 
 void setup()
 {
