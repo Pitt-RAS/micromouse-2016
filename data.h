@@ -124,6 +124,20 @@ class Maze
     // Marks all boxes as unvisited.
     void unvisitAll();
 
+    // Puts a string representing this maze into the given buffer
+    //
+    // This requires a buffer that can hold (4*x + 9*y + 12*x*y + 2)
+    // characters, not including the null terminator
+    // A 16x16 maze requires 3282 characters
+    //
+    // Cells look like this:
+    //   ___ ___
+    //  |   |   |
+    //  |   | X |
+    //  |___|___|
+    //
+    //  Visited cells are marked with an X
+    void print(char* buf);
 
 #ifdef COMPILE_FOR_PC
 
@@ -565,6 +579,78 @@ void Maze<x_size, y_size>::unvisitAll()
   for (y = 0; y < y_size; y++) {
     unvisit(x, y);
   }
+}
+
+template <const size_t x_size, const size_t y_size>
+void Maze<x_size, y_size>::print(char* buf)
+{
+
+  // print top row of maze
+  for (int x = 0; x < x_size; x++) {
+    *(buf++) = ' ';
+    for (int i = 0; i < 3; i++) {
+        *(buf++) = '_';
+    }
+  }
+  *(buf++) = '\r';
+  *(buf++) = '\n';
+
+  // print rest of maze
+  for (size_t y = y_size - 1; y != ((size_t)-1); y--) {
+    // print first line of text for this row
+    for (int x = 0; x < x_size; x++) {
+      if (isWall(x, y, kWest)) {
+        *(buf++) = '|';
+      } else {
+        *(buf++) = ' ';
+      }
+
+      for (int i = 0; i < 3; i++) {
+        *(buf++) = ' ';
+      }
+    }
+    *(buf++) = '|';
+    *(buf++) = '\r';
+    *(buf++) = '\n';
+
+    // print second line of text for this row
+    for (int x = 0; x < x_size; x++) {
+      if (isWall(x, y, kWest)) {
+        *(buf++) = '|';
+      } else {
+        *(buf++) = ' ';
+      }
+
+      *(buf++) = ' ';
+      *(buf++) = (isVisited(x, y) ? 'X' : ' ');
+      *(buf++) = ' ';
+    }
+    *(buf++) = '|';
+    *(buf++) = '\r';
+    *(buf++) = '\n';
+
+    // print third line of text for this row
+    for (int x = 0; x < x_size; x++) {
+      if (isWall(x, y, kWest)) {
+        *(buf++) = '|';
+      } else {
+        *(buf++) = ' ';
+      }
+
+      for (int i = 0; i < 3; i++) {
+        if (isWall(x, y, kSouth)) {
+          *(buf++) = '_';
+        } else {
+          *(buf++) = ' ';
+        }
+      }
+    }
+    *(buf++) = '|';
+    *(buf++) = '\r';
+    *(buf++) = '\n';
+  }
+
+  *(buf++) = '\0';
 }
 
 #ifdef COMPILE_FOR_PC
