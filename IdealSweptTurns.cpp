@@ -11,34 +11,40 @@ IdealSweptTurns::IdealSweptTurns(float temp_tangential_velocity, float temp_turn
   turn_angle = temp_turn_angle * 3.14159265359 / 180.0;
   time_step = temp_time_step;
   frict_force = ROBOT_MASS * MAX_COEFFICIENT_FRICTION * 9.81;
-  inside_trigs = (ROBOT_MASS * (MM_BETWEEN_WHEELS / 1000) * tangential_velocity) / (2 * MOMENT_OF_INERTIA);
   mm_per_radian = MM_BETWEEN_WHEELS / 2;
 
-  float j = 0;
-  //get the max acceleration duration by finding the time that the angle begins to get smaller
-  while (getAngleAtTime(j * time_step, true) < getAngleAtTime((j + 1) * time_step, true)) {
-    j = j+1;
-  }
-  j = j-1;
+  // this is the constant that multiplies the time to get an argument for
+  //   all of the trig functions
+  inside_trigs = ROBOT_MASS * (MM_BETWEEN_WHEELS / 1000) * tangential_velocity;
+  inside_trigs /= 2 * MOMENT_OF_INERTIA;
 
-  acceleration_duration = j * time_step;
-  float theta_accel = getAngleAtTime(acceleration_duration,true);
-  float theta_const = turn_angle - (theta_accel * 2);
-  
-  
-  const_velocity_duration = theta_const / getVelocityAtTime(acceleration_duration);
-  float max_velocity = getVelocityAtTime(acceleration_duration);
+  // time duration of the acceleration phase
+  acceleration_duration = MOMENT_OF_INERTIA * PI;
+  acceleration_duration /= ROBOT_MASS * tangential_velocity * MM_BETWEEN_WHEELS / 1000;
 
-  //this is the case that it's a 45
-  if(theta_accel*2 > turn_angle){
-    const_velocity_duration = 0.0;
+  // angle the robot covers during the acceleration phase
+  theta_accel = getAngleAtTime(acceleration_duration, true);
+
+  // angle the robot covers during the zero-acceleration phase
+  float theta_const;
+
+  // Recalculate if we don't need all of our acceleration time
+  if (theta_accel * 2 > turn_angle) {
     theta_const = 0.0;
-    int x = 0;
-    for (int t = 0; x < turn_angle / 2; t++) {
-      x = getAngleAtTime(t*time_step, true);
-    }
-    theta_accel = x;
-    acceleration_duration = x * time_step;
+    const_velocity_duration = 0.0;
+    theta_accel = turn_angle / 2;
+
+    // Solve for t from the equation for theta (when theta = theta_accel)
+    acceleration_duration = theta_accel * (MM_BETWEEN_WHEELS / 1000)
+                            * sq(tangential_velocity * ROBOT_MASS);
+    acceleration_duration /= frict_force * MOMENT_OF_INERTIA;
+    acceleration_duration = 1 - acos(acceleration_duration);
+
+    max_velocity = getVelocityAtTime(acceleration_duration);
+
+  } else {
+    theta_const = turn_angle - (theta_accel * 2);
+    const_velocity_duration = theta_const / getVelocityAtTime(acceleration_duration);
     max_velocity = getVelocityAtTime(acceleration_duration);
   }
   
@@ -89,11 +95,16 @@ int IdealSweptTurns::getTotalTurnSteps()
 
 float IdealSweptTurns::getAngleAtTime(float t, bool build_time_table)
 {
-  float abs_sec_func = abs(1 / cos(inside_trigs * t));
-  if((t <= acceleration_duration + const_velocity_duration) || build_time_table)
-    return (((2.0 * frict_force * MOMENT_OF_INERTIA) / (ROBOT_MASS * tangential_velocity * ROBOT_MASS * tangential_velocity * (MM_BETWEEN_WHEELS / 1000))) * (-1.0 + abs_sec_func) / (abs_sec_func));
-  else //extrapolate the decceleration angles by taking the reverse of the acceleration
+  if (t <= acceleration_duration || build_time_table) {
+    float result = 2 * frict_force * MOMENT_OF_INERTIA;
+    result /= sq(ROBOT_MASS * tangential_velocity) * (MM_BETWEEN_WHEELS / 1000);
+    result *= 1 - cos(inside_trigs * t);
+    return result;
+  } else if (t <= acceleration_duration + const_velocity_duration) {
+    return theta_accel + max_velocity * t;
+  } else { //extrapolate the decceleration angles by taking the reverse of the acceleration
     return turn_angle - getAngleAtTime(turn_duration - t, true);
+  }
 }
 
 float IdealSweptTurns::getVelocityAtTime(float t)
