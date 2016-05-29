@@ -4,12 +4,14 @@ namespace std {
   void __throw_bad_alloc()
   {
     Serial.println("Unable to allocate memory");
+    while (1);
   }
 
   void __throw_length_error(char const* e)
   {
     Serial.print("Length Error :");
     Serial.println(e);
+    while (1);
   }
 }
 
@@ -51,8 +53,6 @@ PathParser::PathParser(Path<16, 16> *abspath) : path(NULL, 0)
   end_y = abspath->getEndY();
 
   lastMoveFlag = false;
-  Compass8 movement_direction, next_direction, decision_direction;
-  //dir = next_direction = abspath->nextDirection();
   //all paths start by assuming that you're starting from the middle of the previous cell
   buildRelativePath(abspath);
   beginDecision();

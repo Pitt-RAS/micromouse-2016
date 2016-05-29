@@ -1,6 +1,7 @@
-#ifndef RANGESENSORCONTAINER_H
-#define RANGESENSORCONTAINER_H
+#ifndef MICROMOUSE_RANGESENSORCONTAINER_H_
+#define MICROMOUSE_RANGESENSORCONTAINER_H_
 
+// Dependencies within Micromouse
 #include "RangeSensor.h"
 
 enum Direction {

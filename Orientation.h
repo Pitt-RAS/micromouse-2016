@@ -1,10 +1,12 @@
-#ifndef MICROMOUSE_SENSORS_ORIENTATION_H_
-#define MICROMOUSE_SENSORS_ORIENTATION_H_
+#ifndef MICROMOUSE_ORIENTATION_H_
+#define MICROMOUSE_ORIENTATION_H_
 
 #include <Arduino.h>
 
+// External libraries
 #include <MPU9150.h>
 
+// Dependencies within Micromouse
 #include "conf.h"
 
 class Orientation {

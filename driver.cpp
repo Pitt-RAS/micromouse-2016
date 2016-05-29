@@ -10,16 +10,18 @@
 
 #ifndef COMPILE_FOR_PC
 #include <Arduino.h>
-#include <EEPROM.h>
+
+// Dependencies within Micromouse
+#include "FreakOut.h"
+#include "Menu.h"
+#include "Orientation.h"
+#include "PersistantStorage.h"
+#include "RangeSensorContainer.h"
+#include "conf.h"
 #include "data.h"
 #include "motion.h"
 #include "parser.h"
-#include "conf.h"
 #include "sensors_encoders.h"
-#include "sensors_orientation.h"
-#include "FreakOut.h"
-#include "RangeSensorContainer.h"
-#include "Menu.h"
 #endif
 
 
@@ -103,7 +105,6 @@ void Driver::saveState(Maze<16, 16>& maze) {
 #ifdef COMPILE_FOR_PC
   std::ofstream out_file;
   out_file.open("saved_state.maze");
-#endif
 
   for (int x = 0; x < 16; x++) {
     for (int y = 0; y < 16; y++) {
@@ -113,18 +114,13 @@ void Driver::saveState(Maze<16, 16>& maze) {
       out |= maze.isWall(x, y, kSouth) << 2;
       out |= maze.isWall(x, y, kWest) << 3;
       out |= maze.isVisited(x, y) << 4;
-#ifdef COMPILE_FOR_PC
       out_file << out;
-#else
-      EEPROM.write(EEPROM_MAZE_LOCATION + 16*x + y, out);
-#endif
     }
   }
 
-#ifdef COMPILE_FOR_PC
   out_file.close();
 #else
-  EEPROM.write(EEPROM_MAZE_FLAG_LOCATION, 1);
+  PersistantStorage::saveMaze(maze);
 #endif
 }
 
@@ -132,16 +128,11 @@ void Driver::loadState(Maze<16, 16>& maze) {
 #ifdef COMPILE_FOR_PC
   std::ifstream in_file;
   in_file.open("saved_state.maze");
-#endif
 
   for (int x = 0; x < 16; x++) {
     for (int y = 0; y < 16; y++) {
       uint8_t in;
-#ifdef COMPILE_FOR_PC
       std::ifstream >> in;
-#else
-      in = EEPROM.read(EEPROM_MAZE_LOCATION + 16*x + y);
-#endif
 
       if (in & (1 << 0)) {
         maze.addWall(x, y, kNorth);
@@ -175,12 +166,14 @@ void Driver::loadState(Maze<16, 16>& maze) {
     }
   }
 
-#ifdef COMPILE_FOR_PC
   in_file.close();
+#else
+  PersistantStorage::loadSavedMaze(maze);
 #endif
 }
 
 void Driver::updateState(Maze<16, 16>& maze, size_t x, size_t y) {
+#ifdef COMPILE_FOR_PC
   uint8_t out = 0;
   out |= maze.isWall(x, y, kNorth) << 0;
   out |= maze.isWall(x, y, kEast) << 1;
@@ -188,14 +181,13 @@ void Driver::updateState(Maze<16, 16>& maze, size_t x, size_t y) {
   out |= maze.isWall(x, y, kWest) << 3;
   out |= maze.isVisited(x, y) << 4;
 
-#ifdef COMPILE_FOR_PC
   std::fstream out_file;
   out_file.open("saved_state.maze");
   out_file.seekp(16*x + y);
   out_file << out;
   out_file.close();
 #else
-  EEPROM.write(EEPROM_MAZE_LOCATION + 16*x + y, out);
+  PersistantStorage::updateSavedMaze(maze, x, y);
 #endif
 }
 
@@ -203,16 +195,13 @@ void Driver::clearState() {
 #ifdef COMPILE_FOR_PC
   remove("saved_state.maze");
 #else
-  Maze<16, 16> maze;
-  saveState(maze);
-  EEPROM.write(EEPROM_MAZE_FLAG_LOCATION, 0);
+  PersistantStorage::clearSavedMaze();
 #endif
 }
 
 void Driver::resetState() {
 #ifndef COMPILE_FOR_PC
-  Maze<16, 16> maze;
-  saveState(maze);
+  PersistantStorage::resetSavedMaze();
 #endif
 }
 
@@ -227,7 +216,7 @@ bool Driver::hasStoredState() {
     return false;
   }
 #else
-  return EEPROM.read(EEPROM_MAZE_FLAG_LOCATION) != 0;
+  return PersistantStorage::hasSavedMaze();
 #endif
 }
 
@@ -514,287 +503,6 @@ SerialDriver::SerialDriver()
 
 
 
-bool ContinuousRobotDriver::onEdge()
-{
-  float x_offset, y_offset;
-
-  x_offset = getXFloat() - getX();
-  y_offset = getYFloat() - getY();
-
-  if (x_offset < -0.25 || x_offset > 0.25)
-    return true;
-  if (y_offset < -0.25 || y_offset > 0.25)
-    return true;
-
-  return false;
-}
-
-ContinuousRobotDriver::ContinuousRobotDriver() :
-    exit_velocity_(0.0), turn_advanced_(false)
-{
-  // Initialize whatever we need to.
-}
-
-
-int ContinuousRobotDriver::getX()
-{
-  float x;
-
-  x = getXFloat();
-
-  if ((x + 0.5) - (int) (x + 0.5) == 0.0) {
-    switch(getDir()) {
-      case kEast:
-        return (int) (x + 0.5);
-        break;
-      case kWest:
-        return (int) (x - 0.5);
-        break;
-      default:
-        break;
-    }
-  }
-
-  return Driver::getX();
-}
-
-int ContinuousRobotDriver::getY()
-{
-  float y;
-
-  y = getYFloat();
-
-  if ((y + 0.5) - (int) (y + 0.5) == 0.0) {
-    switch(getDir()) {
-      case kNorth:
-        return (int) (y + 0.5);
-        break;
-      case kSouth:
-        return (int) (y - 0.5);
-        break;
-      default:
-        break;
-    }
-  }
-
-  return Driver::getY();
-}
-
-void ContinuousRobotDriver::turn(Compass8 dir)
-{
-  float arc_to_turn;
-
-  arc_to_turn = 45.0 * (int) relativeDir(dir);
-
-  if (arc_to_turn > 180.0)
-    arc_to_turn -= 360.0;
-
-  turn_advanced_ = false;
-
-  if (onEdge() && exit_velocity_ > 0.0) {
-    switch(relativeDir(dir)) {
-      case kNorth:
-        break;
-      case kSouth:
-        motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
-        motion_rotate(180.0);
-        motion_forward(MM_PER_BLOCK / 2, 0, exit_velocity_);
-        turn_advanced_ = true;
-        break;
-      case kEast:
-        motion_corner(kRightTurn90, exit_velocity_);
-        turn_advanced_ = true;
-        break;
-      case kWest:
-        motion_corner(kLeftTurn90, exit_velocity_);
-        turn_advanced_ = true;
-        break;
-      default:
-        motion_forward(MM_PER_BLOCK / 4, SEARCH_VELOCITY, 0.0);
-        motion_hold(100);
-        delay(3000);
-        freakOut("BAD4");
-        break;
-    }
-
-    if (relativeDir(dir) == kEast || relativeDir(dir) == kWest) {
-      switch (getDir()) {
-        case kNorth:
-          setY(getYFloat() + 0.5);
-          break;
-        case kSouth:
-          setY(getYFloat() - 0.5);
-          break;
-        case kEast:
-          setX(getXFloat() + 0.5);
-          break;
-        case kWest:
-          setX(getXFloat() - 0.5);
-          break;
-      }
-
-      switch (dir) {
-        case kNorth:
-          setY(getYFloat() + 0.5);
-          break;
-        case kSouth:
-          setY(getYFloat() - 0.5);
-          break;
-        case kEast:
-          setX(getXFloat() + 0.5);
-          break;
-        case kWest:
-          setX(getXFloat() - 0.5);
-          break;
-      }
-    }
-  }
-  else if (!onEdge() && exit_velocity_ == 0.0) {
-    motion_rotate(arc_to_turn);
-    exit_velocity_ = 0.0;
-  }
-  else {
-    motion_forward(MM_PER_BLOCK / 4, SEARCH_VELOCITY, 0.0);
-    motion_hold(100);
-    freakOut("BAD1");
-  }
-
-  setDir(dir);
-}
-
-bool ContinuousRobotDriver::isWall(Compass8 dir)
-{
-  RangeSensors.updateReadings();
-  if (getX() == 0 && getY() == 0) {
-    switch (relativeDir(dir)) {
-      case kNorth:
-        return RangeSensors.isWall(front);
-        break;
-      case kSouth:
-        return RangeSensors.isWall(back);
-        break;
-      case kEast:
-        return true;
-        break;
-      case kWest:
-        return true;
-        break;
-      default:
-        return true;
-        break;
-    }
-  }
-
-  switch (relativeDir(dir)) {
-    case kNorth:
-      return RangeSensors.isWall(front);
-      break;
-    case kSouth:
-      return RangeSensors.isWall(back);
-      break;
-    case kEast:
-      return RangeSensors.isWall(right);
-      break;
-    case kWest:
-      return RangeSensors.isWall(left);
-      break;
-    default:
-      return true;
-      break;
-  }
-}
-
-void ContinuousRobotDriver::move(Compass8 dir, int distance)
-{
-
-  //char buf[5];
-  //snprintf(buf, 5, "%02d%02d", getX(), getY());
-  //menu.showString(buf, 4);
-  float distance_to_add;
-  menu.showInt((int)dir, 4);
-
-  if (distance == 0) {
-    if (onEdge() && exit_velocity_ > 0.0) {
-      motion_forward(MM_PER_BLOCK / 2, SEARCH_VELOCITY, 0.0);
-      motion_hold(10);
-      exit_velocity_ = 0.0;
-
-      switch (getDir()) {
-        case kNorth:
-          setY(getYFloat() + 0.5);
-          break;
-
-        case kSouth:
-          setY(getYFloat() - 0.5);
-          break;
-
-        case kEast:
-          setX(getXFloat() + 0.5);
-          break;
-
-        case kWest:
-          setX(getXFloat() - 0.5);
-          break;
-      }
-      turn(dir);
-      return;
-    }
-    else if (!onEdge() && exit_velocity_ == 0.0) {
-      turn(dir);
-      return;
-    }
-    else {
-      motion_forward(MM_PER_BLOCK / 4, SEARCH_VELOCITY, 0.0);
-      motion_hold(100);
-      freakOut("BAD2");
-    }
-  }
-
-  turn(dir);
-
-  if (turn_advanced_)
-    distance--;
-
-  if (distance < 1)
-    return;
-
-  if (onEdge() && exit_velocity_ > 0.0) {
-    motion_forward(MM_PER_BLOCK * distance, SEARCH_VELOCITY, exit_velocity_);
-    distance_to_add = distance;
-  }
-  else if (!onEdge() && exit_velocity_ == 0.0) {
-    motion_forward(MM_PER_BLOCK / 2 + MM_PER_BLOCK * (distance - 1), 0, SEARCH_VELOCITY);
-    exit_velocity_ = SEARCH_VELOCITY;
-    distance_to_add = distance - 0.5;
-  }
-  else {
-    motion_forward(MM_PER_BLOCK / 4, SEARCH_VELOCITY, 0.0);
-    motion_hold(100);
-    freakOut("BAD3");
-  }
-
-  switch (dir) {
-    case kNorth:
-      setY(getYFloat() + distance_to_add);
-      break;
-
-    case kSouth:
-      setY(getYFloat() - distance_to_add);
-      break;
-
-    case kEast:
-      setX(getXFloat() + distance_to_add);
-      break;
-
-    case kWest:
-      setX(getXFloat() - distance_to_add);
-      break;
-  }
-}
-
-
-
-
 RobotDriver::RobotDriver()
 {
   // Initialize whatever we need to.
@@ -936,7 +644,7 @@ void RobotDriver::move(Compass8 dir, int distance)
 
 
 
-void ContinuousRobotDriverRefactor::turn_in_place(Compass8 dir)
+void ContinuousRobotDriver::turn_in_place(Compass8 dir)
 {
   float arc;
 
@@ -950,7 +658,7 @@ void ContinuousRobotDriverRefactor::turn_in_place(Compass8 dir)
   setDir(dir);
 }
 
-void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
+void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
 {
   bool is_front_wall, is_left_wall, is_right_wall;
 
@@ -1080,7 +788,7 @@ void ContinuousRobotDriverRefactor::turn_while_moving(Compass8 dir)
   }
 }
 
-void ContinuousRobotDriverRefactor::beginFromCenter(Compass8 dir)
+void ContinuousRobotDriver::beginFromCenter(Compass8 dir)
 {
   turn_in_place(dir);
   motion_forward(MM_PER_BLOCK / 2, 0.0, search_velocity_);
@@ -1106,7 +814,7 @@ void ContinuousRobotDriverRefactor::beginFromCenter(Compass8 dir)
   setDir(dir);
 }
 
-void ContinuousRobotDriverRefactor::beginFromBack(Compass8 dir, int distance)
+void ContinuousRobotDriver::beginFromBack(Compass8 dir, int distance)
 {
   if (dir != getDir()) {
     motion_forward(MM_FROM_BACK_TO_CENTER, 0, 0);
@@ -1168,7 +876,7 @@ void ContinuousRobotDriverRefactor::beginFromBack(Compass8 dir, int distance)
   }
 }
 
-void ContinuousRobotDriverRefactor::stop(Compass8 dir)
+void ContinuousRobotDriver::stop(Compass8 dir)
 {
   motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0.0);
   turn_in_place(dir);
@@ -1177,7 +885,7 @@ void ContinuousRobotDriverRefactor::stop(Compass8 dir)
   setDir(dir);
 }
 
-void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
+void ContinuousRobotDriver::proceed(Compass8 dir, int distance)
 {
   turn_while_moving(dir);
 
@@ -1205,36 +913,30 @@ void ContinuousRobotDriverRefactor::proceed(Compass8 dir, int distance)
   setDir(dir);
 }
 
-ContinuousRobotDriverRefactor::ContinuousRobotDriverRefactor(int x, int y, Compass8 direction, bool begin_from_back) : moving_(false), last_direction_(kNorth), moves_in_this_direction_(0), pivot_turns_in_a_row_(0),
-    left_back_wall_(false)
+ContinuousRobotDriver::ContinuousRobotDriver(
+    int x, int y, Compass8 direction, bool begin_from_back)
+    : moving_(false), left_back_wall_(false), pivot_turns_in_a_row_(0)
 {
   setX(x);
   setY(y);
   setDir(direction);
 
-  uint16_t loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_VEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_SEARCH_VEL_LOCATION + 1);
-  search_velocity_ = (float)loaded_int / 100;
+  search_velocity_ = PersistantStorage::getSearchVelocity();
   motion_set_maxVel_straight(search_velocity_);
 
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION + 1);
-  motion_set_maxAccel_straight((float)loaded_int / 10);
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION + 1);
-  motion_set_maxDecel_straight(-(float)loaded_int / 10);
+  motion_set_maxAccel_straight(PersistantStorage::getSearchAccel());
+  motion_set_maxDecel_straight(-PersistantStorage::getSearchDecel());
 
   if (!begin_from_back)
     left_back_wall_ = true;
 }
 
-void ContinuousRobotDriverRefactor::turn(Compass8 dir)
+void ContinuousRobotDriver::turn(Compass8 dir)
 {
   // Not using this method.
 }
 
-bool ContinuousRobotDriverRefactor::isWall(Compass8 dir)
+bool ContinuousRobotDriver::isWall(Compass8 dir)
 {
   RangeSensors.updateReadings();
 
@@ -1277,7 +979,7 @@ bool ContinuousRobotDriverRefactor::isWall(Compass8 dir)
   }
 }
 
-void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
+void ContinuousRobotDriver::move(Compass8 dir, int distance)
 {
   bool will_end_moving;
 
@@ -1311,20 +1013,9 @@ void ContinuousRobotDriverRefactor::move(Compass8 dir, int distance)
   }
 
   moving_ = will_end_moving;
-
-  if (dir == last_direction_) {
-      moves_in_this_direction_++;
-  }
-  else {
-      moves_in_this_direction_ = 0;
-  }
-  if (moves_in_this_direction_ > 17) {
-      //motion_forward(30.0, search_velocity_, search_velocity_);
-  }
-  last_direction_ == dir;
 }
 
-void ContinuousRobotDriverRefactor::move(Path<16, 16>* path)
+void ContinuousRobotDriver::move(Path<16, 16>* path)
 {
   Driver::move(*path);
 }
@@ -1343,27 +1034,11 @@ void KaosDriver::execute(std::queue<int> move_list)
 {
   if (move_list.empty()) return;
 
-  uint16_t loaded_int = 0;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION + 1);
-  max_vel_straight_ = (float)loaded_int / 100;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION + 1);
-  max_vel_diag_ = (float)loaded_int / 100;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION + 1);
-  turn_velocity_ = (float)loaded_int / 100;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION + 1);
-  max_accel_ = (float)loaded_int / 10;
-
-  loaded_int = (uint16_t)EEPROM.read(EEPROM_KAOS_DECEL_LOCATION) << 8;
-  loaded_int |= EEPROM.read(EEPROM_KAOS_DECEL_LOCATION + 1);
-  max_decel_ = -(float)loaded_int / 10;
+  max_vel_straight_ = PersistantStorage::getKaosForwardVelocity();
+  max_vel_diag_ = PersistantStorage::getKaosDiagVelocity();
+  turn_velocity_ = PersistantStorage::getKaosTurnVelocity();
+  max_accel_ = PersistantStorage::getKaosAccel();
+  max_decel_ = -PersistantStorage::getKaosDecel();
 
   float old_max_vel_straight = motion_get_maxVel_straight();
   motion_set_maxVel_straight(max_vel_straight_);

@@ -1,6 +1,8 @@
 #ifndef MOTION_CALC_H
 #define MOTION_CALC_H
 
+#include <Arduino.h>
+
 class MotionCalc {
   private:
     float max_accel, max_decel;
@@ -16,7 +18,7 @@ class MotionCalc {
     float idealDistance(int32_t elapsedTime);
     float idealVelocity(int32_t elapsedTime);
     float idealAccel(int32_t elapsedTime);
-    int32_t getTotalTime();
+    uint32_t getTotalTime();
 };
 
 #endif

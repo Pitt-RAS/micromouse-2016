@@ -1,6 +1,6 @@
 #ifndef FREAKOUT_H
 #define FREAKOUT_H
 
-void freakOut(char* msg);
+void __attribute__((noreturn)) freakOut(const char* msg);
 
 #endif

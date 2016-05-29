@@ -2,9 +2,9 @@
 #define MENU_H
 
 #include <Arduino.h>
-#include <LedDisplay.h>
 
-#include "data.h"
+// External libraries
+#include <LedDisplay.h>
 
 class Menu {
  private:
@@ -31,9 +31,6 @@ class Menu {
   void soundBuzzer(int frequency);
   void checkBattery();
   void waitForHand();
-
-  void storeDefaultDirection(Compass8 dir);
-  Compass8 loadDefaultDirection();
 };
 
 extern Menu menu;

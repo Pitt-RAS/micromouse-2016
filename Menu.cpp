@@ -1,20 +1,15 @@
 #include "Menu.h"
 
 #include <Arduino.h>
-#include <EEPROM.h>
 
-#include "conf.h"
-#include "data.h"
-#include "driver.h"
-#include "motors.h"
+// Dependencies within Micromouse
+#include "Orientation.h"
 #include "PIDController.h"
 #include "PlayMelodies.h"
 #include "RangeSensorContainer.h"
+#include "conf.h"
+#include "motors.h"
 #include "sensors_encoders.h"
-#include "sensors_orientation.h"
-
-#define min(a, b) ((a) < (b) ? (a) : (b))
-#define max(a, b) ((a) < (b) ? (b) : (a))
 
 Menu menu;
 
@@ -68,7 +63,6 @@ void Menu::begin() {
     display_.setBrightness(DISPLAY_BRIGHTNESS);
     display_.begin();
     initialized_ = true;
-    Turnable::setDefaultInitialDirection(loadDefaultDirection());
   }
 }
 
@@ -290,12 +284,4 @@ void Menu::waitForHand()
   }
   
   delay(100);
-}
-
-void Menu::storeDefaultDirection(Compass8 dir) {
-  EEPROM.write(EEPROM_INITIAL_DIRECTION_LOCATION, (uint8_t)dir);
-}
-
-Compass8 Menu::loadDefaultDirection() {
-  return (Compass8) EEPROM.read(EEPROM_INITIAL_DIRECTION_LOCATION);
 }

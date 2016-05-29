@@ -1,24 +1,28 @@
 #include <Arduino.h>
 
-#include <EEPROM.h>
+// External libraries
+#include <I2Cdev.h>
 #include <LedDisplay.h>
+#include <MPU9150.h>
+
+// Dependencies within Micromouse
+#include "EncoderMod.h"
+#include "IdealSweptTurns.h"
+#include "Logger.h"
+#include "Menu.h"
+#include "Navigator.h"
+#include "Orientation.h"
+#include "PersistantStorage.h"
+#include "PlayMelodies.h"
+#include "RangeSensorContainer.h"
 #include "conf.h"
 #include "data.h"
 #include "driver.h"
-#include "Logger.h"
-#include "Navigator.h"
-#include "Menu.h"
 #include "motion.h"
-#include "RangeSensorContainer.h"
 #include "motors.h"
+#include "parser.h"
 #include "sensors_encoders.h"
-#include "sensors_orientation.h"
-#include "EncoderMod.h"
-#include "IdealSweptTurns.h"
-#include <I2Cdev.h>
-#include <MPU9150.h>
-
-bool knowsBestPath();
+#include "utility.h"
 
 void setup()
 {
@@ -50,6 +54,7 @@ void setup()
   Serial.begin(BAUD);
 
   menu.begin();
+  Turnable::setDefaultInitialDirection(PersistantStorage::getDefaultDirection());
 }
 
 const char* primary_options[] = {
@@ -64,6 +69,7 @@ const char* secondary_options[] = {
   "CLR",
   "SDIR",
   "SPDS",
+  "TRGT",
   "BACK"
 };
 
@@ -84,11 +90,17 @@ const char* speed_options[] = {
   "BACK"
 };
 
+const char* cell_options[] = {
+  "X",
+  "Y",
+  "BACK"
+};
+
 void loop()
 {
   switch (menu.getString(primary_options, 5, 4)) {
     case 0: { // RUN
-      Navigator<ContinuousRobotDriverRefactor> navigator;
+      Navigator<ContinuousRobotDriver> navigator;
       Orientation* orientation = Orientation::getInstance();
 
       menu.waitForHand();
@@ -100,18 +112,24 @@ void loop()
       enc_right_back_write(0);
       orientation->resetHeading();
 
-      navigator.runDevelopmentCode();
+      navigator.findBox(PersistantStorage::getTargetXLocation(),
+                        PersistantStorage::getTargetYLocation());
+      searchFinishMelody();
+      navigator.findBox(0, 0);
+      stopMelody();
       break;
     }
     case 1: { // KAOS
-      if (knowsBestPath()) {
+      uint8_t target_x = PersistantStorage::getTargetXLocation();
+      uint8_t target_y = PersistantStorage::getTargetYLocation();
+      if (knowsBestPath(target_x, target_y)) {
         Compass8 absolute_end_direction;
 
-        ContinuousRobotDriverRefactor maze_load_driver;
+        ContinuousRobotDriver maze_load_driver;
         Maze<16, 16> maze;
         maze_load_driver.loadState(maze);
-        FloodFillPath<16, 16> flood_path (maze, 0, 0, 8, 8);
-        KnownPath<16, 16> known_path (maze, 0, 0, 8, 8, flood_path);
+        FloodFillPath<16, 16> flood_path (maze, 0, 0, target_x, target_y);
+        KnownPath<16, 16> known_path (maze, 0, 0, target_x, target_y, flood_path);
         PathParser parser (&known_path);
         KaosDriver driver;
 
@@ -127,27 +145,27 @@ void loop()
         menu.showString(buf, 4);
         searchFinishMelody();
 
-        ContinuousRobotDriverRefactor other_driver(parser.end_x, parser.end_y, absolute_end_direction, false);
+        ContinuousRobotDriver other_driver(parser.end_x, parser.end_y, absolute_end_direction, false);
 
-    {
-      FloodFillPath<16, 16>
-        flood_path(maze, other_driver.getX(), other_driver.getY(), 0, 0);
+        {
+          FloodFillPath<16, 16>
+            flood_path(maze, other_driver.getX(), other_driver.getY(), 0, 0);
 
-      KnownPath<16, 16>
-        known_path(maze, other_driver.getX(), other_driver.getY(), 0, 0, flood_path);
+          KnownPath<16, 16>
+            known_path(maze, other_driver.getX(), other_driver.getY(), 0, 0, flood_path);
 
-      if (known_path.isEmpty())
-        break;
+          if (known_path.isEmpty())
+            break;
 
-      other_driver.move(&known_path);
+          other_driver.move(&known_path);
 
-        snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
-        menu.showString(buf, 4);
-       
-    }
+            snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
+            menu.showString(buf, 4);
 
-  other_driver.move(kNorth, 0);
-        //ContinuousRobotDriverRefactor return_driver(parser.end_x, parser.end_y,
+        }
+
+        other_driver.move(kNorth, 0);
+        //ContinuousRobotDriver return_driver(parser.end_x, parser.end_y,
         //                                    absolute_end_direction);
         //return_driver.loadState(maze);
         //FloodFillPath<16, 16> return_path (maze, 8, 8, 0, 0);
@@ -174,7 +192,9 @@ void loop()
       break;
     }
     case 3: { // CHK (checks if entire path has been discovered)
-      if (knowsBestPath()) {
+      uint8_t target_x = PersistantStorage::getTargetXLocation();
+      uint8_t target_y = PersistantStorage::getTargetYLocation();
+      if (knowsBestPath(target_x, target_y)) {
         menu.showString("YES", 4);
       } else {
         menu.showString("NO", 4);
@@ -197,12 +217,12 @@ void loop()
           switch (menu.getString(direction_options, 2, 4)) {
             case 0: { // NORTH
               Turnable::setDefaultInitialDirection(kNorth);
-              menu.storeDefaultDirection(kNorth);
+              PersistantStorage::setDefaultDirection(kNorth);
               break;
             }
             case 1: { // EAST
               Turnable::setDefaultInitialDirection(kEast);
-              menu.storeDefaultDirection(kEast);
+              PersistantStorage::setDefaultDirection(kEast);
               break;
             }
             default: {
@@ -216,67 +236,51 @@ void loop()
             bool back = false;
             switch (menu.getString(speed_options, 8, 4)) {
               case 0: { // SEARCH VELOCITY
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_SEARCH_VEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_SEARCH_VEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawSearchVelocity();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_SEARCH_VEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_SEARCH_VEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawSearchVelocity(result);
                 break;
               }
               case 1: { // SEARCH FORWARD ACCEL
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_SEARCH_ACCEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawSearchAccel();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_SEARCH_ACCEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_SEARCH_ACCEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawSearchAccel(result);
                 break;
               }
               case 2: { // SEARCH DECEL
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_SEARCH_DECEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawSearchDecel();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_SEARCH_DECEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_SEARCH_DECEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawSearchDecel(result);
                 break;
               }
               case 3: { // KAOS FORWARD VELOCITY
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_KAOS_FORWARD_VEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawKaosForwardVelocity();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_KAOS_FORWARD_VEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_KAOS_FORWARD_VEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawKaosForwardVelocity(result);
                 break;
               }
               case 4: { // KAOS DIAGONAL VELOCITY
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_KAOS_DIAG_VEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawKaosDiagVelocity();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_KAOS_DIAG_VEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_KAOS_DIAG_VEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawKaosDiagVelocity(result);
                 break;
               }
               case 5: { // KAOS TURN VELOCITY
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_KAOS_TURN_VEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawKaosTurnVelocity();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_KAOS_TURN_VEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_KAOS_TURN_VEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawKaosTurnVelocity(result);
                 break;
               }
               case 6: { // KAOS FORWARD ACCEL
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_KAOS_ACCEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawKaosAccel();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_KAOS_ACCEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_KAOS_ACCEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawKaosAccel(result);
                 break;
               }
               case 7: { // KAOS DECEL
-                uint16_t result = (uint16_t)EEPROM.read(EEPROM_KAOS_DECEL_LOCATION) << 8;
-                result |= EEPROM.read(EEPROM_KAOS_DECEL_LOCATION + 1);
+                uint16_t result = PersistantStorage::getRawKaosDecel();
                 result = menu.getInt(0, 9999, result, 4);
-                EEPROM.write(EEPROM_KAOS_DECEL_LOCATION, result >> 8);
-                EEPROM.write(EEPROM_KAOS_DECEL_LOCATION + 1, result & 0xFF);
+                PersistantStorage::setRawKaosDecel(result);
                 break;
               }
               case 8: { // BACK
@@ -288,7 +292,32 @@ void loop()
           }
           break;
         }
-        case 3: // BACK
+        case 3: { // TRGT
+          while (1) {
+            bool back = false;
+            switch (menu.getString(cell_options, 8, 4)) {
+              case 0: { // X LOCATION
+                uint8_t result = PersistantStorage::getTargetXLocation();
+                result = menu.getInt(0, 15, result, 4);
+                PersistantStorage::setTargetXLocation(result);
+                break;
+              }
+              case 1: { // Y LOCATION
+                uint8_t result = PersistantStorage::getTargetYLocation();
+                result = menu.getInt(0, 15, result, 4);
+                PersistantStorage::setTargetYLocation(result);
+                break;
+              }
+              case 2: { // BACK
+                back = true;
+                break;
+              }
+            }
+            if (back) break;
+          }
+          break;
+        }
+        case 4: // BACK
         default: {
           break;
         }
@@ -299,34 +328,4 @@ void loop()
       break;
     }
   }
-}
-
-bool knowsBestPath() {
-  ContinuousRobotDriverRefactor driver;
-  Maze<16, 16> maze;
-  bool success = true;
-  if (driver.hasStoredState()) {
-    driver.loadState(maze);
-    FloodFillPath<16, 16> flood_path1 (maze, 0, 0, 8, 8);
-    FloodFillPath<16, 16> flood_path2 (maze, 0, 0, 8, 8);
-    KnownPath<16, 16> known_path (maze, 0, 0, 8, 8, flood_path1);
-
-    if (flood_path2.isEmpty()) {
-      success = false;
-    }
-
-    while (!flood_path2.isEmpty()) {
-      if (known_path.isEmpty()) {
-        success = false;
-        break;
-      }
-      if (flood_path2.nextDirection() != known_path.nextDirection()) {
-        success = false;
-        break;
-      }
-    }
-  } else {
-    success = false;
-  }
-  return success;
 }
