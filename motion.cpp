@@ -437,7 +437,7 @@ void motion_collect(float distance, float current_speed, float exit_speed){
   enc_right_back_write(0);
 
   motion_hold(100);
-  while (!menu.buttonOkPressed()) {}
+  while (!gUserInterface.buttonOkPressed()) {}
 
   Serial.println("=== Front Left ===");
   for(i = 0; i<num_range_value; i++){

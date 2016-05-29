@@ -1,38 +1,43 @@
-#ifndef MENU_H
-#define MENU_H
+#ifndef MICROMOUSE_MENU_H
+#define MICROMOUSE_MENU_H
 
-#include <Arduino.h>
+#include "UserInterface.h"
 
-// External libraries
-#include <LedDisplay.h>
+class Menu
+{
+  public:
+    Menu();
 
-class Menu {
- private:
-  LedDisplay display_;
-  bool initialized_ = false;
+    // Runs the main menu
+    void main();
 
- public:
-  Menu();
-  void begin();
+  private:
+    // Does a discovery run.
+    void run();
 
-  void showInt(int value, int d);
-  void showString(const char* s, int chars = -1, bool left_align = true);
+    // Does a kaos mode run.
+    void kaos();
 
-  // gets a integer between min and max with at most d digits
-  int getInt(int min, int max, int initial, int d);
+    // Goes out of the start cell, turns around, comes back.
+    void turn();
 
-  // picks a string out of an array and returns the index selected
-  size_t getString(const char* strings[], size_t strings_len, size_t chars, size_t initial = 0,
-                   bool left_align = true);
+    // Checks if the entire path has been discovered.
+    void check();
 
-  bool buttonOkPressed();
-  bool buttonBackPressed();
+    // Configures options.
+    void options();
 
-  void soundBuzzer(int frequency);
-  void checkBattery();
-  void waitForHand();
+    // Clears the maze memory.
+    void clear();
+
+    // Sets the start direction.
+    void startDirection();
+
+    // Sets speeds.
+    void speeds();
+
+    // Sets the target cell.
+    void targetCell();
 };
-
-extern Menu menu;
 
 #endif

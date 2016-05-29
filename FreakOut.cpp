@@ -13,9 +13,9 @@ void freakOut(const char* msg) {
   motor_lb.Set(0, 0);
   motor_rf.Set(0, 0);
   motor_rb.Set(0, 0);
-  menu.showString(msg);
+  gUserInterface.showString(msg);
   crashMelody();
-  while (!menu.buttonOkPressed()) {
+  while (!gUserInterface.buttonOkPressed()) {
     // wait for button press before dumping logs
   }
   delay(500);

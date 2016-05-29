@@ -38,7 +38,7 @@ bool knowsBestPath(size_t target_x, size_t target_y) {
 }
 
 void streamRanges() {
-  while (!menu.buttonBackPressed()) {
+  while (!gUserInterface.buttonBackPressed()) {
     RangeSensors.updateReadings();
     Serial.print(RangeSensors.diagLeftSensor.getRange());
     Serial.print("\t");
@@ -52,7 +52,7 @@ void streamRanges() {
 }
 
 void streamRawRanges() {
-  while (!menu.buttonBackPressed()) {
+  while (!gUserInterface.buttonBackPressed()) {
     RangeSensors.updateReadings();
     Serial.print(RangeSensors.diagLeftSensor.getRawReading());
     Serial.print("\t");
