@@ -1,287 +1,329 @@
-#include "Menu.h"
-
 #include <Arduino.h>
 
-// Dependencies within Micromouse
+#include "data.h"
+#include "driver.h"
+#include "Navigator.h"
+#include "PersistantStorage.h"
 #include "Orientation.h"
-#include "PIDController.h"
 #include "PlayMelodies.h"
-#include "RangeSensorContainer.h"
-#include "conf.h"
-#include "motors.h"
 #include "sensors_encoders.h"
-
-Menu menu;
+#include "utility.h"
+#include "parser.h"
+#include "motion.h"
+#include "Menu.h"
 
 Menu::Menu()
-    : display_(DISPLAY_DATA_PIN, DISPLAY_RS_PIN, DISPLAY_CLOCK_PIN,
-               DISPLAY_ENABLE_PIN, DISPLAY_RESET_PIN, DISPLAY_SIZE) {
-}
-
-void Menu::showInt(int value, int d) {
-  char buf[d + 1];
-  int chars = snprintf(buf, d + 1, "%i", value);
-  display_.setCursor(DISPLAY_SIZE - d);
-  for (int i = 0; i < d - chars; i++) {
-      display_.write(' ');
-  }
-  for (int i = 0; i < chars; i++) {
-    display_.write(buf[i]);
-  }
-}
-
-void Menu::showString(const char* s, int chars, bool left_align) {
-  int len = strlen(s);
-
-  if (chars < 0) {
-    chars = len;
-  }
-
-  if (left_align) {
-    display_.setCursor(0);
-  } else {
-    display_.setCursor(max(0, DISPLAY_SIZE - chars));
-  }
-
-  if (!left_align) {
-    for (int i = 0; i < min(chars, DISPLAY_SIZE) - len; i++) {
-      display_.write(' ');
-    }
-  }
-  for (int i = 0; i < min(len, min(chars, DISPLAY_SIZE)); i++) {
-    display_.write(s[i]);
-  }
-  if (left_align) {
-    for (int i = 0; i < min(chars, DISPLAY_SIZE) - len; i++) {
-      display_.write(' ');
-    }
-  }
-}
-
-void Menu::begin() {
-  if (!initialized_) {
-    display_.setBrightness(DISPLAY_BRIGHTNESS);
-    display_.begin();
-    initialized_ = true;
-  }
-}
-
-int Menu::getInt(int min, int max, int initial, int d) {
-  float distance_between_options = MENU_STEP_ANGLE * DEG_TO_RAD * WHEEL_RADIUS;
-  int result = initial;
-  enc_left_back_write(0);
-  showInt(result, d);
-
-  motor_lf.Set(0, 0);
-  motor_rf.Set(0, 0);
-  motor_rb.Set(0, 0);
-
-  bool okPressed = false;
-  bool backPressed = false;
-  while (!okPressed && !backPressed) {
-    float distance_from_center = enc_left_back_extrapolate();
-
-    if (distance_from_center > distance_between_options / 2) {
-      if (result < max && result + 1 < pow(10, d)) {
-        enc_left_back_write(-distance_between_options / 2);
-        result++;
-        showInt(result, d);
-      }
-    } else if (distance_from_center < -distance_between_options / 2) {
-      if (result > min && result - 1 > -pow(10, d - 1)) {
-        enc_left_back_write(distance_between_options / 2);
-        result--;
-        showInt(result, d);
-      }
-    }
-
-    if (abs(enc_left_back_extrapolate()) < MENU_DEAD_ZONE) {
-        motor_lb.Set(0, enc_left_back_velocity());
-    } else {
-        motor_lb.Set(-MENU_RESTORING_FORCE * enc_left_back_extrapolate(),
-                     enc_left_back_velocity());
-    }
-
-    okPressed = buttonOkPressed();
-    backPressed = buttonBackPressed();
-  }
-
-  if (okPressed) {
-    delay(100);
-    while (buttonOkPressed()) {
-      // Wait for button release
-    }
-    delay(100);
-    return result;
-  } else {
-    delay(100);
-    while (buttonBackPressed()) {
-      // Wait for button release
-    }
-    delay(100);
-    return initial;
-  }
-}
-
-size_t Menu::getString(const char* strings[], size_t strings_len, size_t chars, size_t initial, bool left_align) {
-  float distance_between_options = MENU_STEP_ANGLE * DEG_TO_RAD * WHEEL_RADIUS;
-  size_t result = initial;
-  enc_left_back_write(0);
-  showString(strings[result], chars, left_align);
-
-  motor_lf.Set(0, 0);
-  motor_rf.Set(0, 0);
-  motor_rb.Set(0, 0);
-
-  bool okPressed = false;
-  bool backPressed = false;
-  while (!okPressed && !backPressed) {
-    float distance_from_center = enc_left_back_extrapolate();
-
-    if (distance_from_center > distance_between_options / 2) {
-      if (result > 0) {
-        enc_left_back_write(-distance_between_options / 2);
-        result--;
-        showString(strings[result], chars, left_align);
-      }
-    } else if (distance_from_center < -distance_between_options / 2) {
-      if (result < strings_len - 1) {
-        enc_left_back_write(distance_between_options / 2);
-        result++;
-        showString(strings[result], chars, left_align);
-      }
-    }
-
-    if (abs(enc_left_back_extrapolate()) < MENU_DEAD_ZONE) {
-        motor_lb.Set(0, enc_left_back_velocity());
-    } else {
-        motor_lb.Set(-MENU_RESTORING_FORCE * enc_left_back_extrapolate(),
-                     enc_left_back_velocity());
-    }
-
-    okPressed = buttonOkPressed();
-    backPressed = buttonBackPressed();
-  }
-
-  if (okPressed) {
-    delay(100);
-    while (buttonOkPressed()) {
-      // Wait for button release
-    }
-    delay(100);
-    return result;
-  } else {
-    delay(100);
-    while (buttonBackPressed()) {
-      // Wait for button release
-    }
-    delay(100);
-    return initial;
-  }
-}
-
-bool Menu::buttonOkPressed() {
-  return (digitalRead(BUTTON_OK_PIN) == LOW);
-}
-
-bool Menu::buttonBackPressed() {
-  return (digitalRead(BUTTON_BACK_PIN) == LOW);
-}
-
-void Menu::soundBuzzer(int frequency)
 {
-  static bool on = false;
+  gUserInterface.begin();
+  Turnable::setDefaultInitialDirection(PersistantStorage::getDefaultDirection());
+}
 
-  if (frequency == 0) {
-    analogWrite(BUZZER_PIN, 0);
-    on = false;
-    return;
-  }
+void Menu::main()
+{
+  const char* names[] = {
+    "RUN",
+    "KAOS",
+    "TURN",
+    "CHK",
+    "OPT"
+  };
 
-  if (!on) {
-    analogWriteFrequency(BUZZER_PIN, frequency);
-    analogWrite(BUZZER_PIN, PWM_SPEED_STEPS / 2);
-    on = true;
+  switch (gUserInterface.getString(names, 5, 4))
+  {
+    case 0:
+      run();
+      break;
+    case 1:
+      kaos();
+      break;
+    case 2:
+      turn();
+      break;
+    case 3:
+      check();
+      break;
+    case 4:
+      options();
+      break;
+    default:
+      break;
   }
 }
 
-void Menu::checkBattery()
+void Menu::run()
 {
-  char buf[5];
-  int whole;
-  int decimal;
-
-  float voltage = (8.225 / 6.330) * (26 / 10) * (3.3 / 1023) * analogRead(BATTERY_PIN);
-
-  if (voltage < BATTERY_VOLTAGE_WARNING) {
-    tone(BUZZER_PIN, 2000);
-    delay(1000);
-    analogWriteFrequency(MOTOR_LF_PWM_PIN, 46875);
-    analogWriteFrequency(MOTOR_RF_PWM_PIN, 46875);
-    analogWriteFrequency(MOTOR_LB_PWM_PIN, 46875);
-    analogWriteFrequency(MOTOR_RB_PWM_PIN, 46875);
-  }
-
-  whole = (int) voltage;
-  decimal = (int) ((voltage - whole) * 100);
-
-  if (whole > 9 || decimal > 99) {
-    whole = 0;
-    decimal = 0;
-  }
-
-  sprintf(buf, "%0d.%02d", whole, decimal);
-  menu.showString(buf);
-}
-
-void Menu::waitForHand()
-{
+  Navigator<ContinuousRobotDriver> navigator;
   Orientation* orientation = Orientation::getInstance();
-  bool gyro_failed = true;
-  float initial_heading = orientation->getHeading();
-  uint32_t time = millis();
 
-  while (gyro_failed) {
-    gyro_failed = false;
-    while (millis() - time < HAND_SWIPE_START_TIME) {
-      float delta_heading = abs(orientation->getHeading() - initial_heading);
-      if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
-        time = millis();
-        initial_heading = orientation->getHeading();
-      }
-      checkBattery();
+  gUserInterface.waitForHand();
+  startMelody();
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
+  orientation->resetHeading();
+
+  navigator.findBox(PersistantStorage::getTargetXLocation(),
+                    PersistantStorage::getTargetYLocation());
+  searchFinishMelody();
+  navigator.findBox(0, 0);
+  stopMelody();
+}
+
+void Menu::kaos()
+{
+  uint8_t target_x = PersistantStorage::getTargetXLocation();
+  uint8_t target_y = PersistantStorage::getTargetYLocation();
+  if (knowsBestPath(target_x, target_y)) {
+    Compass8 absolute_end_direction;
+
+    ContinuousRobotDriver maze_load_driver;
+    Maze<16, 16> maze;
+    maze_load_driver.loadState(maze);
+    FloodFillPath<16, 16> flood_path (maze, 0, 0, target_x, target_y);
+    KnownPath<16, 16> known_path (maze, 0, 0, target_x, target_y, flood_path);
+    PathParser parser (&known_path);
+    KaosDriver driver;
+
+    gUserInterface.waitForHand();
+    speedRunMelody();
+
+    absolute_end_direction = parser.getEndDirection();
+
+    driver.execute(parser.getMoveList());
+    char buf[5];
+
+    snprintf(buf, 5, "%02d%02d", parser.end_x, parser.end_y);
+    gUserInterface.showString(buf, 4);
+    searchFinishMelody();
+
+    ContinuousRobotDriver other_driver(parser.end_x, parser.end_y, absolute_end_direction, false);
+
+    {
+      FloodFillPath<16, 16>
+        flood_path(maze, other_driver.getX(), other_driver.getY(), 0, 0);
+
+      KnownPath<16, 16>
+        known_path(maze, other_driver.getX(), other_driver.getY(), 0, 0, flood_path);
+
+      if (known_path.isEmpty())
+        return;
+
+      other_driver.move(&known_path);
+
+        snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
+        gUserInterface.showString(buf, 4);
+
     }
 
-    do {
-      RangeSensors.frontRightSensor.updateRange();
-      RangeSensors.diagRightSensor.updateRange();
-      float delta_heading = abs(orientation->getHeading() - initial_heading);
-      if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
-        time = millis();
-        initial_heading = orientation->getHeading();
-        gyro_failed = true;
+    other_driver.move(kNorth, 0);
+    //ContinuousRobotDriver return_driver(parser.end_x, parser.end_y,
+    //                                    absolute_end_direction);
+    //return_driver.loadState(maze);
+    //FloodFillPath<16, 16> return_path (maze, 8, 8, 0, 0);
+    //KnownPath<16, 16> return_best_path (maze, 8, 8, 0, 0, return_path);
+    //return_driver.move(&return_best_path);
+  }
+}
+
+void Menu::turn()
+{
+  gUserInterface.waitForHand();
+  playNote(2000, 200);
+  delay(1000);
+
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
+  Orientation::getInstance()->resetHeading();
+
+  motion_forward(180, 0, 0);
+  motion_rotate(180);
+  motion_forward(180, 0, 0);
+  motion_hold(100);
+}
+
+void Menu::check()
+{
+  uint8_t target_x = PersistantStorage::getTargetXLocation();
+  uint8_t target_y = PersistantStorage::getTargetYLocation();
+  if (knowsBestPath(target_x, target_y)) {
+    gUserInterface.showString("YES", 4);
+  } else {
+    gUserInterface.showString("NO", 4);
+  }
+
+  while (!gUserInterface.buttonOkPressed()) {
+    // wait
+  }
+  delay(500);
+}
+
+void Menu::options()
+{
+  const char* names[] = {
+    "CLR",
+    "SDIR",
+    "SPDS",
+    "TRGT",
+    "BACK"
+  };
+
+  switch (gUserInterface.getString(names, 5, 4)) {
+    case 0:
+      clear();
+      break;
+    case 1:
+      startDirection();
+      break;
+    case 2:
+      speeds();
+      break;
+    case 3:
+      targetCell();
+      break;
+    case 4:
+      // back
+      break;
+    default:
+      break;
+  }
+}
+
+void Menu::clear()
+{
+  RobotDriver driver;
+  driver.clearState();
+}
+
+void Menu::startDirection()
+{
+  const char* names[] = {
+    "NRTH",
+    "EAST"
+  };
+
+  switch (gUserInterface.getString(names, 2, 4)) {
+    case 0: { // NORTH
+      Turnable::setDefaultInitialDirection(kNorth);
+      PersistantStorage::setDefaultDirection(kNorth);
+      break;
+    }
+    case 1: { // EAST
+      Turnable::setDefaultInitialDirection(kEast);
+      PersistantStorage::setDefaultDirection(kEast);
+      break;
+    }
+    default: {
+      break;
+    }
+  }
+}
+
+void Menu::speeds()
+{
+  const char* names[] = {
+    "SVEL",
+    "SACC",
+    "SDEC",
+    "K FV",
+    "K DV",
+    "K TV",
+    "KACC",
+    "KDEC",
+    "BACK"
+  };
+
+  while (1) {
+    bool back = false;
+    switch (gUserInterface.getString(names, 9, 4)) {
+      case 0: { // SEARCH VELOCITY
+        uint16_t result = PersistantStorage::getRawSearchVelocity();
+        result = gUserInterface.getInt(0, 9999, result, 4);
+        PersistantStorage::setRawSearchVelocity(result);
         break;
       }
-      checkBattery();
-    } while (RangeSensors.frontRightSensor.getRange() > HAND_SWIPE_FORWARD_RANGE
-              || RangeSensors.diagRightSensor.getRange() > HAND_SWIPE_DIAG_RANGE);
-
-    if (!gyro_failed) {
-      do {
-        RangeSensors.frontRightSensor.updateRange();
-        RangeSensors.diagRightSensor.updateRange();
-        float delta_heading = abs(orientation->getHeading() - initial_heading);
-        if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
-          time = millis();
-          initial_heading = orientation->getHeading();
-          gyro_failed = true;
-          break;
-        }
-        checkBattery();
-      } while (RangeSensors.frontRightSensor.getRange() < HAND_SWIPE_FORWARD_RANGE
-                || RangeSensors.diagRightSensor.getRange() < HAND_SWIPE_DIAG_RANGE);
+      case 1: { // SEARCH FORWARD ACCEL
+        uint16_t result = PersistantStorage::getRawSearchAccel();
+        result = gUserInterface.getInt(0, 9999, result, 4);
+        PersistantStorage::setRawSearchAccel(result);
+        break;
+      }
+      case 2: { // SEARCH DECEL
+        uint16_t result = PersistantStorage::getRawSearchDecel();
+        result = gUserInterface.getInt(0, 9999, result, 4);
+        PersistantStorage::setRawSearchDecel(result);
+        break;
+      }
+      case 3: { // KAOS FORWARD VELOCITY
+        uint16_t result = PersistantStorage::getRawKaosForwardVelocity();
+        result = gUserInterface.getInt(0, 9999, result, 4);
+        PersistantStorage::setRawKaosForwardVelocity(result);
+        break;
+      }
+      case 4: { // KAOS DIAGONAL VELOCITY
+        uint16_t result = PersistantStorage::getRawKaosDiagVelocity();
+        result = gUserInterface.getInt(0, 9999, result, 4);
+        PersistantStorage::setRawKaosDiagVelocity(result);
+        break;
+      }
+      case 5: { // KAOS TURN VELOCITY
+        uint16_t result = PersistantStorage::getRawKaosTurnVelocity();
+        result = gUserInterface.getInt(0, 9999, result, 4);
+        PersistantStorage::setRawKaosTurnVelocity(result);
+        break;
+      }
+      case 6: { // KAOS FORWARD ACCEL
+        uint16_t result = PersistantStorage::getRawKaosAccel();
+        result = gUserInterface.getInt(0, 9999, result, 4);
+        PersistantStorage::setRawKaosAccel(result);
+        break;
+      }
+      case 7: { // KAOS DECEL
+        uint16_t result = PersistantStorage::getRawKaosDecel();
+        result = gUserInterface.getInt(0, 9999, result, 4);
+        PersistantStorage::setRawKaosDecel(result);
+        break;
+      }
+      case 8: { // BACK
+        back = true;
+        break;
+      }
     }
+    if (back) break;
   }
-  
-  delay(100);
+}
+
+void Menu::targetCell()
+{
+  const char* names[] = {
+    "X",
+    "Y",
+    "BACK"
+  };
+
+  while (1) {
+    bool back = false;
+    switch (gUserInterface.getString(names, 3, 4)) {
+      case 0: { // X LOCATION
+        uint8_t result = PersistantStorage::getTargetXLocation();
+        result = gUserInterface.getInt(0, 15, result, 4);
+        PersistantStorage::setTargetXLocation(result);
+        break;
+      }
+      case 1: { // Y LOCATION
+        uint8_t result = PersistantStorage::getTargetYLocation();
+        result = gUserInterface.getInt(0, 15, result, 4);
+        PersistantStorage::setTargetYLocation(result);
+        break;
+      }
+      case 2: { // BACK
+        back = true;
+        break;
+      }
+    }
+    if (back) break;
+  }
 }
