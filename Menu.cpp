@@ -110,20 +110,14 @@ void Menu::kaos()
       if (known_path.isEmpty())
         return;
 
-      other_driver.move(&known_path);
+      other_driver.move(known_path);
 
-        snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
-        gUserInterface.showString(buf, 4);
+      snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
+      gUserInterface.showString(buf, 4);
 
     }
 
     other_driver.move(kNorth, 0);
-    //ContinuousRobotDriver return_driver(parser.end_x, parser.end_y,
-    //                                    absolute_end_direction);
-    //return_driver.loadState(maze);
-    //FloodFillPath<16, 16> return_path (maze, 8, 8, 0, 0);
-    //KnownPath<16, 16> return_best_path (maze, 8, 8, 0, 0, return_path);
-    //return_driver.move(&return_best_path);
   }
 }
 
