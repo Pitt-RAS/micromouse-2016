@@ -78,6 +78,8 @@ void Driver::move(Path<16, 16>& path)
   Compass8 movement_direction, next_direction;
   int movement_distance;
 
+  if (path.isEmpty()) return;
+
   next_direction = path.nextDirection();
 
   if (path.isEmpty())
@@ -940,7 +942,24 @@ bool ContinuousRobotDriver::isWall(Compass8 dir)
 {
   RangeSensors.updateReadings();
 
-  if (getX() == 0 && getY() == 0) {
+  if (!left_back_wall_) {
+    switch (relativeDir(dir)) {
+      case kNorth:
+        return false;
+        break;
+      case kSouth:
+      case kEast:
+      case kWest:
+        return true;
+        break;
+      default:
+        freakOut("BDIR");
+        break;
+    }
+  } else if (!moving_) {
+    // TODO FIX THIS TERRIBLE HACK
+    return false;
+  } else {
     switch (relativeDir(dir)) {
       case kNorth:
         return RangeSensors.isWall(front);
@@ -949,33 +968,15 @@ bool ContinuousRobotDriver::isWall(Compass8 dir)
         return RangeSensors.isWall(back);
         break;
       case kEast:
-        return true;
+        return RangeSensors.isWall(right);
         break;
       case kWest:
-        return true;
+        return RangeSensors.isWall(left);
         break;
       default:
-        return true;
+        freakOut("BDIR");
         break;
     }
-  }
-
-  switch (relativeDir(dir)) {
-    case kNorth:
-      return RangeSensors.isWall(front);
-      break;
-    case kSouth:
-      return RangeSensors.isWall(back);
-      break;
-    case kEast:
-      return RangeSensors.isWall(right);
-      break;
-    case kWest:
-      return RangeSensors.isWall(left);
-      break;
-    default:
-      return true;
-      break;
   }
 }
 
@@ -1016,7 +1017,11 @@ void ContinuousRobotDriver::move(Compass8 dir, int distance)
 }
 
 void ContinuousRobotDriver::move(Path<16, 16>& path) {
+  if (path.isEmpty()) {
+    move(getDir(), 0);
+  } else {
     Driver::move(path);
+  }
 }
 
 KaosDriver::KaosDriver()
