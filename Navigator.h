@@ -150,22 +150,22 @@ void Navigator<driver_type>::findBox(int x, int y)
   while (driver.getX() != x || driver.getY() != y) {
     updateMaze();
 
-    {
-      FloodFillPath<16, 16>
-        flood_path(maze, driver.getX(), driver.getY(), x, y);
+    FloodFillPath<16, 16>
+      flood_path(maze, driver.getX(), driver.getY(), x, y);
 
-      KnownPath<16, 16>
-        known_path(maze, driver.getX(), driver.getY(), x, y, flood_path);
+    KnownPath<16, 16>
+      known_path(maze, driver.getX(), driver.getY(), x, y, flood_path);
 
-      if (known_path.isEmpty())
-        break;
+    if (known_path.isEmpty())
+      break;
 
-      driver.move(known_path);
-    }
+    driver.move(known_path);
   }
 
   updateMaze();
-  driver.move(kNorth, 0);
+
+  FloodFillPath<16, 16> path(maze, 0, 0, 0, 0);
+  driver.move(path);
 }
 
 template <typename driver_type>

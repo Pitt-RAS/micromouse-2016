@@ -78,6 +78,8 @@ void Driver::move(Path<16, 16>& path)
   Compass8 movement_direction, next_direction;
   int movement_distance;
 
+  if (path.isEmpty()) return;
+
   next_direction = path.nextDirection();
 
   if (path.isEmpty())
@@ -1015,7 +1017,11 @@ void ContinuousRobotDriver::move(Compass8 dir, int distance)
 }
 
 void ContinuousRobotDriver::move(Path<16, 16>& path) {
+  if (path.isEmpty()) {
+    move(getDir(), 0);
+  } else {
     Driver::move(path);
+  }
 }
 
 KaosDriver::KaosDriver()
