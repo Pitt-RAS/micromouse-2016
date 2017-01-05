@@ -73,7 +73,7 @@ int Driver::getY()
   return (int) (getYFloat() + 0.5);
 }
 
-void Driver::move(Path<16, 16> path)
+void Driver::move(Path<16, 16>& path)
 {
   Compass8 movement_direction, next_direction;
   int movement_distance;
@@ -1015,9 +1015,8 @@ void ContinuousRobotDriver::move(Compass8 dir, int distance)
   moving_ = will_end_moving;
 }
 
-void ContinuousRobotDriver::move(Path<16, 16>* path)
-{
-  Driver::move(*path);
+void ContinuousRobotDriver::move(Path<16, 16>& path) {
+    Driver::move(path);
 }
 
 KaosDriver::KaosDriver()

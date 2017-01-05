@@ -95,7 +95,7 @@ class Driver
     // The next four methods may be overridden in a derived class.
 
     // Moves the robot through the given Path.
-    virtual void move(Path<16, 16> path);
+    virtual void move(Path<16, 16>& path);
 
     // Writes the current state to persistent memory
     virtual void saveState(Maze<16, 16>& maze);
@@ -296,8 +296,8 @@ class ContinuousRobotDriver : public Driver, public Turnable
     void turn(Compass8 dir);
 
     bool isWall(Compass8 dir);
-    void move(Compass8 dir, int distance);
-    void move(Path<16, 16>* path);
+    virtual void move(Compass8 dir, int distance);
+    virtual void move(Path<16, 16>& path);
 };
 
 class KaosDriver
