@@ -127,7 +127,7 @@ def main(filename):
     print params[6]
 
     plt.plot(readings, f(readings, *params))
-    plt.plot(readings, ranges)
+    plt.plot(readings, ranges, '.')
     plt.show()
 
 if __name__ == '__main__' :
