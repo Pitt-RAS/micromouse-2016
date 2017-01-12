@@ -1,6 +1,6 @@
 #include "parser.h"
 
-namespace std {
+/*namespace std {
   void __throw_bad_alloc()
   {
     Serial.println("Unable to allocate memory");
@@ -13,36 +13,36 @@ namespace std {
     Serial.println(e);
     while (1);
   }
-}
+}*/
 
 FakePath::FakePath(Compass8 path[], int length){
   int end = length;
   for (int i = 0; i < end; i = i + 1)
   {
-    fake_path.push(path[i]);
+    fake_path.enqueue(path[i]);
   }
 }
 
 Compass8 FakePath::nextDirection(){
-  Compass8 dir = fake_path.front();
-  fake_path.pop();
+  Compass8 dir = fake_path.peek();
+  fake_path.dequeue();
   return dir;
 }
 
 void FakePath::push(Compass8 item){
-  fake_path.push(item);
+  fake_path.enqueue(item);
 }
 
 bool FakePath::isEmpty(){
-  return fake_path.empty();
+  return fake_path.isEmpty();
 }
 
 int FakePath::getLength(){
-  return fake_path.size();
+  return (int)fake_path.getSize();
 }
 
 Compass8 FakePath::peek(){
-  return fake_path.front();
+  return fake_path.peek();
 }
 
 PathParser::PathParser(Path<16, 16> *abspath) : path(NULL, 0)
@@ -55,6 +55,18 @@ PathParser::PathParser(Path<16, 16> *abspath) : path(NULL, 0)
   lastMoveFlag = false;
   //all paths start by assuming that you're starting from the middle of the previous cell
   buildRelativePath(abspath);
+  beginDecision();
+}
+
+PathParser::PathParser(FakePath* fp) : path(NULL, 0){
+  start_x = 0;
+  start_y = 0;
+  end_x = 8;
+  end_y = 8;
+
+  lastMoveFlag = false;
+
+  this->path = *fp;
   beginDecision();
 }
 
@@ -94,13 +106,13 @@ void PathParser::buildRelativePath(Path<16, 16> *abspath){
 //}
 
 Compass8 PathParser::getEndDirection(){
-  int size = move_list.size();
+  int size = move_list.getSize();
   int i;
   int angle = 0;
   Move m;
   for(i = 0; i<size;i++){
-    m = (Move)move_list.front();
-    move_list.pop();
+    m = (Move)move_list.peek();
+    move_list.dequeue();
     switch(m){
       case (half):
       case(forward):
@@ -140,7 +152,7 @@ Compass8 PathParser::getEndDirection(){
         angle+=135;
         break;
     }
-    move_list.push(m);
+    move_list.enqueue(m);
   }
 
   angle%=360;
@@ -156,80 +168,6 @@ Compass8 PathParser::getEndDirection(){
   return (Compass8) angle;
 }
 
-std::queue<int> PathParser::getMoveList()
-{
-  //while(!move_list.empty()){
-  //  int m = move_list.front();
-  //  move_list.pop();
-  //  const char* s;
-  //  switch(m){
-  //    case(half):
-  //      s = "half";
-  //      break;
-  //    case (forward):
-  //      s = "forward";
-  //      break;
-  //    case (left_90):
-  //      s = "left_90";
-  //      break;
-  //    case (right_90):
-  //      s = "right_90";
-  //      break;
-  //    case (diag_left_90):
-  //      s = "diag_left_90";
-  //      break;
-  //    case (diag_right_90):
-  //      s = "diag_right_90";
-  //      break;
-  //    case (left_180):
-  //      s = "left_180";
-  //      break;
-  //    case(right_180):
-  //      s = "right_180";
-  //      break;
-  //    case (diag):
-  //      s = "diag";
-  //      break;
-  //    case (pivot_180):
-  //      s = "pivot_180";
-  //      break;
-  //    case (pivot_left_90):
-  //      s = "pivot_left_90";
-  //      break;
-  //    case (pivot_right_90):
-  //      s = "pivot_right_90";
-  //      break;
-  //    case (enter_right_135):
-  //      s = "enter_right_135";
-  //      break;
-  //    case (enter_left_135):
-  //      s = "enter_left_135";
-  //      break;
-  //    case (exit_right_135):
-  //      s = "exit_right_135";
-  //      break;
-  //    case (exit_left_135):
-  //      s = "exit_left_135";
-  //      break;
-  //    case (enter_right_45):
-  //      s = "enter_right_45";
-  //      break;
-  //    case (enter_left_45):
-  //      s = "enter_left_45";
-  //      break;
-  //    case (exit_right_45):
-  //      s = "exit_right_45";
-  //      break;
-  //    case (exit_left_45):
-  //      s = "exit_left_45";
-  //      break;
-  //    default:
-  //      break;
-  //  }
-  //  Serial.println(s);
-  //}
-  return move_list;
-}
 
 void PathParser::beginDecision(){
   //assumes that every movement into this will be a forward
@@ -242,7 +180,7 @@ void PathParser::beginDecision(){
     {
       //forward move
       case kNorth:
-        move_list.push(forward);
+        move_list.enqueue(forward);
         break;
       //right move
       case kEast:
@@ -254,23 +192,23 @@ void PathParser::beginDecision(){
         break;
       //if known path is behind you??
       case kSouth:
-        move_list.push(forward);
-        move_list.push(pivot_180);
-        move_list.push(forward);
+        move_list.enqueue(forward);
+        move_list.enqueue(pivot_180);
+        move_list.enqueue(forward);
         break;
       default:
         break;
     }
   }
   //if ( condition to be determined )
-  //  move_list.push(forward);
+  //  move_list.enqueue(forward);
 }
 
 void PathParser::rightDecisions(){
   if(path.isEmpty()){
-    move_list.push(half);
-    move_list.push(right_90);
-    move_list.push(half);
+    move_list.enqueue(half);
+    move_list.enqueue(right_90);
+    move_list.enqueue(half);
     return;
   }
   decision_dir = path.nextDirection();
@@ -278,22 +216,22 @@ void PathParser::rightDecisions(){
     //forward move
     case kNorth:
       //set motion corner
-      move_list.push(half);
-      move_list.push(right_90);
-      move_list.push(half);
+      move_list.enqueue(half);
+      move_list.enqueue(right_90);
+      move_list.enqueue(half);
 
       dir = path.peek();
       if(dir == kNorth){
-        move_list.push(forward);
+        move_list.enqueue(forward);
         decision_dir = path.nextDirection();
       }
       break;
     //right move
     case kEast:
       if(path.isEmpty()){
-        move_list.push(half);
-        move_list.push(right_180);
-        move_list.push(half);
+        move_list.enqueue(half);
+        move_list.enqueue(right_180);
+        move_list.enqueue(half);
         return;
       }
       decision_dir = path.nextDirection();
@@ -301,12 +239,12 @@ void PathParser::rightDecisions(){
       switch(decision_dir){
         case kNorth:
           //180 outta here
-          move_list.push(half);
-          move_list.push(right_180);
-          move_list.push(half);
+          move_list.enqueue(half);
+          move_list.enqueue(right_180);
+          move_list.enqueue(half);
           dir = path.peek();
           if(dir == kNorth){
-            move_list.push(forward);
+            move_list.enqueue(forward);
             decision_dir = path.nextDirection();
            }
           break;
@@ -319,15 +257,15 @@ void PathParser::rightDecisions(){
 
           switch(decision_dir){
             case(kNorth):
-              move_list.push(pivot_left_90);
-              move_list.push(forward);
+              move_list.enqueue(pivot_left_90);
+              move_list.enqueue(forward);
               break;
             case(kWest):
-              move_list.push(pivot_180);
-              move_list.push(forward);
+              move_list.enqueue(pivot_180);
+              move_list.enqueue(forward);
               break;
             case(kEast):
-              move_list.push(forward);
+              move_list.enqueue(forward);
               break;
             default:
               break;
@@ -335,8 +273,8 @@ void PathParser::rightDecisions(){
 
           break;
         case kWest:
-          move_list.push(enter_right_135);
-          move_list.push(diag);
+          move_list.enqueue(enter_right_135);
+          move_list.enqueue(diag);
           diagonalDecisions(true);
           break;
         default:
@@ -346,8 +284,8 @@ void PathParser::rightDecisions(){
     //left move
     case kWest:
       //diagonal move
-      move_list.push(enter_right_45);
-      move_list.push(diag);
+      move_list.enqueue(enter_right_45);
+      move_list.enqueue(diag);
       diagonalDecisions(true);
       break;
     default:
@@ -357,9 +295,9 @@ void PathParser::rightDecisions(){
 
 void PathParser::leftDecisions(){
   if(path.isEmpty()){
-    move_list.push(half);
-    move_list.push(left_90);
-    move_list.push(half);
+    move_list.enqueue(half);
+    move_list.enqueue(left_90);
+    move_list.enqueue(half);
     return;
   }
   decision_dir = path.nextDirection();
@@ -369,28 +307,28 @@ void PathParser::leftDecisions(){
     case kNorth:
       //set motion corner
       //dir = kNorth;
-      move_list.push(half);
-      move_list.push(left_90);
-      move_list.push(half);
+      move_list.enqueue(half);
+      move_list.enqueue(left_90);
+      move_list.enqueue(half);
       dir = path.peek();
       if(dir == kNorth){
-        move_list.push(forward);
+        move_list.enqueue(forward);
         decision_dir = path.nextDirection();
       }
       break;
     //right move
     case kEast:
       //diagonal move
-      move_list.push(enter_left_45);
-      move_list.push(diag);
+      move_list.enqueue(enter_left_45);
+      move_list.enqueue(diag);
       diagonalDecisions(false);
       break;
     //left move
     case kWest:
       if(path.isEmpty()){
-                move_list.push(half);
-        move_list.push(left_180);
-                move_list.push(half);
+                move_list.enqueue(half);
+        move_list.enqueue(left_180);
+                move_list.enqueue(half);
         return;
       }
       decision_dir = path.nextDirection();
@@ -398,18 +336,18 @@ void PathParser::leftDecisions(){
       switch(decision_dir){
         case kNorth:
           //180 outta here
-          move_list.push(half);
-          move_list.push(left_180);
-          move_list.push(half);
+          move_list.enqueue(half);
+          move_list.enqueue(left_180);
+          move_list.enqueue(half);
           dir = path.peek();
           if(dir == kNorth){
-            move_list.push(forward);
+            move_list.enqueue(forward);
             decision_dir = path.nextDirection();
            }
           break;
         case kEast:
-          move_list.push(enter_left_135);
-          move_list.push(diag);
+          move_list.enqueue(enter_left_135);
+          move_list.enqueue(diag);
           diagonalDecisions(false);
           break;
         case kWest:
@@ -420,15 +358,15 @@ void PathParser::leftDecisions(){
 
           switch(decision_dir){
             case(kNorth):
-              move_list.push(pivot_right_90);
-              move_list.push(forward);
+              move_list.enqueue(pivot_right_90);
+              move_list.enqueue(forward);
               break;
             case(kWest):
-              move_list.push(forward);
+              move_list.enqueue(forward);
               break;
             case(kEast):
-              move_list.push(pivot_180);
-              move_list.push(forward);
+              move_list.enqueue(pivot_180);
+              move_list.enqueue(forward);
               break;
             default:
               break;
@@ -457,32 +395,32 @@ void PathParser::diagonalDecisions(bool approachRight){
     {
       case kNorth:
         if(approachRight) {
-          move_list.push(exit_left_45);
+          move_list.enqueue(exit_left_45);
         } else {
-          move_list.push(exit_right_45);
+          move_list.enqueue(exit_right_45);
         }
         if(path.isEmpty())
-            //move_list.push(forward);
+            //move_list.enqueue(forward);
         return;
         break;
       case kEast:
         if(approachRight){
-          move_list.push(diag);
+          move_list.enqueue(diag);
           diagonalDecisions(false);
           return;
         }
         else{
           if(path.isEmpty()){
-            move_list.push(exit_right_135);
+            move_list.enqueue(exit_right_135);
             return;
           }
           decision_dir = path.nextDirection();
           //135 to straighten out or 90 to go to continue diagonal
           if(decision_dir != kWest) {
-            move_list.push(exit_right_135);
+            move_list.enqueue(exit_right_135);
           }else{
-            move_list.push(diag_right_90);
-            move_list.push(diag);
+            move_list.enqueue(diag_right_90);
+            move_list.enqueue(diag);
             diagonalDecisions(true);
           }
           return;
@@ -491,23 +429,23 @@ void PathParser::diagonalDecisions(bool approachRight){
       case kWest:
         if(approachRight){
           if(path.isEmpty()){
-            move_list.push(exit_left_135);
+            move_list.enqueue(exit_left_135);
             return;
           }
           decision_dir = path.nextDirection();
 
           //135 to straighten out or 90 to go to continue diagonal
           if(decision_dir != kEast) {
-            move_list.push(exit_left_135);
+            move_list.enqueue(exit_left_135);
           }else{
-            move_list.push(diag_left_90);
-            move_list.push(diag);
+            move_list.enqueue(diag_left_90);
+            move_list.enqueue(diag);
             diagonalDecisions(false);
           }
           return;
         }
         else{
-          move_list.push(diag);
+          move_list.enqueue(diag);
           diagonalDecisions(true);
           return;
         }
@@ -527,5 +465,43 @@ Compass8 PathParser::relativeDir(Compass8 next_dir, Compass8 current_dir)
     arc += 8;
 
   return (Compass8) arc;
+}
+
+int main(int argc, const char * argv[])
+{
+  //all-japan 2015 test case: blue
+ Compass8 paddy[] = {kNorth, kEast, kSouth, kEast, kEast, kEast, kEast, kNorth, kEast, kEast, kSouth, kEast, kNorth, kEast, kEast, kSouth,kEast,kEast, kNorth, kEast,
+  kSouth, kEast, kEast, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kWest,
+  kWest, kSouth, kWest, kNorth, kWest, kNorth, kWest, kNorth, kNorth, kEast, kSouth, kEast, kEast,
+  kNorth, kNorth, kWest, kNorth, kWest, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth,
+  kWest, kSouth, kWest, kSouth, kSouth, kEast, kSouth, kEast, kEast, kNorth, kEast,kNorth, kEast, kNorth, kEast, kNorth, kEast, kNorth,
+  kWest};
+
+//Path<16,16> path;
+
+ // all-japan 2015 test case: green
+
+
+  // diagonal test case
+ //Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kNorth};
+
+ //diagonal cornering test case
+ //Compass8 paddy[] = {kEast, kEast, kSouth, kEast, kNorth, kEast, kEast};
+
+ 
+ //Compass8 paddy[] = {kNorth, kEast, kNorth};
+ int length = sizeof(paddy)/sizeof(Compass8);
+ //Serial.println(length);
+ FakePath fpath(paddy, length);
+ PathParser joe(&fpath);
+
+ Move list[50];
+ joe.getMoveList(list);
+ int i = 0;
+ for(i = 0; i < 50; i++){
+  std::cout<<list[i]<<std::endl;
+ }
+
+ std::cout<<joe.getSize()<<std::endl;
 }
 
