@@ -3,49 +3,88 @@
 
 // External libraries
 #include <queue>
+#include <iostream>
 
 // Dependencies within Micromouse
 #include "data.h"
 
 enum Move {
   //half a cell to set up for 90
-  half = 0,
+  half,
   //1 cell edge
-  forward = 1,
+  forward,
   //2 cell edges for straight - 1 cell edge on a diagonal??
-  left_90 = 2,
-  right_90 = 3,
+  left_90,
+  right_90,
   //through 3 cell edges
-  left_180 = 4,
-  right_180 = 5,
+  left_180,
+  right_180,
   //through 1 cell edge
-  enter_left_45 = 6,
-  enter_right_45 = 7, 
-  exit_left_45 = 8,
-  exit_right_45 = 9,
+  enter_left_45,
+  enter_right_45, 
+  exit_left_45,
+  exit_right_45,
   //through 1 cell edge
-  diag = 10,
+  diag,
   //pivots take you through 0 cell edges
-  pivot_right_90 = 11,
-  pivot_left_90 = 12,
-  pivot_180 = 13,
+  pivot_right_90,
+  pivot_left_90,
+  pivot_180,
   //assuming 135 take you through 2 cell edges
   //enter is straight to diagonal
-  enter_right_135 = 14,
-  enter_left_135 = 15,
+  enter_right_135,
+  enter_left_135,
   //exit is diagonal to straight
-  exit_right_135 = 16,
-  exit_left_135 = 17,
-  quarter = 18,
-  diag_left_90 = 19,
-  diag_right_90 = 20
+  exit_right_135,
+  exit_left_135,
+  quarter,
+  diag_left_90,
+  diag_right_90,
+};
+
+struct MoveList{
+  Move list[50];
+  int index;
+
+  void enqueue(Move item){
+    list[index] = item;
+    index++;
+  }
+
+  Move dequeue(){
+    index--;
+    return list[index+1];
+  }
+
+  Move peek(){
+    return list[index];
+  }
+
+  int getSize(){
+    return index+1;
+  }
+
+  bool isEmpty(){
+    return index == 0;
+  }
+
+  Move* getList(){
+    /*Move return_list[index];
+    int i = 0;
+    for(i =0; i<=index; i++){
+      return_list[i] = list[i];
+    }
+    return return_list;*/
+    return list;
+  }
+
 };
 
 
 
 class FakePath{
   private:
-  std::queue<Compass8> fake_path;
+  Queue<Compass8, 50*sizeof(Compass8)> fake_path;
 
   public:
   FakePath(Compass8 path[], int length);
@@ -69,42 +108,27 @@ class PathParser {
     void diagonalDecisions(bool approachRight);
     void buildRelativePath(Path<16, 16> *abspath);
   public:
-   std::queue<int> move_list;
+   Queue<Move, 50*sizeof(Move)> move_list;
    PathParser(Path<16, 16> *abspath);
-   std::queue<int> getMoveList();
+   PathParser(FakePath* fp);
+
+   void getMoveList(Move* array){
+    int i = 0;
+    while(!move_list.isEmpty()){
+      array[i] = move_list.dequeue();
+      i++;
+    }
+   }
+
+   size_t getSize(){
+    return move_list.getSize();
+   }
+
    Compass8 getEndDirection();
 //   std::queue<int> cleanPath();
     size_t start_x, start_y;
     size_t end_x, end_y;
     Compass8 end_direction;
 };
-
-//int main(int argc, const char * argv[])
-//{
-//	//all-japan 2015 test case: blue
-//  // Compass8 paddy[] = {kNorth, kEast, kSouth, kEast, kEast, kEast, kEast, kNorth, kEast, kEast, kSouth, kEast, kNorth, kEast, kEast, kSouth,kEast,kEast, kNorth, kEast,
-//  // 	kSouth, kEast, kEast, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kNorth, kWest, kNorth, kNorth, kEast, kNorth, kWest,
-//  // 	kWest, kSouth, kWest, kNorth, kWest, kNorth, kWest, kNorth, kNorth, kEast, kSouth, kEast, kEast,
-//  // 	kNorth, kNorth, kWest, kNorth, kWest, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth, kWest, kSouth,
-//  // 	kWest, kSouth, kWest, kSouth, kSouth, kEast, kSouth, kEast, kEast, kNorth, kEast,kNorth, kEast, kNorth, kEast, kNorth, kEast, kNorth,
-//  // 	kWest};
-//
-//  //all-japan 2015 test case: green
-//
-//
-//	//diagonal test case
-//  //Compass8 paddy[] = {kNorth, kEast, kNorth, kEast, kNorth};
-//
-//  //diagonal cornering test case
-//  //Compass8 paddy[] = {kEast, kEast, kSouth, kEast, kNorth, kEast, kEast};
-//
-//  //
-//  Compass8 paddy[] = {kNorth, kEast, kNorth};
-//  int length = sizeof(paddy)/sizeof(Compass8);
-//  Serial.println(length);
-//  FakePath fpath(paddy, length);
-//  PathParser joe(&fpath);
-//  joe.getMoveList();
-//}
 
 #endif
