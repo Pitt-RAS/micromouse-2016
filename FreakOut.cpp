@@ -6,6 +6,7 @@
 #include "Logger.h"
 #include "Menu.h"
 #include "PlayMelodies.h"
+#include "UserInterface.h"
 #include "motors.h"
 
 void freakOut(const char* msg) {
