@@ -4,9 +4,9 @@
 #include <I2CdevPittMicromouse.h>
 #include <LedDisplay.h>
 #include <MPU9150PittMicromouse.h>
+#include <EncoderPittMicromouse.h>
 
 // Dependencies within Micromouse
-#include "EncoderMod.h"
 #include "IdealSweptTurns.h"
 #include "Logger.h"
 #include "Menu.h"
