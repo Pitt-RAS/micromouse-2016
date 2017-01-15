@@ -80,48 +80,79 @@ Orientation* Orientation::getInstance() {
 void Orientation::calibrate() {
   Serial.println("Calibrating gyro...");
   mpu_.setZGyroOffset(0);
-  int32_t total = 0;
+  secondary_gyro_offset_ = 0;
+
+  int16_t prev_offset = -1;
   int16_t offset = 0;
+  uint32_t rounds = 0;
 
-  for (int round = 0; round < GYRO_CALIBRATION_ROUNDS; round++) {
-    total = 0;
+  // Keep adjusting the offset until the change we would make to the offset
+  // is less than 1.  For some reason the gyro acts differently with different
+  // offsets, which is why we can't do this in one shot.
+  while (abs(offset - prev_offset) > 0) {
+    uint32_t samples = 0;
+    int32_t total = 0;
 
-    for (int i = 0; i < GYRO_CALIBRATION_SAMPLES; i++) {
+    // Variance * (samples - 1)
+    // See https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance#Online_algorithm
+    float M2 = 0;
+
+    // Take samples until the estimated std dev of the offset is below 0.5
+    for (samples = 1; samples < 10 || M2 / sq(samples) > 0.25; samples++) {
       while (!update()) {
         // wait for actual data
       }
 
-      if (i > 0 && abs(total / i - last_gyro_reading_) > 100) {
+      if (samples > 10
+          && abs(((float)total) / samples - last_gyro_reading_)
+                > 2 * sqrt(M2 / samples)) {
         Serial.println("Calibration failed, restarting calibration...");
         calibrate();
         return;
       }
 
+      float delta = last_gyro_reading_ - ((float)total) / samples;
       total += last_gyro_reading_;
+      float delta2 = last_gyro_reading_ - ((float)total) / (samples + 1);
+      M2 += delta * delta2;
     }
 
-    offset += total / GYRO_CALIBRATION_SAMPLES;
+    prev_offset = offset;
+    rounds++;
+    offset += total / samples;
     mpu_.setZGyroOffset(-offset);
-  }
-  Serial.print("Primary offset: ");
-  Serial.println(offset);
 
-  total = 0;
-  for (int i = 0; i < GYRO_CALIBRATION_SAMPLES; i++) {
+    Serial.print("Primary offset: ");
+    Serial.println(offset);
+    Serial.print("Samples: ");
+    Serial.println(samples);
+  }
+
+  Serial.print("Rounds: ");
+  Serial.println(rounds);
+
+  // Calculate extra floating-point offset to add to integer offset stored
+  // on the IMU itself.  This should be less than 1 if things are done
+  // correctly
+  uint32_t samples = 0;
+  int32_t total = 0;
+  float M2 = 0;
+
+  for (samples = 1;
+       samples < 10 || M2 / sq(samples) > sq(GYRO_CALIBRATION_TARGET_UNCERTAINTY);
+       samples++) {
     while (!update()) {
       // wait for actual data
     }
 
-    if (i > 0 && abs(total / i - last_gyro_reading_) > 100) {
-      Serial.println("Calibration failed, restarting calibration...");
-      calibrate();
-      return;
-    }
-
+    float delta = last_gyro_reading_ - (((float)total) / samples);
     total += last_gyro_reading_;
+    float delta2 = last_gyro_reading_ - (((float)total) / (samples + 1));
+    M2 += delta * delta2;
   }
 
-  secondary_gyro_offset_ = (float)total / GYRO_CALIBRATION_SAMPLES;
+  secondary_gyro_offset_ = ((float)total) / samples;
+
   Serial.print("Secondary offset: ");
   Serial.println(secondary_gyro_offset_, 10);
 
