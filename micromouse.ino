@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
 // External libraries
-#include <I2Cdev.h>
+#include <I2CdevPittMicromouse.h>
 #include <LedDisplay.h>
 #include <MPU9150.h>
 
