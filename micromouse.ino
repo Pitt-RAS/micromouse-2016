@@ -3,7 +3,7 @@
 // External libraries
 #include <I2CdevPittMicromouse.h>
 #include <LedDisplay.h>
-#include <MPU9150.h>
+#include <MPU9150PittMicromouse.h>
 
 // Dependencies within Micromouse
 #include "EncoderMod.h"
