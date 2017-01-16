@@ -37,6 +37,5 @@ float motion_get_maxDecel_corner();
 float motion_get_maxVel_straight();
 float motion_get_maxVel_diag();
 float motion_get_maxVel_rotate();
-float motion_get_maxVel_corner();
 
 #endif
