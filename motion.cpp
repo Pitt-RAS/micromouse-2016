@@ -4,7 +4,7 @@
 
 // Dependencies within Micromouse
 #include "FreakOut.h"
-#include "IdealSweptTurns.h"
+#include "SweptTurnProfile.h"
 #include "Logger.h"
 #include "Menu.h"
 #include "UserInterface.h"
@@ -35,13 +35,13 @@ static float max_vel_rotate = MAX_VEL_ROTATE;
 static Orientation* orientation = NULL;
 
 // instantiate the turn lookup tables
-IdealSweptTurns turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
+SweptTurnProfile turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
                               SWEPT_TURN_45_ANGLE, 0.001);
-IdealSweptTurns turn_90_table(SWEPT_TURN_90_FORWARD_SPEED,
+SweptTurnProfile turn_90_table(SWEPT_TURN_90_FORWARD_SPEED,
                               SWEPT_TURN_90_ANGLE, 0.001);
-IdealSweptTurns turn_135_table(SWEPT_TURN_135_FORWARD_SPEED,
+SweptTurnProfile turn_135_table(SWEPT_TURN_135_FORWARD_SPEED,
                               SWEPT_TURN_135_ANGLE, 0.001);
-IdealSweptTurns turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
+SweptTurnProfile turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
                               SWEPT_TURN_180_ANGLE, 0.001);
 
 void motion_forward(float distance, float current_speed, float exit_speed) {
@@ -659,7 +659,7 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
   int move_time_scaled = 0;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float total_time;
-  IdealSweptTurns* turn_table = NULL;
+  SweptTurnProfile* turn_table = NULL;
 
   if (orientation == NULL) {
     orientation = Orientation::getInstance();

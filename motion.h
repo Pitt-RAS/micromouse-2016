@@ -2,7 +2,7 @@
 #define MICROMOUSE_MOTION_H_
 
 // Dependencies within Micromouse
-#include "IdealSweptTurns.h"
+#include "SweptTurnProfile.h"
 
 void motion_set_max_speed(float new_max_speed);
 void motion_set_max_accel(float new_max_accel);
