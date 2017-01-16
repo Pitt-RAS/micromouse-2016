@@ -24,6 +24,11 @@
 #include "sensors_encoders.h"
 #include "utility.h"
 
+#define PATCH_VER_MESSAGE "Pitt Micromouse patched library version mismatch"
+static_assert(PITT_MICROMOUSE_I2CDEV_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
+static_assert(PITT_MICROMOUSE_MPU9150_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
+static_assert(PITT_MICROMOUSE_ENCODER_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
+
 void setup()
 {
   // Set higher pwm frequency for smoother motor control.
