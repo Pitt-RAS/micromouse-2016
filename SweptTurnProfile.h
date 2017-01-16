@@ -10,6 +10,7 @@ enum SweptTurnType {
 
 class SweptTurnProfile {
  private:
+  // All internal variables in mks units unless stated otherwise
   const float tangential_velocity_;
   const float turn_angle_;
   const float time_step_;
@@ -17,10 +18,11 @@ class SweptTurnProfile {
   const float inside_trigs_;
   const float omega0_;
 
-  float acceleration_duration_;
-  float const_velocity_duration_;
-  float turn_duration_;
+  const float acceleration_duration_;
+  const float const_velocity_duration_;
+  const float turn_duration_;
 
+  // Offsets in mm for wheels at each timestep
   float offset_table_[500];
 
   float getAngleAtTime(float t) const;
@@ -29,9 +31,11 @@ class SweptTurnProfile {
   float getVelocityAtTime(float t) const;
 
  public:
-  SweptTurnProfile(float tangential_velocity, float turn_angle, float time_step);
+  SweptTurnProfile(float tangential_velocity,
+                   float turn_angle,
+                   float time_step);
 
-  float getOffsetAtMicros(unsigned long input_time) const;
+  float getOffsetAtMicros(unsigned long t) const;
   unsigned long getTotalTime() const;
   float getTotalAngle() const;
 };
