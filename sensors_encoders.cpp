@@ -3,15 +3,15 @@
 #include <Arduino.h>
 
 // External libraries
-#include <EncoderMod.h>
+#include <EncoderPittMicromouse.h>
 
 // Dependencies within Micromouse
 #include "conf.h"
 
-Encoder left_front_encoder(ENCODER_LF1_PIN, ENCODER_LF2_PIN);
-Encoder right_front_encoder(ENCODER_RF1_PIN, ENCODER_RF2_PIN);
-Encoder left_back_encoder(ENCODER_LB1_PIN, ENCODER_LB2_PIN);
-Encoder right_back_encoder(ENCODER_RB1_PIN, ENCODER_RB2_PIN);
+EncoderPittMicromouse left_front_encoder(ENCODER_LF1_PIN, ENCODER_LF2_PIN);
+EncoderPittMicromouse right_front_encoder(ENCODER_RF1_PIN, ENCODER_RF2_PIN);
+EncoderPittMicromouse left_back_encoder(ENCODER_LB1_PIN, ENCODER_LB2_PIN);
+EncoderPittMicromouse right_back_encoder(ENCODER_RB1_PIN, ENCODER_RB2_PIN);
 
 float enc_left_front_read() {
     return (left_front_encoder.read() * MM_PER_STEP);

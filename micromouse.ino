@@ -1,12 +1,12 @@
 #include <Arduino.h>
 
 // External libraries
-#include <I2Cdev.h>
+#include <I2CdevPittMicromouse.h>
 #include <LedDisplay.h>
-#include <MPU9150.h>
+#include <MPU9150PittMicromouse.h>
+#include <EncoderPittMicromouse.h>
 
 // Dependencies within Micromouse
-#include "EncoderMod.h"
 #include "IdealSweptTurns.h"
 #include "Logger.h"
 #include "Menu.h"
@@ -23,6 +23,11 @@
 #include "parser.h"
 #include "sensors_encoders.h"
 #include "utility.h"
+
+#define PATCH_VER_MESSAGE "Pitt Micromouse patched library version mismatch"
+static_assert(PITT_MICROMOUSE_I2CDEV_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
+static_assert(PITT_MICROMOUSE_MPU9150_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
+static_assert(PITT_MICROMOUSE_ENCODER_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
 
 void setup()
 {
