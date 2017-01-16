@@ -85,7 +85,8 @@ float SweptTurnProfile::getAngleAtTime(float t) const
     return (1 - std::cos(inside_trigs_ * t)) * omega_max_ / inside_trigs_;
   } else if (t <= acceleration_duration_ + const_velocity_duration_) {
     return getAngleAtTime(acceleration_duration_)
-         + getVelocityAtTime(acceleration_duration_) * t;
+         + (getVelocityAtTime(acceleration_duration_)
+            * (t - acceleration_duration_));
   } else {
     return turn_angle_ - getAngleAtTime(turn_duration_ - t);
   }
