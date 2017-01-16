@@ -16,7 +16,7 @@ class SweptTurnProfile {
   const float time_step_;
 
   const float inside_trigs_;
-  const float omega0_;
+  const float omega_max_;
 
   const float acceleration_duration_;
   const float const_velocity_duration_;

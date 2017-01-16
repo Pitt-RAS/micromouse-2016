@@ -8,16 +8,16 @@
 
 static float calculateAccelerationDuration(float turn_angle,
                                            float inside_trigs,
-                                           float omega0)
+                                           float omega_max)
 {
   // angle covered if we accelerate to max rotational velocity
-  float angle_for_full_acceleration = omega0 / inside_trigs;
+  float angle_for_full_acceleration = omega_max / inside_trigs;
 
   if (angle_for_full_acceleration > turn_angle / 2) {
     // We don't have time to accelerate to max rotational velocity
 
     // Solve for t when theta = turn_angle / 2
-    float temp = (turn_angle / 2) * inside_trigs / omega0;
+    float temp = (turn_angle / 2) * inside_trigs / omega_max;
     return std::acos(1 - temp) / inside_trigs;
   } else {
     // We have time to accelerate to max rotational velocity
@@ -29,18 +29,18 @@ static float calculateAccelerationDuration(float turn_angle,
 
 static float calculateConstVelocityDuration(float turn_angle,
                                             float inside_trigs,
-                                            float omega0)
+                                            float omega_max)
 {
   // angle covered if we accelerate to max rotational velocity
-  float angle_for_full_acceleration = omega0 / inside_trigs;
+  float angle_for_full_acceleration = omega_max / inside_trigs;
 
   if (angle_for_full_acceleration > turn_angle / 2) {
     // We don't have time to accelerate to max rotational velocity
     return 0;
   } else {
     // We have time to accelerate to max rotational velocity
-    float theta_const = turn_angle - 2 * omega0 / inside_trigs;
-    return theta_const / omega0;
+    float theta_const = turn_angle - 2 * omega_max / inside_trigs;
+    return theta_const / omega_max;
   }
 }
 
@@ -52,12 +52,12 @@ SweptTurnProfile::SweptTurnProfile(float tangential_velocity,
       time_step_(time_step),
       inside_trigs_(ROBOT_MASS * (MM_BETWEEN_WHEELS / 2.0 / 1000.0)
                     * tangential_velocity_ / MOMENT_OF_INERTIA),
-      omega0_(ROBOT_MASS * MAX_COEFFICIENT_FRICTION * 9.81 / ROBOT_MASS
+      omega_max_(ROBOT_MASS * MAX_COEFFICIENT_FRICTION * 9.81 / ROBOT_MASS
               / tangential_velocity),
       acceleration_duration_(calculateAccelerationDuration(
-          turn_angle_, inside_trigs_, omega0_)),
+          turn_angle_, inside_trigs_, omega_max_)),
       const_velocity_duration_(calculateConstVelocityDuration(
-          turn_angle_, inside_trigs_, omega0_)),
+          turn_angle_, inside_trigs_, omega_max_)),
       turn_duration_(2 * acceleration_duration_ + const_velocity_duration_)
 {
   for (size_t i = 0; i <= getTotalTurnSteps(); i++) {
@@ -82,7 +82,7 @@ size_t SweptTurnProfile::getTotalTurnSteps() const
 float SweptTurnProfile::getAngleAtTime(float t) const
 {
   if (t <= acceleration_duration_) {
-    return (1 - std::cos(inside_trigs_ * t)) * omega0_ / inside_trigs_;
+    return (1 - std::cos(inside_trigs_ * t)) * omega_max_ / inside_trigs_;
   } else if (t <= acceleration_duration_ + const_velocity_duration_) {
     return getAngleAtTime(acceleration_duration_)
          + getVelocityAtTime(acceleration_duration_) * t;
@@ -93,7 +93,7 @@ float SweptTurnProfile::getAngleAtTime(float t) const
 
 float SweptTurnProfile::getVelocityAtTime(float t) const
 {
-  return omega0_ * std::sin(inside_trigs_ * t);
+  return omega_max_ * std::sin(inside_trigs_ * t);
 }
 
 float SweptTurnProfile::getTurnOffset(float angle) const
