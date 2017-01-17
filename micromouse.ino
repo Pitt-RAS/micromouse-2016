@@ -231,7 +231,7 @@ void startDirection()
     {}
   };
 
-  (Menu(items))();
+  (Menu(items, false))();
 }
 
 void speeds()
