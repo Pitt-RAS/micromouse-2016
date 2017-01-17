@@ -4,6 +4,7 @@
 
 // Dependencies within Micromouse
 #include "Menu.h"
+#include "UserInterface.h"
 #include "RangeSensorContainer.h"
 #include "driver.h"
 

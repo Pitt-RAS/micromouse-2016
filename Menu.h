@@ -1,43 +1,53 @@
 #ifndef MICROMOUSE_MENU_H
 #define MICROMOUSE_MENU_H
 
-#include "UserInterface.h"
+// usage: menuFunction { <function-body> }
+#define menuFunction [] () -> void
+
+class MenuItem
+{
+  public:
+    typedef void (*Function)();
+
+    MenuItem(const char *name, Function function);
+
+    // constructs an array-terminating "null" item
+    MenuItem();
+
+    bool isNull() const;
+
+    const char *name() const;
+    Function function() const;
+
+  private:
+    const char *name_;
+    Function function_;
+};
 
 class Menu
 {
   public:
-    Menu();
+    // one-time initialization that must be called before running any Menus
+    static void begin();
 
-    // Runs the main menu
-    void main();
+    // items array must be terminated with a "null" item
+    Menu(const MenuItem items[], bool append_back_item = true);
+
+    // returns false if the appended back item was selected, else true
+    bool operator()();
 
   private:
-    // Does a discovery run.
-    void run();
+    static const size_t kMaxLength = 10 + 1;
+    static const size_t kNameMaxLength = sizeof("0000") / sizeof(char);
 
-    // Does a kaos mode run.
-    void kaos();
+    const size_t length_;
 
-    // Goes out of the start cell, turns around, comes back.
-    void turn();
+    MenuItem items_[kMaxLength];
+    const char *names_[kMaxLength];
 
-    // Checks if the entire path has been discovered.
-    void check();
+    bool show_back_item_;
 
-    // Configures options.
-    void options();
-
-    // Clears the maze memory.
-    void clear();
-
-    // Sets the start direction.
-    void startDirection();
-
-    // Sets speeds.
-    void speeds();
-
-    // Sets the target cell.
-    void targetCell();
+    size_t countLength(const MenuItem array[]);
 };
 
 #endif

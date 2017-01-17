@@ -7,6 +7,7 @@
 #include "IdealSweptTurns.h"
 #include "Logger.h"
 #include "Menu.h"
+#include "UserInterface.h"
 #include "MotionCalc.h"
 #include "Orientation.h"
 #include "PIDController.h"
