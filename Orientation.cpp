@@ -3,8 +3,8 @@
 #include <Arduino.h>
 
 // External libraries
-#include <I2Cdev.h>
-#include <MPU9150.h>
+#include <I2CdevPittMicromouse.h>
+#include <MPU9150PittMicromouse.h>
 
 // Dependencies within Micromouse
 #include "FreakOut.h"
@@ -52,13 +52,13 @@ Orientation::Orientation() {
   // there's no good magnetometer interface in the MPU9150 library, so here it is
 
   // allow us to access the magnetometer over I2C
-  //I2Cdev::writeByte(MPU9150_DEFAULT_ADDRESS, MPU9150_RA_INT_PIN_CFG, 0x02);
+  //I2CdevPittMicromouse::writeByte(MPU9150_DEFAULT_ADDRESS, MPU9150_RA_INT_PIN_CFG, 0x02);
   //delay(10);
 
-  //I2Cdev::writeByte(MPU9150_RA_MAG_ADDRESS, 0x0A, 0x01);
+  //I2CdevPittMicromouse::writeByte(MPU9150_RA_MAG_ADDRESS, 0x0A, 0x01);
   //delay(10);
   //uint8_t mag_buf[4];
-  //I2Cdev::readBytes(MPU9150_RA_MAG_ADDRESS, MPU9150_RA_MAG_XOUT_L, 4, mag_buf);
+  //I2CdevPittMicromouse::readBytes(MPU9150_RA_MAG_ADDRESS, MPU9150_RA_MAG_XOUT_L, 4, mag_buf);
   //int16_t mx = (((int16_t)mag_buf[0]) << 8) | mag_buf[1];
   //int16_t my = (((int16_t)mag_buf[2]) << 8) | mag_buf[3];
   //last_mag_heading_ = atan2(mx, my) * RAD_TO_DEG;
@@ -214,7 +214,7 @@ bool Orientation::update() {
     //if (updates_since_mag_reading_ == MAG_CYCLES_PER_UPDATE) {
     //  updates_since_mag_reading_ = 0;
     //  uint8_t mag_buf[4];
-    //  I2Cdev::readBytes(MPU9150_RA_MAG_ADDRESS, MPU9150_RA_MAG_XOUT_L, 4, mag_buf);
+    //  I2CdevPittMicromouse::readBytes(MPU9150_RA_MAG_ADDRESS, MPU9150_RA_MAG_XOUT_L, 4, mag_buf);
     //  int16_t mx = (((int16_t)mag_buf[0]) << 8) | mag_buf[1];
     //  int16_t my = (((int16_t)mag_buf[2]) << 8) | mag_buf[3];
     //  float mag_heading = atan2(mx, my) * RAD_TO_DEG + mag_heading_offset_;
@@ -222,9 +222,9 @@ bool Orientation::update() {
     //  //Serial.print("\t");
     //  // tell the magnetometer to take another reading
     //  //   so that it'll be ready by the time we get back around
-    //  I2Cdev::writeByte(MPU9150_RA_MAG_ADDRESS, 0x0A, 0x01);
+    //  I2CdevPittMicromouse::writeByte(MPU9150_RA_MAG_ADDRESS, 0x0A, 0x01);
     //  delay(6);
-    //  I2Cdev::readBytes(MPU9150_RA_MAG_ADDRESS, MPU9150_RA_MAG_XOUT_L, 4, mag_buf);
+    //  I2CdevPittMicromouse::readBytes(MPU9150_RA_MAG_ADDRESS, MPU9150_RA_MAG_XOUT_L, 4, mag_buf);
     //  mx = (((int16_t)mag_buf[0]) << 8) | mag_buf[1];
     //  my = (((int16_t)mag_buf[2]) << 8) | mag_buf[3];
 
