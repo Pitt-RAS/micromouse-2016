@@ -1,8 +1,6 @@
 #ifndef CONF_H
 #define CONF_H
 
-#include <Arduino.h>
-
 // Serial port baud rate
 #define BAUD 9600
 

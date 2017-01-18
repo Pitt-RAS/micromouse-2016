@@ -7,7 +7,7 @@
 #include <EncoderPittMicromouse.h>
 
 // Dependencies within Micromouse
-#include "IdealSweptTurns.h"
+#include "SweptTurnProfile.h"
 #include "Logger.h"
 #include "Menu.h"
 #include "UserInterface.h"
