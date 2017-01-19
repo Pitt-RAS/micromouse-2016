@@ -37,7 +37,7 @@ void Menu::begin()
 Menu::Menu(const MenuItem items[], bool append_back_item) :
   length_(countLength(items) + 1), show_back_item_(append_back_item)
 {
-  for (size_t i = 0; i < length_; i++)
+  for (size_t i = 0; i < length_ - 1; i++)
     items_[i] = items[i];
 
   items_[length_ - 1] = MenuItem("BACK", doNothing);
@@ -60,6 +60,6 @@ bool Menu::operator()()
 size_t Menu::countLength(const MenuItem array[])
 {
   size_t i;
-  for (i = 0; i < kMaxLength && !array[i].isNull(); i++);
+  for (i = 0; i < kMaxLength - 1 && !array[i].isNull(); i++);
   return i;
 }
