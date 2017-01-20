@@ -310,7 +310,7 @@ class KaosDriver
     static float max_decel_;
   public:
     KaosDriver();
-    void execute(std::queue<int> move_list);
+    void execute(Queue<int, 256> move_list);
 };
 
 #endif // #ifndef COMPILE_FOR_PC

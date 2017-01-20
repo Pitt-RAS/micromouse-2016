@@ -1,11 +1,12 @@
 #include "driver.h"
 
-#include <queue>
+#include "data.h"
 
 #ifdef COMPILE_FOR_PC
 #include <fstream>
 #include <iostream>
 #include <unistd.h>
+#include <stddef.h>
 #endif
 
 #ifndef COMPILE_FOR_PC
@@ -1034,9 +1035,9 @@ float KaosDriver::max_vel_diag_  = 0;
 float KaosDriver::max_accel_ = 0;
 float KaosDriver::max_decel_ = 0;
 
-void KaosDriver::execute(std::queue<int> move_list)
+void KaosDriver::execute(Queue<int, 256> move_list)
 {
-  if (move_list.empty()) return;
+  if (move_list.isEmpty()) return;
 
   max_vel_straight_ = PersistantStorage::getKaosForwardVelocity();
   max_vel_diag_ = PersistantStorage::getKaosDiagVelocity();
@@ -1053,9 +1054,9 @@ void KaosDriver::execute(std::queue<int> move_list)
   float old_max_decel = motion_get_maxDecel_straight();
   motion_set_maxDecel_straight(max_decel_);
 
-  int next_move = move_list.front();
+  int next_move = move_list.peek();
   float len = 0;
-  move_list.pop();
+  move_list.dequeue();
 
   motion_forward(MM_FROM_BACK_TO_CENTER, 0, turn_velocity_);
   enc_left_front_write(0);
@@ -1065,8 +1066,8 @@ void KaosDriver::execute(std::queue<int> move_list)
   Orientation::getInstance()->resetHeading();
 
   bool should_continue = true;
-  while (!move_list.empty() || should_continue) {
-    if (move_list.empty()) {
+  while (!move_list.isEmpty() || should_continue) {
+    if (move_list.isEmpty()) {
       should_continue = false;
     }
 
@@ -1084,149 +1085,149 @@ void KaosDriver::execute(std::queue<int> move_list)
             len += 0.25;
           else
             len += 1;
-          if (!move_list.empty()) {
-            next_move = move_list.front();
-            move_list.pop();
+          if (!move_list.isEmpty()) {
+            next_move = move_list.peek();
+            move_list.dequeue();
           }
-        } while (!move_list.empty() && (next_move == forward || next_move == half || next_move == quarter));
+        } while (!move_list.isEmpty() && (next_move == forward || next_move == half || next_move == quarter));
         motion_forward(MM_PER_BLOCK * len, turn_velocity_, turn_velocity_);
         break;
       case left_90:
         motion_corner(kLeftTurn90, turn_velocity_);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case right_90:
         motion_corner(kRightTurn90, turn_velocity_);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case diag_left_90:
         motion_corner(kLeftTurn90, turn_velocity_, 1/sqrt(2));
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case diag_right_90:
         motion_corner(kRightTurn90, turn_velocity_, 1/sqrt(2));
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case left_180:
         motion_corner(kLeftTurn180, turn_velocity_);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case right_180:
         motion_corner(kRightTurn180, turn_velocity_);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case enter_left_45:
         //motion_forward(MM_PER_BLOCK * (0.75 - 0.25 / (sqrt(2) - 1)), turn_velocity_, turn_velocity_);
         motion_corner(kLeftTurn45, turn_velocity_, (sqrt(2) / 2 / (sqrt(2) - 1)));
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case enter_right_45:
         //motion_forward(MM_PER_BLOCK * (0.75 - 0.25 / (sqrt(2) - 1)), turn_velocity_, turn_velocity_);
         motion_corner(kRightTurn45, turn_velocity_, (sqrt(2) / 2 / (sqrt(2) - 1)));
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case exit_left_45:
         motion_corner(kLeftTurn45, turn_velocity_, (sqrt(2) / 2 / (sqrt(2) - 1)));
         //motion_forward(MM_PER_BLOCK * (0.75 - 0.25 / (sqrt(2) - 1)), turn_velocity_, turn_velocity_);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case exit_right_45:
         motion_corner(kRightTurn45, turn_velocity_, (sqrt(2) / 2 / (sqrt(2) - 1)));
         //motion_forward(MM_PER_BLOCK * (0.75 - 0.25 / (sqrt(2) - 1)), turn_velocity_, turn_velocity_);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case diag:
         len = 0;
         do {
           len++;
-          if (!move_list.empty()) {
-            next_move = move_list.front();
-            move_list.pop();
+          if (!move_list.isEmpty()) {
+            next_move = move_list.peek();
+            move_list.dequeue();
           }
-        } while (!move_list.empty() && next_move == diag);
+        } while (!move_list.isEmpty() && next_move == diag);
         motion_forward_diag(MM_PER_BLOCK * 0.707 * len, turn_velocity_, turn_velocity_);
         break;
       case pivot_180:
         motion_rotate(180);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case pivot_left_90:
         motion_rotate(-90);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case pivot_right_90:
         motion_rotate(90);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case enter_right_135:
         motion_forward(MM_PER_BLOCK * (.75 - .75/(sqrt(2) + 1)), turn_velocity_, turn_velocity_);
         motion_corner(kRightTurn135, turn_velocity_, TURN_135_SCALING*(3 * sqrt(2) / 2 / (sqrt(2) + 1)));
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case enter_left_135:
         motion_forward(MM_PER_BLOCK * (.75 - .75/(sqrt(2) + 1)), turn_velocity_, turn_velocity_);
         motion_corner(kLeftTurn135, turn_velocity_, TURN_135_SCALING*(3 * sqrt(2) / 2 / (sqrt(2) + 1)));
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case exit_right_135:
         motion_corner(kRightTurn135, turn_velocity_, TURN_135_SCALING*(3 * sqrt(2) / 2 / (sqrt(2) + 1)));
         motion_forward(MM_PER_BLOCK * (.75 - .75/(sqrt(2) + 1)), turn_velocity_, turn_velocity_);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       case exit_left_135:
         motion_corner(kLeftTurn135, turn_velocity_, TURN_135_SCALING*(3 * sqrt(2) / 2 / (sqrt(2) + 1)));
         motion_forward(MM_PER_BLOCK * (.75 - .75/(sqrt(2) + 1)), turn_velocity_, turn_velocity_);
-        if (!move_list.empty()) {
-          next_move = move_list.front();
-          move_list.pop();
+        if (!move_list.isEmpty()) {
+          next_move = move_list.peek();
+          move_list.dequeue();
         }
         break;
       default:
