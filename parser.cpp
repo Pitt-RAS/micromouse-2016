@@ -467,7 +467,7 @@ Compass8 PathParser::relativeDir(Compass8 next_dir, Compass8 current_dir)
   return (Compass8) arc;
 }
 
-int main(int argc, const char * argv[])
+/*int main(int argc, const char * argv[])
 {
   //all-japan 2015 test case: blue
  Compass8 paddy[] = {kNorth, kEast, kSouth, kEast, kEast, kEast, kEast, kNorth, kEast, kEast, kSouth, kEast, kNorth, kEast, kEast, kSouth,kEast,kEast, kNorth, kEast,
@@ -495,13 +495,13 @@ int main(int argc, const char * argv[])
  FakePath fpath(paddy, length);
  PathParser joe(&fpath);
 
- Move list[50];
+ Move list[256];
  joe.getMoveList(list);
  int i = 0;
- for(i = 0; i < 50; i++){
+ for(i = 0; i < 256; i++){
   std::cout<<list[i]<<std::endl;
  }
 
  std::cout<<joe.getSize()<<std::endl;
 }
-
+*/

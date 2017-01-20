@@ -5,10 +5,11 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+//#include <stdio.h>
 #endif
 
 //#ifndef COMPILE_FOR_PC
-//#include <Arduino.h>
+#include <Arduino.h>
 //#endif
 
 // A "main 8" compass direction

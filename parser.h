@@ -2,8 +2,6 @@
 #define MICROMOUSE_PARSER_H_
 
 // External libraries
-#include <queue>
-#include <iostream>
 
 // Dependencies within Micromouse
 #include "data.h"
@@ -108,16 +106,12 @@ class PathParser {
     void diagonalDecisions(bool approachRight);
     void buildRelativePath(Path<16, 16> *abspath);
   public:
-   Queue<Move, 50*sizeof(Move)> move_list;
+   Queue<int, 256> move_list;
    PathParser(Path<16, 16> *abspath);
    PathParser(FakePath* fp);
 
-   void getMoveList(Move* array){
-    int i = 0;
-    while(!move_list.isEmpty()){
-      array[i] = move_list.dequeue();
-      i++;
-    }
+   Queue<int, 256> getMoveList(){
+    return move_list;
    }
 
    size_t getSize(){
