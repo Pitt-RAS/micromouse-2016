@@ -5,11 +5,12 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+//#include <stdio.h>
 #endif
 
-#ifndef COMPILE_FOR_PC
+//#ifndef COMPILE_FOR_PC
 #include <Arduino.h>
-#endif
+//#endif
 
 // A "main 8" compass direction
 //   The assigned integers are important. Often times this enum is casted to an
@@ -181,7 +182,7 @@ template <typename storage_type, const size_t capacity>
 class Queue
 {
   private:
-    storage_type *array_[capacity];
+    storage_type array_[capacity];
     size_t front_;
     size_t size_;
     bool overflowed_;
@@ -199,6 +200,9 @@ class Queue
     // Returns the maximum capacity.
     size_t getCapacity();
 
+    // Returns the number of items in the queue
+    size_t getSize();
+
 
     // Returns whether or not the queue is empty.
     bool isEmpty();
@@ -208,13 +212,13 @@ class Queue
 
 
     // Adds an item to the queue.
-    void enqueue(storage_type *item);
+    void enqueue(storage_type item);
 
     // Returns the next item from the queue and removes the item.
-    storage_type *dequeue();
+    storage_type dequeue();
 
     // Returns the next item from the queue without removing the item.
-    storage_type *peek();
+    storage_type peek();
 };
 
 // Standard interface for a fixed capacity path data structure
@@ -277,7 +281,7 @@ class Path
     size_t finish_y_;
 
     // Queue which stores directions in order from start to finish
-    Queue<Compass8, x_size * y_size> directions_;
+    Queue<Compass8*, x_size * y_size> directions_;
 
     // Data to be stored in the directions_ queue
     //
@@ -715,6 +719,11 @@ size_t Queue<storage_type, capacity>::getCapacity()
 }
 
 template <typename storage_type, const size_t capacity>
+size_t Queue<storage_type, capacity>::getSize(){
+  return size_;
+}
+
+template <typename storage_type, const size_t capacity>
 bool Queue<storage_type, capacity>::isEmpty()
 {
   return size_ == 0;
@@ -727,7 +736,7 @@ bool Queue<storage_type, capacity>::isFull()
 }
 
 template <typename storage_type, const size_t capacity>
-void Queue<storage_type, capacity>::enqueue(storage_type *item)
+void Queue<storage_type, capacity>::enqueue(storage_type item)
 {
   if (isFull()) {
     overflowed_ = true;
@@ -742,12 +751,12 @@ void Queue<storage_type, capacity>::enqueue(storage_type *item)
 }
 
 template <typename storage_type, const size_t capacity>
-storage_type *Queue<storage_type, capacity>::dequeue()
+storage_type Queue<storage_type, capacity>::dequeue()
 {
-  storage_type *item;
+  storage_type item;
 
   if (isEmpty() || overflowed_)
-    return NULL;
+    return array_[0];
 
   item = array_[front_];
   front_ = indexAfter(front_);
@@ -757,10 +766,10 @@ storage_type *Queue<storage_type, capacity>::dequeue()
 }
 
 template <typename storage_type, const size_t capacity>
-storage_type *Queue<storage_type, capacity>::peek()
+storage_type Queue<storage_type, capacity>::peek()
 {
   if (isEmpty() || overflowed_)
-    return NULL;
+    return array_[0];
 
   return array_[front_];
 }
@@ -835,7 +844,7 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
     Path<x_size, y_size>(maze,
           start_x, start_y, finish_x, finish_y)
 {
-  Queue<unsigned char, x_size * y_size> paint_queue;
+  Queue<unsigned char*, x_size * y_size> paint_queue;
   unsigned char boxes_[y_size][x_size];
   size_t x, y;
   bool breaking;
