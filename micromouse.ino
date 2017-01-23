@@ -84,7 +84,7 @@ void setup()
 
   Menu menu(items, false);
 
-  for (;;) menu();
+  for (;;) menu.run();
 }
 
 void loop() {}
@@ -204,7 +204,7 @@ void options()
     {}
   };
 
-  (Menu(items))();
+  Menu(items).run();
 }
 
 void clear()
@@ -231,7 +231,7 @@ void startDirection()
     {}
   };
 
-  (Menu(items, false))();
+  Menu(items, false).run();
 }
 
 void speeds()
@@ -297,7 +297,7 @@ void speeds()
   };
 
   Menu menu(items);
-  while (menu());
+  while (menu.run());
 }
 
 void targetCell()
@@ -321,5 +321,5 @@ void targetCell()
   };
 
   Menu menu(items);
-  while (menu());
+  while (menu.run());
 }
