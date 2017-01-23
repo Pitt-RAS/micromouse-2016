@@ -46,7 +46,7 @@ Menu::Menu(const MenuItem items[], bool append_back_item) :
     names_[i] = items_[i].name();
 }
 
-bool Menu::operator()()
+bool Menu::run()
 {
   size_t length = show_back_item_ ? length_ : length_ - 1;
   size_t name_length = kNameMaxLength - 1;

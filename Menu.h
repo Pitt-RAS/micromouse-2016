@@ -34,7 +34,7 @@ class Menu
     Menu(const MenuItem items[], bool append_back_item = true);
 
     // returns false if the appended back item was selected, else true
-    bool operator()();
+    bool run();
 
   private:
     static const size_t kMaxLength = 10 + 1;
