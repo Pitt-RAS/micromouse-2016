@@ -1,12 +1,8 @@
 #ifndef MICROMOUSE_SENSORS_ENCODERS_H_
 #define MICROMOUSE_SENSORS_ENCODERS_H_
 
-#include <Arduino.h>
+// compatibility layer for existing code, superseded by Encoder
 
-float enc_left_front_read();
-float enc_left_back_read();
-float enc_right_front_read();
-float enc_right_back_read();
 void enc_left_front_write(float);
 void enc_left_back_write(float);
 void enc_right_front_write(float);

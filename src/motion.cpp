@@ -4,6 +4,7 @@
 
 // Dependencies within Micromouse
 #include "device/Motor.h"
+#include "device/sensors_encoders.h"
 #include "FreakOut.h"
 #include "SweptTurnProfile.h"
 #include "Logger.h"
@@ -15,7 +16,6 @@
 #include "RangeSensor.h"
 #include "RangeSensorContainer.h"
 #include "conf.h"
-#include "sensors_encoders.h"
 
 static float max_accel_straight = MAX_ACCEL_STRAIGHT;
 static float max_decel_straight = MAX_DECEL_STRAIGHT;

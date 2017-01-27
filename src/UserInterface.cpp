@@ -4,12 +4,12 @@
 
 // Dependencies within Micromouse
 #include "device/Motor.h"
+#include "device/sensors_encoders.h"
 #include "Orientation.h"
 #include "PIDController.h"
 #include "PlayMelodies.h"
 #include "RangeSensorContainer.h"
 #include "conf.h"
-#include "sensors_encoders.h"
 
 UserInterface gUserInterface;
 

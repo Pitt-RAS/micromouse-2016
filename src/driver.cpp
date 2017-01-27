@@ -13,6 +13,7 @@
 #include <Arduino.h>
 
 // Dependencies within Micromouse
+#include "device/sensors_encoders.h"
 #include "FreakOut.h"
 #include "Menu.h"
 #include "Orientation.h"
@@ -22,7 +23,6 @@
 #include "data.h"
 #include "motion.h"
 #include "parser.h"
-#include "sensors_encoders.h"
 #endif
 
 

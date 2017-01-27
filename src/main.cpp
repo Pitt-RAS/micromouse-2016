@@ -8,6 +8,7 @@
 
 // Dependencies within Micromouse
 #include "device/Motor.h"
+#include "device/sensors_encoders.h"
 #include "SweptTurnProfile.h"
 #include "Logger.h"
 #include "Menu.h"
@@ -22,7 +23,6 @@
 #include "driver.h"
 #include "motion.h"
 #include "parser.h"
-#include "sensors_encoders.h"
 #include "utility.h"
 
 #define PATCH_VER_MESSAGE "Pitt Micromouse patched library version mismatch"
