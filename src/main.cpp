@@ -69,7 +69,7 @@ void micromouse_main()
   pinMode(13, OUTPUT);
   digitalWrite(13, 0);
 
-  Serial.begin(BAUD);
+  Serial.begin(SERIAL_BAUD);
 
   Menu::begin();
 

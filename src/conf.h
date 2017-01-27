@@ -2,7 +2,7 @@
 #define CONF_H
 
 // Serial port baud rate
-#define BAUD 9600
+#define SERIAL_BAUD 9600
 
 // Define pin assignments for teensy3.2 on Rev2 PCB
 #define ENCODER_LF1_PIN 4
