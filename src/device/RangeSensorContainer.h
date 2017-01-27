@@ -2,8 +2,6 @@
 #define MICROMOUSE_RANGESENSORCONTAINER_H_
 
 #include <Arduino.h>
-
-// Dependencies within Micromouse
 #include "RangeSensor.h"
 
 enum Direction {

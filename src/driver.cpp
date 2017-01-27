@@ -14,11 +14,11 @@
 
 // Dependencies within Micromouse
 #include "device/Orientation.h"
+#include "device/RangeSensorContainer.h"
 #include "device/sensors_encoders.h"
 #include "FreakOut.h"
 #include "Menu.h"
 #include "PersistantStorage.h"
-#include "RangeSensorContainer.h"
 #include "conf.h"
 #include "data.h"
 #include "motion.h"
