@@ -1,13 +1,10 @@
-#include "FreakOut.h"
-
 #include <Arduino.h>
-
-// Dependencies within Micromouse
+#include "device/Motor.h"
 #include "Logger.h"
 #include "Menu.h"
 #include "PlayMelodies.h"
 #include "UserInterface.h"
-#include "motors.h"
+#include "FreakOut.h"
 
 void freakOut(const char* msg) {
   motor_lf.Set(0, 0);

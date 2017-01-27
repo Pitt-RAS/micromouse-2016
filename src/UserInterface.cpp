@@ -3,12 +3,12 @@
 #include <Arduino.h>
 
 // Dependencies within Micromouse
+#include "device/Motor.h"
 #include "Orientation.h"
 #include "PIDController.h"
 #include "PlayMelodies.h"
 #include "RangeSensorContainer.h"
 #include "conf.h"
-#include "motors.h"
 #include "sensors_encoders.h"
 
 UserInterface gUserInterface;
