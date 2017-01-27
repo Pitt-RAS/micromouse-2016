@@ -42,7 +42,7 @@ static void startDirection();
 static void speeds();
 static void targetCell();
 
-void setup()
+void micromouse_main()
 {
   // Set higher pwm frequency for smoother motor control.
   analogWriteFrequency(MOTOR_LF_PWM_PIN, 46875);
@@ -86,8 +86,6 @@ void setup()
 
   for (;;) menu.run();
 }
-
-void loop() {}
 
 void run()
 {
