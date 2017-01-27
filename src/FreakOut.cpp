@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include "device/Motor.h"
+#include "device/PlayMelodies.h"
 #include "Logger.h"
 #include "Menu.h"
-#include "PlayMelodies.h"
 #include "UserInterface.h"
 #include "FreakOut.h"
 

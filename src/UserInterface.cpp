@@ -5,9 +5,9 @@
 // Dependencies within Micromouse
 #include "device/Motor.h"
 #include "device/Orientation.h"
+#include "device/PlayMelodies.h"
 #include "device/sensors_encoders.h"
 #include "PIDController.h"
-#include "PlayMelodies.h"
 #include "RangeSensorContainer.h"
 #include "conf.h"
 

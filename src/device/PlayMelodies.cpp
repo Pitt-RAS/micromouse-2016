@@ -1,9 +1,6 @@
-#include "PlayMelodies.h"
-
 #include <Arduino.h>
-
-// Dependencies within Micromouse
-#include "conf.h"
+#include "../conf.h"
+#include "PlayMelodies.h"
 
 void speedRunMelody() { // time warning sound
   int tempo = 600; // tempo in beats per minute
