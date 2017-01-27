@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include "../conf.h"
-#include "../PIDController.h"
+#include "../legacy_motion/PIDController.h"
 #include "RangeSensorContainer.h"
 #include "Motor.h"
 #include "Orientation.h"

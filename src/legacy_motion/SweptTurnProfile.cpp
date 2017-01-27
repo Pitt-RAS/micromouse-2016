@@ -1,10 +1,7 @@
-#include "SweptTurnProfile.h"
-
 #include <cmath>
 #include <cstddef>
-
-// Dependencies within Micromouse
-#include "conf.h"
+#include "../conf.h"
+#include "SweptTurnProfile.h"
 
 static float calculateAccelerationDuration(float turn_angle,
                                            float inside_trigs,
