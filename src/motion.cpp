@@ -5,12 +5,12 @@
 // Dependencies within Micromouse
 #include "device/Motor.h"
 #include "device/Orientation.h"
+#include "device/UserInterface.h"
 #include "device/sensors_encoders.h"
 #include "FreakOut.h"
 #include "SweptTurnProfile.h"
 #include "Logger.h"
 #include "Menu.h"
-#include "UserInterface.h"
 #include "MotionCalc.h"
 #include "PIDController.h"
 #include "RangeSensor.h"

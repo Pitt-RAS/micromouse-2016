@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include "device/Motor.h"
 #include "device/PlayMelodies.h"
+#include "device/UserInterface.h"
 #include "Logger.h"
 #include "Menu.h"
-#include "UserInterface.h"
 #include "FreakOut.h"
 
 void freakOut(const char* msg) {

@@ -2,8 +2,6 @@
 #define MICROMOUSE_USER_INTERFACE_H
 
 #include <Arduino.h>
-
-// External libraries
 #include <LedDisplay.h>
 
 class UserInterface {

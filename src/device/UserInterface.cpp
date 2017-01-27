@@ -1,15 +1,12 @@
-#include "UserInterface.h"
-
 #include <Arduino.h>
-
-// Dependencies within Micromouse
-#include "device/Motor.h"
-#include "device/Orientation.h"
-#include "device/PlayMelodies.h"
-#include "device/sensors_encoders.h"
-#include "PIDController.h"
-#include "RangeSensorContainer.h"
-#include "conf.h"
+#include "../conf.h"
+#include "../PIDController.h"
+#include "../RangeSensorContainer.h"
+#include "Motor.h"
+#include "Orientation.h"
+#include "PlayMelodies.h"
+#include "sensors_encoders.h"
+#include "UserInterface.h"
 
 UserInterface gUserInterface;
 
