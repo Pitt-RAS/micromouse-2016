@@ -9,6 +9,7 @@
 // Dependencies within Micromouse
 #include "device/Motor.h"
 #include "device/Orientation.h"
+#include "device/PersistantStorage.h"
 #include "device/PlayMelodies.h"
 #include "device/RangeSensorContainer.h"
 #include "device/UserInterface.h"
@@ -17,7 +18,6 @@
 #include "Logger.h"
 #include "Menu.h"
 #include "Navigator.h"
-#include "PersistantStorage.h"
 #include "conf.h"
 #include "data.h"
 #include "driver.h"
