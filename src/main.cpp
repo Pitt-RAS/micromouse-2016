@@ -15,6 +15,7 @@
 #include "device/UserInterface.h"
 #include "device/sensors_encoders.h"
 #include "legacy_motion/motion.h"
+#include "Log.h"
 #include "Logger.h"
 #include "Menu.h"
 #include "Navigator.h"
@@ -68,9 +69,9 @@ void micromouse_main()
   pinMode(13, OUTPUT);
   digitalWrite(13, 0);
 
-  Serial.begin(SERIAL_BAUD);
-
   Menu::begin();
+
+  LOG_INIT();
 
   MenuItem items[] = {
     { "RUN", run },
