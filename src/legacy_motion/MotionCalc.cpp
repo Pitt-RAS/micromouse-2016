@@ -1,6 +1,5 @@
-#include "MotionCalc.h"
-
 #include <Arduino.h>
+#include "MotionCalc.h"
 
 MotionCalc::MotionCalc (float temp_dTot, float temp_vMax, float temp_vStart, float temp_vEnd,
                         float temp_max_accel, float temp_max_decel) {

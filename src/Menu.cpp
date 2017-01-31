@@ -1,7 +1,7 @@
 #include <Arduino.h>
+#include "device/PersistantStorage.h"
+#include "device/UserInterface.h"
 #include "driver.h"
-#include "PersistantStorage.h"
-#include "UserInterface.h"
 #include "Menu.h"
 
 static void doNothing() {};

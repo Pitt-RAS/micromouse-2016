@@ -1,9 +1,6 @@
-#include "motors.h"
-
 #include <Arduino.h>
-
-// Dependencies within Micromouse
-#include "conf.h"
+#include "../conf.h"
+#include "Motor.h"
 
 // input desired force and current speed
 static float idealMotorOutput(float force, float velocity) {

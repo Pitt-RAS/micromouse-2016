@@ -1,7 +1,5 @@
+#include "../conf.h"
 #include "RangeSensorContainer.h"
-
-// Dependencies within Micromouse
-#include "conf.h"
 
 RangeSensorContainer RangeSensors;
 

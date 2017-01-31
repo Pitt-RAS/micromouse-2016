@@ -1,12 +1,9 @@
-#include "utility.h"
-
 #include <Arduino.h>
-
-// Dependencies within Micromouse
+#include "device/RangeSensorContainer.h"
+#include "device/UserInterface.h"
 #include "Menu.h"
-#include "UserInterface.h"
-#include "RangeSensorContainer.h"
 #include "driver.h"
+#include "utility.h"
 
 bool knowsBestPath(size_t target_x, size_t target_y) {
   ContinuousRobotDriver driver;

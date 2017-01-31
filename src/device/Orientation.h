@@ -2,12 +2,8 @@
 #define MICROMOUSE_ORIENTATION_H_
 
 #include <Arduino.h>
-
-// External libraries
 #include <MPU9150PittMicromouse.h>
-
-// Dependencies within Micromouse
-#include "conf.h"
+#include "../conf.h"
 
 class Orientation {
   private:

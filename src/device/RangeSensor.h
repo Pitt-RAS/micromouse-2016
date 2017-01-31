@@ -2,9 +2,7 @@
 #define MICROMOUSE_RANGESENSOR_H_
 
 #include <Arduino.h>
-
-// Dependencies within Micromouse
-#include "conf.h"
+#include "../conf.h"
 
 class RangeSensor {
  private:

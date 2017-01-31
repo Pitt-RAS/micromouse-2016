@@ -13,16 +13,16 @@
 #include <Arduino.h>
 
 // Dependencies within Micromouse
+#include "device/Orientation.h"
+#include "device/PersistantStorage.h"
+#include "device/RangeSensorContainer.h"
+#include "device/sensors_encoders.h"
+#include "legacy_motion/motion.h"
 #include "FreakOut.h"
 #include "Menu.h"
-#include "Orientation.h"
-#include "PersistantStorage.h"
-#include "RangeSensorContainer.h"
 #include "conf.h"
 #include "data.h"
-#include "motion.h"
 #include "parser.h"
-#include "sensors_encoders.h"
 #endif
 
 

@@ -2,9 +2,7 @@
 #define MICROMOUSE_PERSISTANT_STORAGE_H_
 
 #include <Arduino.h>
-
-// Dependencies within Micromouse
-#include "data.h"
+#include "../data.h"
 
 class PersistantStorage {
   private:
