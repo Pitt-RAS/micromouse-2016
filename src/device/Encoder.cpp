@@ -9,17 +9,17 @@ Encoder gEncoderRB(9, 10);
 Encoder::Encoder(uint8_t pin1, uint8_t pin2) : encoder_(pin1, pin2)
 {}
 
-double Encoder::count()
+Motion::LengthUnit Encoder::displacement()
 {
-  return encoder_.extrapolate();
+  return Motion::LengthUnit::fromCounts(encoder_.extrapolate());
 }
 
-void Encoder::count(double value)
+void Encoder::displacement(Motion::LengthUnit value)
 {
-  encoder_.write(nearbyint(value));
+  encoder_.write(nearbyint(value.counts()));
 }
 
-double Encoder::countsPerSecond()
+Motion::LengthUnit Encoder::velocity()
 {
-  return encoder_.stepRate();
+  return Motion::LengthUnit::fromCounts(encoder_.stepRate());
 }

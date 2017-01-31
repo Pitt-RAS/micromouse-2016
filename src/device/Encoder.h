@@ -3,17 +3,17 @@
 
 #include <cstdint>
 #include <EncoderPittMicromouse.h>
+#include "../motion/units.h"
 
 class Encoder
 {
   public:
     Encoder(uint8_t pin1, uint8_t pin2);
 
-    // extrapolated
-    double count();
-    void count(double value);
+    Motion::LengthUnit displacement();
+    void displacement(Motion::LengthUnit value);
 
-    double countsPerSecond();
+    Motion::LengthUnit velocity();
 
   private:
     EncoderPittMicromouse encoder_;

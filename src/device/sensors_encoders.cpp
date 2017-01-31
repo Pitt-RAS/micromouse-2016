@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <cmath>
+#include "../motion/units.h"
 #include "Encoder.h"
 #include "sensors_encoders.h"
 
@@ -26,16 +27,15 @@ float  enc_right_back_extrapolate() { return extrapolate(gEncoderRB); }
 
 static void write(Encoder &encoder, float value)
 {
-  int16_t count = nearbyint(value / kMillimetersPerCount);
-  encoder.count(count);
+  encoder.displacement(Motion::LengthUnit::fromMeters(value / 1000.0));
 }
 
 static float velocity(Encoder &encoder)
 {
-  return kMillimetersPerCount * encoder.countsPerSecond();
+  return 1000.0 * encoder.velocity().meters();
 }
 
 static float extrapolate(Encoder &encoder)
 {
-  return kMillimetersPerCount * encoder.count();
+  return 1000.0 * encoder.displacement().meters();
 }
