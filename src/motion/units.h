@@ -1,6 +1,8 @@
 #ifndef UNITS_H
 #define UNITS_H
 
+#include <cmath>
+
 namespace Motion {
 
 // displacement reads as is
@@ -12,12 +14,19 @@ class LengthUnit
   public:
     static LengthUnit fromMeters(double value);
     static LengthUnit fromCells(double value);
+    static LengthUnit fromCounts(double value);
 
     double meters();
     double cells();
+    double counts();
 
   private:
-    double cells_;
+    static constexpr double kMetersPerCell = 0.18;
+    static constexpr double kMetersPerCount = 0.000653868;
+
+    LengthUnit(double meters);
+
+    double meters_;
 };
 
 // need to define which direction is positive
@@ -32,7 +41,11 @@ class AngleUnit
     double radians();
 
   private:
-    double radians_;
+    static constexpr double kDegreesPerRadian = M_PI / 180;
+
+    AngleUnit(double degrees);
+
+    double degrees_;
 };
 
 class TimeUnit
@@ -43,6 +56,8 @@ class TimeUnit
     double seconds();
 
   private:
+    TimeUnit(double seconds);
+
     double seconds_;
 };
 
