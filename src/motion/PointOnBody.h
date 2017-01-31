@@ -12,7 +12,10 @@ class PointOnBody
   public:
     PointOnBody(LengthUnit x_location, LengthUnit y_location);
 
-    LinearPoint &point(LinearRotationalPoint body_point);
+    LinearPoint point(LinearRotationalPoint body_point);
+
+  private:
+    const double kMetersPerRadian;
 };
 
 }
