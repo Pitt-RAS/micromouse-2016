@@ -13,9 +13,14 @@
 
 UserInterface gUserInterface;
 
+char gWorkaroundBuffer[9] = "--------";
+
 UserInterface::UserInterface()
     : display_(DISPLAY_DATA_PIN, DISPLAY_RS_PIN, DISPLAY_CLOCK_PIN,
-               DISPLAY_ENABLE_PIN, DISPLAY_RESET_PIN, DISPLAY_SIZE) {
+               DISPLAY_ENABLE_PIN, DISPLAY_RESET_PIN, DISPLAY_SIZE)
+{
+  // workaround for memory bug in older versions of LedDisplay library
+  display_.setString(gWorkaroundBuffer);
 }
 
 void UserInterface::showInt(int value, int d) {
