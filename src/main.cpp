@@ -69,7 +69,7 @@ void micromouse_main()
   pinMode(13, OUTPUT);
   digitalWrite(13, 0);
 
-  Menu::begin();
+  Turnable::setDefaultInitialDirection(PersistantStorage::getDefaultDirection());
 
   LOG_INIT();
 

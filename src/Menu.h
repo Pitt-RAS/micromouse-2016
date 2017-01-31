@@ -27,9 +27,6 @@ class MenuItem
 class Menu
 {
   public:
-    // one-time initialization that must be called before running any Menus
-    static void begin();
-
     // items array must be terminated with a "null" item
     Menu(const MenuItem items[], bool append_back_item = true);
 
