@@ -1,6 +1,10 @@
 #ifndef UNITS_H
 #define UNITS_H
 
+// disable Arduino macros
+#undef degrees
+#undef radians
+
 #include <cmath>
 
 namespace Motion {
