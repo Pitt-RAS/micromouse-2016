@@ -2,7 +2,7 @@
 #define SKID_STEER_CAR_H
 
 #include "Wheel.h"
-#include "BodyWithPoint.h"
+#include "PointOnBody.h"
 #include "Profile.h"
 
 namespace Motion {
@@ -10,7 +10,7 @@ namespace Motion {
 struct WheelOnBody
 {
   Wheel wheel;
-  BodyWithPoint body;
+  PointOnBody point;
 };
 
 template <size_t length>
