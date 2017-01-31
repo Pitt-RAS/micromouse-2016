@@ -15,10 +15,25 @@ This is an Arduino project for Teensy 3.1/3.2.
 In the code, we enforce 144 MHz. By default, this is disabled in
 Teensyduino. To enable this clock speed:
 
- 1. In your Arduino installation, find this file:
+ 1. Find your Arduino installation. Typical locations are:
 
-     `hardware/teensy/avr/boards.txt`
+     - `/usr/share/arduino` (Linux)
 
- 2. Uncomment this line:
+     - `/Applications/Arduino.app` (Mac)
+
+     - `C:\Program Files\arduino` (Windows)
+
+     - somewhere in your home directory (local installation)
+
+ 2. In your Arduino installation, find your Teensy `boards.txt` file.
+    Typical locations are:
+
+     - `hardware/teensy/avr/boards.txt`
+
+     - `Java/hardware/teensy/avr/boards.txt`
+
+ 3. Uncomment this line:
 
      ```teensy31.menu.speed.144=144 MHz (overclock)```
+
+ 4. Restart the Arduino IDE to pick up configuration changes.
