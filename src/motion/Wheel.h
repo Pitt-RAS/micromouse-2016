@@ -10,14 +10,20 @@ namespace Motion {
 class Wheel
 {
   public:
-    Wheel(Motor &motor, Encoder &Encoder);
+    Wheel(Motor &motor, Encoder &encoder);
 
     void reference(LinearPoint point);
     LinearPoint reference() const;
 
-    void update(TimeUnit dt);
+    void update(TimeUnit time);
 
     void reset();
+
+  private:
+    Motor &motor_;
+    Encoder &encoder_;
+
+    LinearPoint reference_ = LinearPoint::zero();
 };
 
 }
