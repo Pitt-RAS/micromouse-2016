@@ -2,6 +2,11 @@
 
 namespace Motion {
 
+LengthUnit LengthUnit::zero()
+{
+  return LengthUnit(0.0);
+}
+
 LengthUnit LengthUnit::fromMeters(double value)
 {
   return LengthUnit(value);
@@ -35,6 +40,11 @@ double LengthUnit::counts()
 LengthUnit::LengthUnit(double meters) : meters_(meters)
 {}
 
+AngleUnit AngleUnit::zero()
+{
+  return AngleUnit(0.0);
+}
+
 AngleUnit AngleUnit::fromDegrees(double value)
 {
   return AngleUnit(value);
@@ -57,6 +67,11 @@ double AngleUnit::radians()
 
 AngleUnit::AngleUnit(double degrees) : degrees_(degrees)
 {}
+
+TimeUnit TimeUnit::zero()
+{
+  return TimeUnit(0.0);
+}
 
 TimeUnit TimeUnit::fromSeconds(double value)
 {

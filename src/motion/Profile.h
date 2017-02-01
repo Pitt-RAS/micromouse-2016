@@ -6,11 +6,14 @@
 namespace Motion {
 
 template <typename UnitType>
-struct ProfilePoint
+class ProfilePoint
 {
-  UnitType displacement;
-  UnitType velocity;
-  UnitType acceleration;
+  public:
+    static ProfilePoint<UnitType> zero();
+
+    UnitType displacement;
+    UnitType velocity;
+    UnitType acceleration;
 };
 
 template <typename PointType>
@@ -23,10 +26,13 @@ class Profile
 typedef ProfilePoint<LengthUnit> LinearPoint;
 typedef ProfilePoint<AngleUnit> RotationalPoint;
 
-struct LinearRotationalPoint
+class LinearRotationalPoint
 {
-  LinearPoint linear_point;
-  RotationalPoint rotational_point;
+  public:
+    static LinearRotationalPoint zero();
+
+    LinearPoint linear_point;
+    RotationalPoint rotational_point;
 };
 
 typedef Profile<LinearPoint> LinearProfile;

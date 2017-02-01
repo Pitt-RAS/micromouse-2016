@@ -16,6 +16,8 @@ namespace Motion {
 class LengthUnit
 {
   public:
+    static LengthUnit zero();
+
     static LengthUnit fromMeters(double value);
     static LengthUnit fromCells(double value);
     static LengthUnit fromCounts(double value);
@@ -38,6 +40,8 @@ class LengthUnit
 class AngleUnit
 {
   public:
+    static AngleUnit zero();
+
     static AngleUnit fromDegrees(double value);
     static AngleUnit fromRadians(double value);
 
@@ -55,6 +59,7 @@ class AngleUnit
 class TimeUnit
 {
   public:
+    static TimeUnit zero();
     static TimeUnit fromSeconds(double value);
 
     double seconds();
