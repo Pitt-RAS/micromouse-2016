@@ -20,8 +20,9 @@ struct ManeuverConstraints
 
 struct Transition
 {
-  LengthUnit velocity;
-  const AngleUnit rotational_velocity = AngleUnit::fromRadians(0);
+  static const AngleUnit rotational_velocity;
+
+  LengthUnit linear_velocity;
 };
 
 class Maneuver
