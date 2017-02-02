@@ -34,8 +34,8 @@ class Maneuver
     virtual void run() = 0;
 
   protected:
-    void transition(Transition transition);
-    Transition transition();
+    static void transition(Transition transition);
+    static Transition transition();
 
   private:
     static Transition transition_;
