@@ -6,29 +6,60 @@
 
 namespace Motion {
 
+template <typename UnitType>
 struct TrapezoidalConstraints
 {
-  LengthUnit distance = LengthUnit::zero();
+  UnitType distance = UnitType::zero();
 
-  LengthUnit initial_velocity = LengthUnit::zero();
-  LengthUnit final_velocity = LengthUnit::zero();
+  UnitType initial_velocity = UnitType::zero();
+  UnitType final_velocity = UnitType::zero();
 
-  LengthUnit max_velocity = LengthUnit::zero();
+  UnitType max_velocity = UnitType::zero();
 
-  LengthUnit acceleration = LengthUnit::zero();
-  LengthUnit deceleration = LengthUnit::zero();
+  UnitType acceleration = UnitType::zero();
+  UnitType deceleration = UnitType::zero();
 };
 
-class TrapezoidalProfile : public LinearProfile
+template <typename UnitType>
+class TrapezoidalProfile : public Profile<ProfilePoint<UnitType>>
 {
   public:
-    TrapezoidalProfile(TrapezoidalConstraints constraints);
+    TrapezoidalProfile(TrapezoidalConstraints<UnitType> constraints);
 
-    virtual LinearPoint pointAtTime(TimeUnit time);
+    virtual ProfilePoint<UnitType> pointAtTime(TimeUnit time);
 
   private:
     MotionCalc legacy_implementation_;
 };
+
+template <typename UnitType>
+TrapezoidalProfile<UnitType>::TrapezoidalProfile(
+                                TrapezoidalConstraints<UnitType> constraints) :
+  legacy_implementation_(
+    constraints.distance.abstract(),
+    constraints.max_velocity.abstract(),
+    constraints.initial_velocity.abstract(),
+    constraints.final_velocity.abstract(),
+    constraints.acceleration.abstract(),
+    constraints.deceleration.abstract()
+  )
+{}
+
+template <typename UnitType>
+ProfilePoint<UnitType> TrapezoidalProfile<UnitType>::pointAtTime(TimeUnit time)
+{
+  double seconds = time.seconds();
+
+  double displacement = legacy_implementation_.idealDistance(seconds);
+  double     velocity = legacy_implementation_.idealVelocity(seconds);
+  double acceleration = legacy_implementation_.idealAccel(seconds);
+
+  return {
+    UnitType::fromAbstract(displacement),
+    UnitType::fromAbstract(velocity),
+    UnitType::fromAbstract(acceleration)
+  };
+}
 
 }
 
