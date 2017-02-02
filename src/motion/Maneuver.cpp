@@ -6,9 +6,14 @@ namespace Motion {
 
 const AngleUnit Transition::rotational_velocity = AngleUnit::zero();
 
-void Maneuver::transition(Transition transition)
+ManeuverConstraints Maneuver::constraints()
 {
-  transition_ = transition;
+  return constraints_;
+}
+
+void Maneuver::constraints(ManeuverConstraints constraints)
+{
+  constraints_ = constraints;
 }
 
 Transition Maneuver::transition()
@@ -16,4 +21,8 @@ Transition Maneuver::transition()
   return transition_;
 }
 
+void Maneuver::transition(Transition transition)
+{
+  transition_ = transition;
+}
 }

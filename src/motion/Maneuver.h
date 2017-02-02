@@ -28,16 +28,18 @@ struct Transition
 class Maneuver
 {
   public:
-    // should be protected by a lock, to be discussed
-    static ManeuverConstraints constraints;
-
     virtual void run() = 0;
 
   protected:
-    static void transition(Transition transition);
+    // will have public mechanism for setting constraints and obtaining lock
+    static ManeuverConstraints constraints();
+    static void constraints(ManeuverConstraints constraints);
+
     static Transition transition();
+    static void transition(Transition transition);
 
   private:
+    static ManeuverConstraints constraints_;
     static Transition transition_;
 };
 
