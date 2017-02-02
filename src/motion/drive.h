@@ -12,7 +12,7 @@ struct DriveOptions
   bool use_gyro = true;
 };
 
-void drive(DriveOptions options, LinearRotationalProfile profile);
+void drive(DriveOptions &options, LinearRotationalProfile &profile);
 
 }
 
