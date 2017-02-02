@@ -7,6 +7,11 @@ LengthUnit LengthUnit::zero()
   return LengthUnit(0.0);
 }
 
+LengthUnit LengthUnit::fromAbstract(double value)
+{
+  return fromMeters(value);
+}
+
 LengthUnit LengthUnit::fromMeters(double value)
 {
   return LengthUnit(value);
@@ -20,6 +25,11 @@ LengthUnit LengthUnit::fromCells(double value)
 LengthUnit LengthUnit::fromCounts(double value)
 {
   return LengthUnit(kMetersPerCount * value);
+}
+
+double LengthUnit::abstract()
+{
+  return meters();
 }
 
 double LengthUnit::meters()
@@ -45,6 +55,11 @@ AngleUnit AngleUnit::zero()
   return AngleUnit(0.0);
 }
 
+AngleUnit AngleUnit::fromAbstract(double value)
+{
+  return fromDegrees(value);
+}
+
 AngleUnit AngleUnit::fromDegrees(double value)
 {
   return AngleUnit(value);
@@ -53,6 +68,11 @@ AngleUnit AngleUnit::fromDegrees(double value)
 AngleUnit AngleUnit::fromRadians(double value)
 {
   return AngleUnit(kDegreesPerRadian * value);
+}
+
+double AngleUnit::abstract()
+{
+  return degrees();
 }
 
 double AngleUnit::degrees()
@@ -73,9 +93,19 @@ TimeUnit TimeUnit::zero()
   return TimeUnit(0.0);
 }
 
+TimeUnit TimeUnit::fromAbstract(double value)
+{
+  return fromSeconds(value);
+}
+
 TimeUnit TimeUnit::fromSeconds(double value)
 {
   return TimeUnit(value);
+}
+
+double TimeUnit::abstract()
+{
+  return seconds();
 }
 
 double TimeUnit::seconds()
