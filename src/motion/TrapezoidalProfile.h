@@ -8,15 +8,15 @@ namespace Motion {
 
 struct TrapezoidalConstraints
 {
-  LengthUnit distance;
+  LengthUnit distance = LengthUnit::zero();
 
-  LengthUnit initial_velocity;
-  LengthUnit final_velocity;
+  LengthUnit initial_velocity = LengthUnit::zero();
+  LengthUnit final_velocity = LengthUnit::zero();
 
-  LengthUnit max_velocity;
+  LengthUnit max_velocity = LengthUnit::zero();
 
-  LengthUnit acceleration;
-  LengthUnit deceleration;
+  LengthUnit acceleration = LengthUnit::zero();
+  LengthUnit deceleration = LengthUnit::zero();
 };
 
 class TrapezoidalProfile : public LinearProfile
