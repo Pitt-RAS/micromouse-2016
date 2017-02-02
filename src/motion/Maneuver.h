@@ -1,6 +1,7 @@
 #ifndef MANEUVER_H
 #define MANEUVER_H
 
+#include "TrapezoidalProfile.h"
 #include "units.h"
 
 namespace Motion {
@@ -43,12 +44,30 @@ class Maneuver
     static Transition transition_;
 };
 
-class ForwardManeuver : public Maneuver
+class Straight : public Maneuver
 {
   public:
-    ForwardManeuver(LengthUnit length);
+    Straight(LengthUnit length);
 
     virtual void run();
+
+  protected:
+    Straight(LengthUnit length, LengthUnit final_velocity);
+
+  private:
+    class Profile : public LinearRotationalProfile
+    {
+      public:
+        Profile(TrapezoidalProfile<LengthUnit> linear_component);
+
+        virtual LinearRotationalPoint pointAtTime(TimeUnit time);
+
+      private:
+        TrapezoidalProfile<LengthUnit> linear_component_;
+    };
+
+    const LengthUnit length_;
+    const LengthUnit final_velocity_;
 };
 
 class PivotManeuver : public Maneuver
