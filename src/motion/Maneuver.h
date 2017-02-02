@@ -9,13 +9,13 @@ struct ManeuverConstraints
 {
   // consider adding error checking to these numbers via setters/getters
 
-  LengthUnit max_forward_velocity;
-  LengthUnit max_diagonal_velocity;
+  LengthUnit max_forward_velocity = LengthUnit::zero();
+  LengthUnit max_diagonal_velocity = LengthUnit::zero();
 
-  LengthUnit sweep_velocity;
+  LengthUnit sweep_velocity = LengthUnit::zero();
 
-  LengthUnit acceleration;
-  LengthUnit deceleration;
+  LengthUnit acceleration = LengthUnit::zero();
+  LengthUnit deceleration = LengthUnit::zero();
 };
 
 struct Transition
