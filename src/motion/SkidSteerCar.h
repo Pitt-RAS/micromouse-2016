@@ -17,7 +17,7 @@ template <size_t length>
 class SkidSteerCar
 {
   public:
-    SkidSteerCar(WheelOnBody wheels_on_body[length]);
+    SkidSteerCar(WheelOnBody *wheels_on_body);
 
     void reference(LinearRotationalPoint point);
     LinearRotationalPoint reference() const;
@@ -27,13 +27,13 @@ class SkidSteerCar
     void reset();
 
   private:
-    WheelOnBody wheels_on_body_[];
+    WheelOnBody *wheels_on_body_;
 
     LinearRotationalPoint reference_ = LinearRotationalPoint::zero();
 };
 
 template <size_t length>
-SkidSteerCar<length>::SkidSteerCar(WheelOnBody wheels_on_body[length]) :
+SkidSteerCar<length>::SkidSteerCar(WheelOnBody wheels_on_body[]) :
   wheels_on_body_(wheels_on_body)
 {}
 
