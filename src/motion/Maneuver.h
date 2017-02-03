@@ -74,7 +74,7 @@ class Straight : public Maneuver
     const LengthUnit final_velocity_;
 };
 
-class PivotManeuver : public Maneuver
+class Pivot : public Maneuver
 {
   public:
     struct Angle {
@@ -82,12 +82,27 @@ class PivotManeuver : public Maneuver
       enum { left, right } direction;
     };
 
-    PivotManeuver(Angle angle);
+    Pivot(Angle angle);
 
-    // for the possibility that we need to pivot for small corrections
-    PivotManeuver(AngleUnit angle);
+    Pivot(AngleUnit angle);
 
     virtual void run();
+
+  private:
+    class Profile : public LinearRotationalProfile
+    {
+      public:
+        Profile(TrapezoidalProfile<AngleUnit> rotational_component);
+
+        virtual LinearRotationalPoint pointAtTime(TimeUnit time);
+
+      private:
+        TrapezoidalProfile<AngleUnit> rotational_component_;
+    };
+
+    AngleUnit toContinuousAngle(Angle discrete_angle);
+
+    const AngleUnit angle_;
 };
 
 class SweepManeuver : public Maneuver
