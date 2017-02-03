@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include <I2CdevPittMicromouse.h>
 #include <MPU9150PittMicromouse.h>
-#include "../FreakOut.h"
-#include "../Logger.h"
+#include "../user_interaction/FreakOut.h"
+#include "../user_interaction/Logger.h"
 #include "../conf.h"
 #include "Orientation.h"
 

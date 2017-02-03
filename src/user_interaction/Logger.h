@@ -3,9 +3,8 @@
 
 #include <Arduino.h>
 
-// Dependencies within Micromouse
-#include "conf.h"
-#include "data.h"
+#include "../conf.h"
+#include "../data.h"
 
 class Logger {
  private:
