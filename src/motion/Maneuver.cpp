@@ -76,6 +76,11 @@ LinearRotationalPoint Straight::Profile::pointAtTime(TimeUnit time)
   };
 }
 
+TimeUnit Straight::Profile::finalTime()
+{
+  return linear_component_.finalTime();
+}
+
 Start::Start() : Straight(LengthUnit::fromCells(0.5))
 {}
 
@@ -148,6 +153,11 @@ LinearRotationalPoint Pivot::Profile::pointAtTime(TimeUnit time)
   };
 }
 
+TimeUnit Pivot::Profile::finalTime()
+{
+  return rotational_component_.finalTime();
+}
+
 const SweptTurnProfile Sweep::Profile::kLegacyProfile45 (0.8700,  45.0);
 const SweptTurnProfile Sweep::Profile::kLegacyProfile90 (0.8400,  90.0);
 const SweptTurnProfile Sweep::Profile::kLegacyProfile135(0.8975, 135.0);
@@ -200,6 +210,11 @@ LinearRotationalPoint Sweep::Profile::pointAtTime(TimeUnit time)
   };
 
   return { linear_component, rotational_component };
+}
+
+TimeUnit Sweep::Profile::finalTime()
+{
+  return TimeUnit::fromSeconds(legacy_implementation_.getTotalTime() / 1e6);
 }
 
 const SweptTurnProfile &Sweep::Profile::toLegacyImplementation(Angle angle)

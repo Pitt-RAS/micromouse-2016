@@ -66,6 +66,7 @@ class Straight : public Maneuver
         Profile(TrapezoidalProfile<LengthUnit> linear_component);
 
         virtual LinearRotationalPoint pointAtTime(TimeUnit time);
+        virtual TimeUnit finalTime();
 
       private:
         TrapezoidalProfile<LengthUnit> linear_component_;
@@ -108,6 +109,7 @@ class Pivot : public Maneuver
         Profile(TrapezoidalProfile<AngleUnit> rotational_component);
 
         virtual LinearRotationalPoint pointAtTime(TimeUnit time);
+        virtual TimeUnit finalTime();
 
       private:
         TrapezoidalProfile<AngleUnit> rotational_component_;
@@ -137,6 +139,7 @@ class Sweep : public Maneuver
         Profile(Angle angle, LengthUnit velocity);
 
         virtual LinearRotationalPoint pointAtTime(TimeUnit time);
+        virtual TimeUnit finalTime();
 
       private:
         static const SweptTurnProfile kLegacyProfile45;

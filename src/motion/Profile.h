@@ -21,6 +21,7 @@ class Profile
 {
   public:
     virtual PointType pointAtTime(TimeUnit time) = 0;
+    virtual TimeUnit finalTime() = 0;
 };
 
 typedef ProfilePoint<LengthUnit> LinearPoint;

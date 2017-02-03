@@ -27,6 +27,7 @@ class TrapezoidalProfile : public Profile<ProfilePoint<UnitType>>
     TrapezoidalProfile(TrapezoidalConstraints<UnitType> constraints);
 
     virtual ProfilePoint<UnitType> pointAtTime(TimeUnit time);
+    virtual TimeUnit finalTime();
 
   private:
     MotionCalc legacy_implementation_;
@@ -59,6 +60,12 @@ ProfilePoint<UnitType> TrapezoidalProfile<UnitType>::pointAtTime(TimeUnit time)
     UnitType::fromAbstract(velocity),
     UnitType::fromAbstract(acceleration)
   };
+}
+
+template <typename UnitType>
+TimeUnit TrapezoidalProfile<UnitType>::finalTime()
+{
+  return TimeUnit::fromSeconds(legacy_implementation_.getTotalTime() / 1e6);
 }
 
 }
