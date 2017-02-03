@@ -28,12 +28,6 @@ MenuItem::Function MenuItem::function() const
   return function_;
 }
 
-void Menu::begin()
-{
-  gUserInterface.begin();
-  Turnable::setDefaultInitialDirection(PersistantStorage::getDefaultDirection());
-}
-
 Menu::Menu(const MenuItem items[], bool append_back_item) :
   length_(countLength(items) + 1), show_back_item_(append_back_item)
 {

@@ -16,6 +16,8 @@ UserInterface::UserInterface()
     : display_(DISPLAY_DATA_PIN, DISPLAY_RS_PIN, DISPLAY_CLOCK_PIN,
                DISPLAY_ENABLE_PIN, DISPLAY_RESET_PIN, DISPLAY_SIZE)
 {
+  begin();
+
   // workaround for memory bug in older versions of LedDisplay library
   display_.setString(gWorkaroundBuffer);
 }
