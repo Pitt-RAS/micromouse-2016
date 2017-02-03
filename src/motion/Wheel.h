@@ -23,7 +23,9 @@ class Wheel
     Motor &motor_;
     Encoder &encoder_;
 
-    LinearPoint reference_ = LinearPoint::zero();
+    LinearPoint reference_ = {
+      LengthUnit::zero(), LengthUnit::zero(), LengthUnit::zero()
+    };
 };
 
 }
