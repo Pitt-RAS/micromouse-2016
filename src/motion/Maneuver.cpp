@@ -45,8 +45,8 @@ void Straight::run()
   trapezoidal_constraints.initial_velocity = transition().linear_velocity;
   trapezoidal_constraints.final_velocity = final_velocity_;
   trapezoidal_constraints.max_velocity = constraints().max_forward_velocity;
-  trapezoidal_constraints.acceleration = constraints().acceleration;
-  trapezoidal_constraints.deceleration = constraints().deceleration;
+  trapezoidal_constraints.acceleration = constraints().linear_acceleration;
+  trapezoidal_constraints.deceleration = constraints().linear_deceleration;
 
   TrapezoidalProfile<LengthUnit> trapezoidal_profile(trapezoidal_constraints);
   Straight::Profile profile(trapezoidal_profile);
