@@ -75,6 +75,18 @@ class Straight : public Maneuver
     const bool zero_final_velocity_;
 };
 
+class Start : public Straight
+{
+  public:
+    Start();
+};
+
+class Stop : public Straight
+{
+  public:
+    Stop();
+};
+
 class Pivot : public Maneuver
 {
   public:

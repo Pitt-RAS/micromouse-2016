@@ -76,6 +76,12 @@ LinearRotationalPoint Straight::Profile::pointAtTime(TimeUnit time)
   };
 }
 
+Start::Start() : Straight(LengthUnit::fromCells(0.5))
+{}
+
+Stop::Stop() : Straight(LengthUnit::fromCells(0.5), true)
+{}
+
 Pivot::Pivot(Angle angle) : Pivot(toContinuousAngle(angle))
 {}
 
