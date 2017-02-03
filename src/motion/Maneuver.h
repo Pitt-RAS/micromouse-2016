@@ -1,6 +1,7 @@
 #ifndef MANEUVER_H
 #define MANEUVER_H
 
+#include "../legacy_motion/SweptTurnProfile.h"
 #include "TrapezoidalProfile.h"
 #include "units.h"
 
@@ -105,7 +106,7 @@ class Pivot : public Maneuver
     const AngleUnit angle_;
 };
 
-class SweepManeuver : public Maneuver
+class Sweep : public Maneuver
 {
   public:
     struct Angle {
@@ -113,9 +114,33 @@ class SweepManeuver : public Maneuver
       enum { left, right } direction;
     };
 
-    SweepManeuver(Angle angle);
+    Sweep(Angle angle);
 
     virtual void run();
+
+  private:
+    class Profile : public LinearRotationalProfile
+    {
+      public:
+        Profile(Angle angle, LengthUnit velocity);
+
+        virtual LinearRotationalPoint pointAtTime(TimeUnit time);
+
+      private:
+        static const SweptTurnProfile kLegacyProfile45;
+        static const SweptTurnProfile kLegacyProfile90;
+        static const SweptTurnProfile kLegacyProfile135;
+        static const SweptTurnProfile kLegacyProfile180;
+
+        const SweptTurnProfile &legacy_implementation_;
+
+        LengthUnit radius_ = LengthUnit::fromCells(0.5); // is this right?
+        LengthUnit velocity_;
+
+        const SweptTurnProfile &toLegacyImplementation(Angle angle);
+    };
+
+    Angle angle_;
 };
 
 }
