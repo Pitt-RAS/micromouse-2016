@@ -29,8 +29,7 @@ void Maneuver::transition(Transition transition)
   transition_ = transition;
 }
 
-Straight::Straight(LengthUnit length) :
-  Straight(length, constraints().sweep_velocity)
+Straight::Straight(LengthUnit length) : Straight(length, false)
 {}
 
 void Straight::run()
@@ -43,9 +42,12 @@ void Straight::run()
 
   TrapezoidalConstraints<LengthUnit> trapezoidal_constraints;
 
+  LengthUnit final_velocity = zero_final_velocity_ ?
+                            LengthUnit::zero() : constraints().sweep_velocity;
+
   trapezoidal_constraints.distance = length_;
   trapezoidal_constraints.initial_velocity = transition().linear_velocity;
-  trapezoidal_constraints.final_velocity = final_velocity_;
+  trapezoidal_constraints.final_velocity = final_velocity;
   trapezoidal_constraints.max_velocity = constraints().max_forward_velocity;
   trapezoidal_constraints.acceleration = constraints().linear_acceleration;
   trapezoidal_constraints.deceleration = constraints().linear_deceleration;
@@ -58,8 +60,8 @@ void Straight::run()
   transition({ trapezoidal_constraints.final_velocity });
 }
 
-Straight::Straight(LengthUnit length, LengthUnit final_velocity) :
-  length_(length), final_velocity_(final_velocity)
+Straight::Straight(LengthUnit length, bool zero_final_velocity) :
+  length_(length), zero_final_velocity_(zero_final_velocity)
 {}
 
 Straight::Profile::Profile(TrapezoidalProfile<LengthUnit> linear_component) :

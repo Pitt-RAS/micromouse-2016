@@ -57,7 +57,7 @@ class Straight : public Maneuver
     virtual void run();
 
   protected:
-    Straight(LengthUnit length, LengthUnit final_velocity);
+    Straight(LengthUnit length, bool zero_final_velocity);
 
   private:
     class Profile : public LinearRotationalProfile
@@ -72,7 +72,7 @@ class Straight : public Maneuver
     };
 
     const LengthUnit length_;
-    const LengthUnit final_velocity_;
+    const bool zero_final_velocity_;
 };
 
 class Pivot : public Maneuver
