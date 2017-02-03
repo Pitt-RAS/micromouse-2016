@@ -1,5 +1,8 @@
-#include <Arduino.h>
+#include <cstdlib>
+#include <cmath>
 #include "MotionCalc.h"
+
+#define sq(x) (x) * (x)
 
 MotionCalc::MotionCalc (float temp_dTot, float temp_vMax, float temp_vStart, float temp_vEnd,
                         float temp_max_accel, float temp_max_decel) {
