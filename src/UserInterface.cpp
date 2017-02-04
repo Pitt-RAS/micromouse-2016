@@ -111,6 +111,8 @@ int UserInterface::getInt(int min, int max, int initial, int d) {
     backPressed = buttonBackPressed();
   }
 
+  motor_lb.Set(0, 0);
+
   if (okPressed) {
     delay(100);
     while (buttonOkPressed()) {
@@ -167,6 +169,8 @@ size_t UserInterface::getString(const char* strings[], size_t strings_len, size_
     okPressed = buttonOkPressed();
     backPressed = buttonBackPressed();
   }
+
+  motor_lb.Set(0, 0);
 
   if (okPressed) {
     delay(100);
