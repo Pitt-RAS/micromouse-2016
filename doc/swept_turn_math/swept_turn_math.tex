@@ -1,0 +1,56 @@
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry} 
+\usepackage{amsmath, amsthm, amssymb, amsfonts, enumitem, tikz, graphicx, subcaption}
+
+\begin{document}
+
+\title{Swept Turn Math}
+\date{}
+\maketitle
+
+\section{Assumptions}
+Our swept turns are based on the assumption that we want to use a constant friction force $F$ (the max our wheels can handle) throughout the turn, while maintaining a constant forward velocity $v$.  Each wheel will have a component of the friction force in the sideways direction (due to the centripetal force required to keep us moving in a circle), let's call this $F_c$.  We also have a component in the forward/backward direction because to have an angular acceleration, one side of the robot has to accelerate forward and the other has to accelerate backward.  Let's call this forward/backward component $F_a$.
+
+Let $m$ be the robot's mass, $I$ its moment of inertia, and $r$ its radius.
+
+\section{Calculations}
+So the total friction force is
+$$ F^2 = F_c^2 + F_a^2 = \left( m \dot{\theta} v \right)^2 + \left( \frac{I \ddot{\theta}}{r} \right)^2 $$
+$$ \implies \left( \frac{F}{m v} \right)^2 = \dot{\theta}^2 + \left( \frac{I}{m v r} \ddot{\theta} \right)^2 $$
+
+Let $t_0 = \frac{I}{m v r}$ and the nondimensionalized time be $\tau = t/t_0$. Then we have
+$$ \left( \frac{F}{m v} \right)^2 = \frac{1}{t_0^2} \left( \frac{d \theta}{d \tau} \right)^2 + \frac{1}{t_0^2} \left( \frac{d^2 \theta}{d \tau^2} \right)^2 $$
+$$ \implies \left( \frac{F t_0}{m v} \right)^2 = \left( \frac{d \theta}{d \tau} \right)^2 + \left( \frac{d^2 \theta}{d \tau^2} \right)^2 $$
+
+Let $\eta = F t_0 / m v$, so
+$$ \eta^2 = \left( \frac{d \theta}{d \tau} \right)^2 + \left( \frac{d^2 \theta}{d \tau^2} \right)^2 $$
+$$ \implies \frac{d^2 \theta}{d \tau^2} = \sqrt{\eta^2 - \left( \frac{d \theta}{d \tau} \right)^2} $$
+
+Let $ \psi(\tau) = \sin^{-1} \left( \frac{1}{\eta} \frac{d \theta}{d \tau} \right) \implies \frac{d \theta}{d \tau} = \eta \sin \psi$, so
+$$ \frac{d}{d \tau} [\eta \sin \psi] = \sqrt{\eta^2 - \left( \eta \sin \psi \right)^2} \implies \frac{d}{d \tau} [\sin \psi] = \sqrt{1 - \left( \sin \psi \right)^2} = \cos \psi $$
+
+Because $\frac{d}{d \tau}[\sin \psi] = \cos (\psi) \frac{d \psi}{d \tau}$, we have that $\frac{d \psi}{d \tau} = 1$, so $\psi(\tau) = \tau + C$. $C$ must be 0 because the rotational velocity is 0 at time 0, which means that $\frac{d \theta}{d \tau} = \eta \sin \psi = \eta \sin (\tau + C)$ is 0 at $\tau = 0$.
+
+So we have that
+$$ \frac{d \theta}{d \tau} = \eta \sin \tau $$
+
+Integrating this, we get that
+$$ \theta(\tau) = \eta (C - \cos \tau) $$
+
+From the requirement that $\theta(0) = 0$, we get that $C = 1$.
+
+So $\theta(t) = \eta (1 - \cos (t/t_0))$.
+
+This stops working when $\tau = \pi/2$, so our max rotational velocity is $\eta / t_0 = F/m v$ as expected.
+
+\section{Results}
+
+Let $ t_0 = I / m v r $ and $ \eta = F t_0 / m v $.
+Until time $t = t_0 \pi / 2$:
+$$ \theta(t) = \eta (1 - \cos (t / t_0)) $$
+$$ \omega(t) = (\eta / t_0) \sin (t / t_0) $$
+$$ \alpha(t) = (\eta / t_0^2) \cos (t / t_0) $$
+
+At that time, we have hit our maximum safe rotational velocity.  After that time, we can continue rotation at constant rotational velocity, or we can decelerate using an inverted version of this acceleration profile.
+
+\end{document}
