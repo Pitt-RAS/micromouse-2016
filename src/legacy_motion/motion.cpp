@@ -818,6 +818,8 @@ void motion_hold(unsigned int time) {
     orientation = Orientation::getInstance();
   }
 
+  orientation->handler_update_ = false;
+
   while (currentTime / 1000 < time) {
     orientation->update();
     errorFrontLeft = enc_left_front_extrapolate();
@@ -838,6 +840,12 @@ void motion_hold(unsigned int time) {
     logger.logMotionType('h');
     logger.nextCycle();
   }
+
+  uint8_t old_SREG = SREG;
+  noInterrupts();
+  orientation->update();
+  orientation->handler_update_ = true;
+  SREG = old_SREG;
 
   motor_lf.Set(0, 0);
   motor_rf.Set(0, 0);
@@ -860,12 +868,14 @@ void motion_hold_range(int setpoint, unsigned int time) {
     orientation = Orientation::getInstance();
   }
 
+  orientation->handler_update_ = false;
+
   while (currentTime / 1000 < time) {
     orientation->update();
 
     RangeSensors.frontLeftSensor.updateRange();
     RangeSensors.frontRightSensor.updateRange();
-    
+
     leftFrontOutput = left_front_PID.Calculate(
         -RangeSensors.frontLeftSensor.getRange(),
         -setpoint);
@@ -901,6 +911,12 @@ void motion_hold_range(int setpoint, unsigned int time) {
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
+
+  uint8_t old_SREG = SREG;
+  noInterrupts();
+  orientation->update();
+  orientation->handler_update_ = true;
+  SREG = old_SREG;
 
   motor_lf.Set(0, 0);
   motor_rf.Set(0, 0);
