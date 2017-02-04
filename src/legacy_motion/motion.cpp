@@ -31,15 +31,15 @@ static float max_vel_rotate = MAX_VEL_ROTATE;
 
 static Orientation* orientation = NULL;
 
-// instantiate the turn lookup tables
-SweptTurnProfile turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
-                              SWEPT_TURN_45_ANGLE, 0.001);
-SweptTurnProfile turn_90_table(SWEPT_TURN_90_FORWARD_SPEED,
-                              SWEPT_TURN_90_ANGLE, 0.001);
-SweptTurnProfile turn_135_table(SWEPT_TURN_135_FORWARD_SPEED,
-                              SWEPT_TURN_135_ANGLE, 0.001);
-SweptTurnProfile turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
-                              SWEPT_TURN_180_ANGLE, 0.001);
+// instantiate the turn profiles
+const SweptTurnProfile turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
+                                     SWEPT_TURN_45_ANGLE);
+const SweptTurnProfile turn_90_table(SWEPT_TURN_90_FORWARD_SPEED,
+                                     SWEPT_TURN_90_ANGLE);
+const SweptTurnProfile turn_135_table(SWEPT_TURN_135_FORWARD_SPEED,
+                                      SWEPT_TURN_135_ANGLE);
+const SweptTurnProfile turn_180_table(SWEPT_TURN_180_FORWARD_SPEED,
+                                      SWEPT_TURN_180_ANGLE);
 
 void motion_forward(float distance, float current_speed, float exit_speed) {
   // HACK
@@ -656,7 +656,7 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
   int move_time_scaled = 0;
   float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
   float total_time;
-  SweptTurnProfile* turn_table = NULL;
+  const SweptTurnProfile* turn_table = NULL;
 
   if (orientation == NULL) {
     orientation = Orientation::getInstance();
@@ -727,7 +727,7 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
   orientation->handler_update_ = false;
 
   // execute motion
-  while (move_time_scaled < total_time) {
+  while (move_time_scaled < total_time * 1000000) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     orientation->update();
 
@@ -735,7 +735,8 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
     
     idealDistance = move_time * speed / 1000;
 
-    rotation_offset = sign * turn_table->getOffsetAtMicros(move_time_scaled);
+    rotation_offset = MM_BETWEEN_WHEELS / 2
+        * sign * turn_table->getAngle(move_time_scaled / 1000000.0);
 
     gyro_correction = gyro_PID.Calculate(
         orientation->getHeading() * distancePerDegree,
