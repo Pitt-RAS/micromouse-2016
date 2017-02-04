@@ -1,11 +1,11 @@
 #include <Arduino.h>
 #include "../conf.h"
-#include "../legacy_motion/PIDController.h"
 #include "../device/RangeSensorContainer.h"
 #include "../device/Motor.h"
 #include "../device/Orientation.h"
-#include "PlayMelodies.h"
 #include "../device/sensors_encoders.h"
+#include "../legacy_motion/PIDController.h"
+#include "PlayMelodies.h"
 #include "UserInterface.h"
 
 UserInterface gUserInterface;

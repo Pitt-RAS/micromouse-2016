@@ -1,10 +1,10 @@
 #include <Arduino.h>
 #include <I2CdevPittMicromouse.h>
 #include <MPU9150PittMicromouse.h>
+#include "Orientation.h"
+#include "../conf.h"
 #include "../user_interaction/FreakOut.h"
 #include "../user_interaction/Logger.h"
-#include "../conf.h"
-#include "Orientation.h"
 
 volatile bool Orientation::mpu_interrupt_ = false;
 Orientation* Orientation::instance_ = NULL;
