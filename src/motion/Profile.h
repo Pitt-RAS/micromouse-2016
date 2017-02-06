@@ -1,5 +1,5 @@
-#ifndef SPATIAL_PROFILE_H
-#define SPATIAL_PROFILE_H
+#ifndef PROFILE_H
+#define PROFILE_H
 
 #include "units.h"
 
