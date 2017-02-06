@@ -37,23 +37,23 @@ template <typename UnitType>
 TrapezoidalProfile<UnitType>::TrapezoidalProfile(
                                 TrapezoidalConstraints<UnitType> constraints) :
   legacy_implementation_(
-    constraints.distance.abstract(),
-    constraints.max_velocity.abstract(),
-    constraints.initial_velocity.abstract(),
-    constraints.final_velocity.abstract(),
-    constraints.acceleration.abstract(),
-    constraints.deceleration.abstract()
+    1000 * constraints.distance.abstract(),
+           constraints.max_velocity.abstract(),
+           constraints.initial_velocity.abstract(),
+           constraints.final_velocity.abstract(),
+           constraints.acceleration.abstract(),
+           constraints.deceleration.abstract()
   )
 {}
 
 template <typename UnitType>
 ProfilePoint<UnitType> TrapezoidalProfile<UnitType>::pointAtTime(TimeUnit time)
 {
-  double seconds = time.seconds();
+  double microseconds = 1e6 * time.seconds();
 
-  double displacement = legacy_implementation_.idealDistance(seconds);
-  double     velocity = legacy_implementation_.idealVelocity(seconds);
-  double acceleration = legacy_implementation_.idealAccel(seconds);
+  double displacement = legacy_implementation_.idealDistance(microseconds);
+  double     velocity = legacy_implementation_.idealVelocity(microseconds);
+  double acceleration = legacy_implementation_.idealAccel(microseconds);
 
   return {
     UnitType::fromAbstract(displacement),
