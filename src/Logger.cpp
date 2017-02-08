@@ -37,35 +37,35 @@ void Logger::logTertiaryPID(float value) {
 void Logger::nextCycle() {
   cycles_++;
 
-  if (forward_accel_log_.size() < cycles_) {
+  if (forward_accel_log_.getSize() < cycles_) {
     forward_accel_log_.enqueue(0);
   }
 
-  if (radial_accel_log_.size() < cycles_) {
+  if (radial_accel_log_.getSize() < cycles_) {
     radial_accel_log_.enqueue(0);
   }
 
-  if (gyro_log_.size() < cycles_) {
+  if (gyro_log_.getSize() < cycles_) {
     gyro_log_.enqueue(0);
   }
 
-  if (heading_log_.size() < cycles_) {
+  if (heading_log_.getSize() < cycles_) {
     heading_log_.enqueue(0);
   }
 
-  if (motion_type_log_.size() < cycles_) {
+  if (motion_type_log_.getSize() < cycles_) {
     motion_type_log_.enqueue(' ');
   }
 
-  if (primary_pid_log_.size() < cycles_) {
+  if (primary_pid_log_.getSize() < cycles_) {
     primary_pid_log_.enqueue(0);
   }
 
-  if (secondary_pid_log_.size() < cycles_) {
+  if (secondary_pid_log_.getSize() < cycles_) {
     secondary_pid_log_.enqueue(0);
   }
 
-  if (tertiary_pid_log_.size() < cycles_) {
+  if (tertiary_pid_log_.getSize() < cycles_) {
     tertiary_pid_log_.enqueue(0);
   }
 }
