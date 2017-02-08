@@ -1,8 +1,9 @@
 #include <Arduino.h>
-#include "device/PersistantStorage.h"
-#include "device/UserInterface.h"
-#include "driver.h"
+#include "UserInterface.h"
 #include "Menu.h"
+#include "../device/PersistantStorage.h"
+#include "../driver.h"
+
 
 static void doNothing() {};
 

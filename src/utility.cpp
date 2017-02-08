@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "device/RangeSensorContainer.h"
-#include "device/UserInterface.h"
-#include "Menu.h"
+#include "user_interaction/UserInterface.h"
+#include "user_interaction/Menu.h"
 #include "driver.h"
 #include "utility.h"
 
