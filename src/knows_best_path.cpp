@@ -1,6 +1,6 @@
-#include <Arduino.h>
+#include "data.h"
 #include "driver.h"
-#include "utility.h"
+#include "knows_best_path.h"
 
 bool knowsBestPath(size_t target_x, size_t target_y) {
   ContinuousRobotDriver driver;

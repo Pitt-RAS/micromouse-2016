@@ -23,7 +23,7 @@
 #include "data.h"
 #include "driver.h"
 #include "parser.h"
-#include "utility.h"
+#include "knows_best_path.h"
 
 #define PATCH_VER_MESSAGE "Pitt Micromouse patched library version mismatch"
 static_assert(PITT_MICROMOUSE_I2CDEV_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
