@@ -14,16 +14,16 @@
 #include "device/RangeSensorContainer.h"
 #include "legacy_motion/motion.h"
 #include "user_interaction/PlayMelodies.h"
+#include "user_interaction/Log.h"
 #include "user_interaction/Logger.h"
 #include "user_interaction/Menu.h"
 #include "user_interaction/UserInterface.h"
 #include "Navigator.h"
-#include "Log.h"
 #include "conf.h"
 #include "data.h"
 #include "driver.h"
 #include "parser.h"
-#include "utility.h"
+#include "knows_best_path.h"
 
 #define PATCH_VER_MESSAGE "Pitt Micromouse patched library version mismatch"
 static_assert(PITT_MICROMOUSE_I2CDEV_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
