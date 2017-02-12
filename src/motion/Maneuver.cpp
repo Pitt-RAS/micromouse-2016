@@ -140,10 +140,10 @@ LinearRotationalPoint Pivot::Profile::pointAtTime(TimeUnit time)
   };
 }
 
-const SweptTurnProfile Sweep::Profile::kLegacyProfile45 (0.8700,  45.0, 0.001);
-const SweptTurnProfile Sweep::Profile::kLegacyProfile90 (0.8400,  90.0, 0.001);
-const SweptTurnProfile Sweep::Profile::kLegacyProfile135(0.8975, 135.0, 0.001);
-const SweptTurnProfile Sweep::Profile::kLegacyProfile180(0.9350, 180.0, 0.001);
+const SweptTurnProfile Sweep::Profile::kLegacyProfile45 (0.8700,  45.0);
+const SweptTurnProfile Sweep::Profile::kLegacyProfile90 (0.8400,  90.0);
+const SweptTurnProfile Sweep::Profile::kLegacyProfile135(0.8975, 135.0);
+const SweptTurnProfile Sweep::Profile::kLegacyProfile180(0.9350, 180.0);
 
 Sweep::Sweep(Angle angle) : angle_(angle)
 {}
@@ -179,15 +179,16 @@ LinearRotationalPoint Sweep::Profile::pointAtTime(TimeUnit time)
     LengthUnit::zero()
   };
 
-  double micros = 1e6 * time.seconds();
+  double seconds = time.seconds();
 
-  double displacement = legacy_implementation_.getOffsetAtMicros(micros)
-                                                            / radius_.meters();
+  double displacement = legacy_implementation_.getAngle(seconds);
+  double     velocity = legacy_implementation_.getAngularVelocity(seconds);
+  double acceleration = legacy_implementation_.getAngularAcceleration(seconds);
 
   RotationalPoint rotational_component = {
-    AngleUnit::fromRadians(displacement),
-    AngleUnit::zero(), // unimplemented
-    AngleUnit::zero()  // unimplemented
+    AngleUnit::fromDegrees(displacement),
+    AngleUnit::fromDegrees(velocity),
+    AngleUnit::fromDegrees(acceleration)
   };
 
   return { linear_component, rotational_component };
