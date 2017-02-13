@@ -1,6 +1,6 @@
 #include "../../legacy_motion/SweptTurnProfile.h"
 #include "../../user_interaction/FreakOut.h"
-#include "../drive.h"
+#include "../Tracker.h"
 #include "Sweep.h"
 
 namespace Motion {
@@ -100,15 +100,15 @@ void Sweep::run()
                                     != constraints().sweep_velocity.abstract())
     freakOut("SWPT"); // consider more verbose logging
 
-  DriveOptions options;
+  TrackerOptions options;
 
-  options.tuning = DriveOptions::kSweep;
-  options.use_range = false;
-  options.use_gyro = true;
+  options.wheel_pid_parameters = { 0.0, 0.0, 0.0 };
+  options.range_pid_parameters = { 0.0, 0.0, 0.0 };
+  options.gyro_pid_parameters  = { 0.0, 0.0, 0.0 };
 
   LocalProfile profile(angle_, constraints().sweep_velocity);
 
-  drive(options, profile);
+  Tracker(options, profile).run();
 
   transition({ constraints().sweep_velocity });
 }

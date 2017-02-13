@@ -1,6 +1,6 @@
 #include "../../user_interaction/FreakOut.h"
+#include "../Tracker.h"
 #include "../TrapezoidalProfile.h"
-#include "../drive.h"
 #include "Pivot.h"
 
 namespace Motion {
@@ -68,11 +68,10 @@ void Pivot::run()
   if (transition().linear_velocity.abstract() != LengthUnit::zero().abstract())
     freakOut("PIVT"); // consider more verbose logging
 
-  DriveOptions options;
+  TrackerOptions options;
 
-  options.tuning = DriveOptions::kPivot;
-  options.use_range = false;
-  options.use_gyro = true;
+  options.wheel_pid_parameters = { 0.0, 0.0, 0.0 };
+  options.gyro_pid_parameters = { 0.0, 0.0, 0.0 };
 
   TrapezoidalConstraints<AngleUnit> trapezoidal_constraints;
 
@@ -86,7 +85,7 @@ void Pivot::run()
   TrapezoidalProfile<AngleUnit> trapezoidal_profile(trapezoidal_constraints);
   LocalProfile profile(trapezoidal_profile);
 
-  drive(options, profile);
+  Tracker(options, profile).run();
 
   transition({ LengthUnit::zero() });
 }

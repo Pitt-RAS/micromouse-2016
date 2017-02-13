@@ -1,5 +1,5 @@
+#include "../Tracker.h"
 #include "../TrapezoidalProfile.h"
-#include "../drive.h"
 #include "Straight.h"
 
 namespace Motion {
@@ -42,11 +42,11 @@ Straight::Straight(LengthUnit length) : Straight(length, false)
 
 void Straight::run()
 {
-  DriveOptions options;
+  TrackerOptions options;
 
-  options.tuning = DriveOptions::kStraight;
-  options.use_range = true;
-  options.use_gyro = true;
+  options.wheel_pid_parameters = { 0.0, 0.0, 0.0 };
+  options.range_pid_parameters = { 0.0, 0.0, 0.0 };
+  options.gyro_pid_parameters  = { 0.0, 0.0, 0.0 };
 
   TrapezoidalConstraints<LengthUnit> trapezoidal_constraints;
 
@@ -63,7 +63,7 @@ void Straight::run()
   TrapezoidalProfile<LengthUnit> trapezoidal_profile(trapezoidal_constraints);
   LocalProfile profile(trapezoidal_profile);
 
-  drive(options, profile);
+  Tracker(options, profile).run();
 
   transition({ trapezoidal_constraints.final_velocity });
 }
