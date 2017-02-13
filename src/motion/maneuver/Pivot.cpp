@@ -1,8 +1,43 @@
 #include "../../user_interaction/FreakOut.h"
+#include "../TrapezoidalProfile.h"
 #include "../drive.h"
 #include "Pivot.h"
 
 namespace Motion {
+
+namespace {
+
+  class LocalProfile : public LinearRotationalProfile
+  {
+    public:
+      LocalProfile(TrapezoidalProfile<AngleUnit> rotational_component);
+
+      virtual LinearRotationalPoint pointAtTime(TimeUnit time);
+      virtual TimeUnit finalTime();
+
+    private:
+      TrapezoidalProfile<AngleUnit> rotational_component_;
+  };
+
+  LocalProfile::LocalProfile(
+                        TrapezoidalProfile<AngleUnit> rotational_component) :
+    rotational_component_(rotational_component)
+  {}
+
+  LinearRotationalPoint LocalProfile::pointAtTime(TimeUnit time)
+  {
+    return {
+      LinearPoint::zero(),
+      rotational_component_.pointAtTime(time)
+    };
+  }
+
+  TimeUnit LocalProfile::finalTime()
+  {
+    return rotational_component_.finalTime();
+  }
+
+}
 
 Pivot::Pivot(Angle angle) : Pivot(toContinuousAngle(angle))
 {}
@@ -31,7 +66,7 @@ void Pivot::run()
   trapezoidal_constraints.deceleration = constraints().rotational_deceleration;
 
   TrapezoidalProfile<AngleUnit> trapezoidal_profile(trapezoidal_constraints);
-  Pivot::Profile profile(trapezoidal_profile);
+  LocalProfile profile(trapezoidal_profile);
 
   drive(options, profile);
 
@@ -56,23 +91,6 @@ AngleUnit Pivot::toContinuousAngle(Angle discrete_angle)
   }
 
   return AngleUnit::fromDegrees(result);
-}
-
-Pivot::Profile::Profile(TrapezoidalProfile<AngleUnit> rotational_component) :
-  rotational_component_(rotational_component)
-{}
-
-LinearRotationalPoint Pivot::Profile::pointAtTime(TimeUnit time)
-{
-  return {
-    LinearPoint::zero(),
-    rotational_component_.pointAtTime(time)
-  };
-}
-
-TimeUnit Pivot::Profile::finalTime()
-{
-  return rotational_component_.finalTime();
 }
 
 }

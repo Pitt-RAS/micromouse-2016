@@ -4,6 +4,39 @@
 
 namespace Motion {
 
+namespace {
+
+  class LocalProfile : public LinearRotationalProfile
+  {
+    public:
+      LocalProfile(TrapezoidalProfile<LengthUnit> linear_component);
+
+      virtual LinearRotationalPoint pointAtTime(TimeUnit time);
+      virtual TimeUnit finalTime();
+
+    private:
+      TrapezoidalProfile<LengthUnit> linear_component_;
+  };
+
+  LocalProfile::LocalProfile(TrapezoidalProfile<LengthUnit> linear_component) :
+    linear_component_(linear_component)
+  {}
+
+  LinearRotationalPoint LocalProfile::pointAtTime(TimeUnit time)
+  {
+    return {
+      linear_component_.pointAtTime(time),
+      RotationalPoint::zero()
+    };
+  }
+
+  TimeUnit LocalProfile::finalTime()
+  {
+    return linear_component_.finalTime();
+  }
+
+}
+
 Straight::Straight(LengthUnit length) : Straight(length, false)
 {}
 
@@ -28,7 +61,7 @@ void Straight::run()
   trapezoidal_constraints.deceleration = constraints().linear_deceleration;
 
   TrapezoidalProfile<LengthUnit> trapezoidal_profile(trapezoidal_constraints);
-  Straight::Profile profile(trapezoidal_profile);
+  LocalProfile profile(trapezoidal_profile);
 
   drive(options, profile);
 
@@ -38,23 +71,6 @@ void Straight::run()
 Straight::Straight(LengthUnit length, bool zero_final_velocity) :
   length_(length), zero_final_velocity_(zero_final_velocity)
 {}
-
-Straight::Profile::Profile(TrapezoidalProfile<LengthUnit> linear_component) :
-  linear_component_(linear_component)
-{}
-
-LinearRotationalPoint Straight::Profile::pointAtTime(TimeUnit time)
-{
-  return {
-    linear_component_.pointAtTime(time),
-    RotationalPoint::zero()
-  };
-}
-
-TimeUnit Straight::Profile::finalTime()
-{
-  return linear_component_.finalTime();
-}
 
 Start::Start() : Straight(LengthUnit::fromCells(0.5))
 {}

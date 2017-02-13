@@ -11,27 +11,14 @@ class Pivot : public Maneuver
     };
 
     Pivot(Angle angle);
-
     Pivot(AngleUnit angle);
 
     virtual void run();
 
   private:
-    class Profile : public LinearRotationalProfile
-    {
-      public:
-        Profile(TrapezoidalProfile<AngleUnit> rotational_component);
-
-        virtual LinearRotationalPoint pointAtTime(TimeUnit time);
-        virtual TimeUnit finalTime();
-
-      private:
-        TrapezoidalProfile<AngleUnit> rotational_component_;
-    };
+    const AngleUnit angle_;
 
     AngleUnit toContinuousAngle(Angle discrete_angle);
-
-    const AngleUnit angle_;
 };
 
 }

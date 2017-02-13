@@ -15,29 +15,7 @@ class Sweep : public Maneuver
     virtual void run();
 
   private:
-    class Profile : public LinearRotationalProfile
-    {
-      public:
-        Profile(Angle angle, LengthUnit velocity);
-
-        virtual LinearRotationalPoint pointAtTime(TimeUnit time);
-        virtual TimeUnit finalTime();
-
-      private:
-        static const SweptTurnProfile kLegacyProfile45;
-        static const SweptTurnProfile kLegacyProfile90;
-        static const SweptTurnProfile kLegacyProfile135;
-        static const SweptTurnProfile kLegacyProfile180;
-
-        const SweptTurnProfile &legacy_implementation_;
-
-        LengthUnit radius_ = LengthUnit::fromCells(0.5); // is this right?
-        LengthUnit velocity_;
-
-        const SweptTurnProfile &toLegacyImplementation(Angle angle);
-    };
-
-    Angle angle_;
+    const Angle angle_;
 };
 
 }
