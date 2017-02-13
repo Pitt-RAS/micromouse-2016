@@ -17,7 +17,7 @@ template <size_t length>
 class SkidSteerCar
 {
   public:
-    SkidSteerCar(WheelOnBody *wheels_on_body);
+    SkidSteerCar(WheelOnBody wheels_on_body[]);
 
     void reference(LinearRotationalPoint point);
     LinearRotationalPoint reference() const;
