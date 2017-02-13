@@ -5,9 +5,12 @@ namespace Motion {
 class Pivot : public Maneuver
 {
   public:
-    struct Angle {
-      enum { k45, k90, k180 } magnitude;
-      enum { left, right } direction;
+    class Angle {
+      public:
+        enum { k45, k90, k180 } magnitude;
+        enum { left, right } direction;
+
+        AngleUnit toContinuous();
     };
 
     Pivot(Angle angle);
@@ -17,8 +20,6 @@ class Pivot : public Maneuver
 
   private:
     const AngleUnit angle_;
-
-    AngleUnit toContinuousAngle(Angle discrete_angle);
 };
 
 }

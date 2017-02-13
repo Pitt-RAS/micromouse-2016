@@ -39,7 +39,25 @@ namespace {
 
 }
 
-Pivot::Pivot(Angle angle) : Pivot(toContinuousAngle(angle))
+AngleUnit Pivot::Angle::toContinuous()
+{
+  double result = 0.0;
+
+  switch (magnitude) {
+    case Angle::k45:  result =  45.0; break;
+    case Angle::k90:  result =  90.0; break;
+    case Angle::k180: result = 180.0; break;
+  }
+
+  switch (direction) {
+    case Angle::left:  result =   magnitude; break;
+    case Angle::right: result = - magnitude; break;
+  }
+
+  return AngleUnit::fromDegrees(result);
+}
+
+Pivot::Pivot(Angle angle) : Pivot(angle.toContinuous())
 {}
 
 Pivot::Pivot(AngleUnit angle) : angle_(angle)
@@ -71,26 +89,6 @@ void Pivot::run()
   drive(options, profile);
 
   transition({ LengthUnit::zero() });
-}
-
-AngleUnit Pivot::toContinuousAngle(Angle discrete_angle)
-{
-  double magnitude = 0.0;
-
-  switch (discrete_angle.magnitude) {
-    case Angle::k45:  magnitude =  45.0; break;
-    case Angle::k90:  magnitude =  90.0; break;
-    case Angle::k180: magnitude = 180.0; break;
-  }
-
-  double result = 0.0;
-
-  switch (discrete_angle.direction) {
-    case Angle::left:  result =   magnitude; break;
-    case Angle::right: result = - magnitude; break;
-  }
-
-  return AngleUnit::fromDegrees(result);
 }
 
 }
