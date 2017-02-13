@@ -3,14 +3,20 @@
 
 #include "../device/Motor.h"
 #include "../device/Encoder.h"
+#include "PIDFunction.h"
 #include "Profile.h"
 
 namespace Motion {
 
+struct WheelOptions
+{
+  PIDParameters pid_parameters;
+};
+
 class Wheel
 {
   public:
-    Wheel(Motor &motor, Encoder &encoder);
+    Wheel(WheelOptions options, Motor &motor, Encoder &encoder);
 
     void reference(LinearPoint point);
     LinearPoint reference() const;

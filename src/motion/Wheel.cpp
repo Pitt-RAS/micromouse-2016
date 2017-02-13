@@ -2,7 +2,8 @@
 
 namespace Motion {
 
-Wheel::Wheel(Motor &motor, Encoder &encoder) : motor_(motor), encoder_(encoder)
+Wheel::Wheel(WheelOptions options, Motor &motor, Encoder &encoder) :
+  motor_(motor), encoder_(encoder)
 {}
 
 void Wheel::reference(LinearPoint point)
