@@ -7,31 +7,33 @@
 
 namespace Motion {
 
-static LengthUnit kRightWheelX = LengthUnit::fromMeters(0.03725);
+namespace {
 
-static LengthUnit kLeftWheelX =
-                          LengthUnit::fromAbstract(- kRightWheelX.abstract());
+  LengthUnit kRightWheelX = LengthUnit::fromMeters(0.03725);
+  LengthUnit kLeftWheelX = LengthUnit::fromAbstract(-kRightWheelX.abstract());
 
-static WheelOnBody gWheelsOnBody[] = {
-  {
-    Wheel(motor_lf, gEncoderLF),
-    PointOnBody(kLeftWheelX, LengthUnit::zero())
-  },
-  {
-    Wheel(motor_lb, gEncoderLB),
-    PointOnBody(kLeftWheelX, LengthUnit::zero())
-  },
-  {
-    Wheel(motor_rf, gEncoderRF),
-    PointOnBody(kRightWheelX, LengthUnit::zero())
-  },
-  {
-    Wheel(motor_rb, gEncoderRB),
-    PointOnBody(kRightWheelX, LengthUnit::zero())
-  }
-};
+  WheelOnBody gWheelsOnBody[] = {
+    {
+      Wheel(motor_lf, gEncoderLF),
+      PointOnBody(kLeftWheelX, LengthUnit::zero())
+    },
+    {
+      Wheel(motor_lb, gEncoderLB),
+      PointOnBody(kLeftWheelX, LengthUnit::zero())
+    },
+    {
+      Wheel(motor_rf, gEncoderRF),
+      PointOnBody(kRightWheelX, LengthUnit::zero())
+    },
+    {
+      Wheel(motor_rb, gEncoderRB),
+      PointOnBody(kRightWheelX, LengthUnit::zero())
+    }
+  };
 
-static SkidSteerCar<4> gCar(gWheelsOnBody);
+  SkidSteerCar<4> gCar(gWheelsOnBody);
+
+}
 
 void drive(DriveOptions &options, LinearRotationalProfile &profile)
 {
