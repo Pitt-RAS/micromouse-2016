@@ -1,7 +1,7 @@
 #ifndef MOTION_CALC_H
 #define MOTION_CALC_H
 
-#include <cstdint>
+#include <Arduino.h>
 
 class MotionCalc {
   private:
