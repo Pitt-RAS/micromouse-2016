@@ -3,7 +3,7 @@
 namespace Motion {
 
 Wheel::Wheel(WheelOptions options, Motor &motor, Encoder &encoder) :
-  motor_(motor), encoder_(encoder)
+  motor_(motor), encoder_(encoder), pid_(options.pid_parameters)
 {}
 
 void Wheel::reference(LinearPoint point)
@@ -18,7 +18,15 @@ LinearPoint Wheel::reference() const
 
 void Wheel::update(TimeUnit time)
 {
-  // control
+  double current_displacement = encoder_.displacement().meters();
+  double target_displacement  = reference_.displacement.meters();
+
+  double correction = pid_.response(current_displacement, target_displacement);
+
+  double target_acceleration = reference_.acceleration.meters();
+  double at_velocity = reference_.velocity.meters();
+
+  motor_.Set(target_acceleration + correction, at_velocity);
 }
 
 void Wheel::reset()

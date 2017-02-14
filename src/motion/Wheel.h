@@ -29,6 +29,8 @@ class Wheel
     Motor &motor_;
     Encoder &encoder_;
 
+    PIDFunction pid_;
+
     LinearPoint reference_ = {
       LengthUnit::zero(), LengthUnit::zero(), LengthUnit::zero()
     };
