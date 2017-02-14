@@ -9,6 +9,9 @@ ManeuverConstraints Maneuver::constraints()
   return constraints_;
 }
 
+ManeuverConstraints Maneuver::constraints_ = ManeuverConstraints();
+Transition Maneuver::transition_ = { LengthUnit::zero() };
+
 void Maneuver::constraints(ManeuverConstraints constraints)
 {
   constraints_ = constraints;
