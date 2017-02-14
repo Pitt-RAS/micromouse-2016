@@ -40,6 +40,12 @@ typedef Profile<LinearPoint> LinearProfile;
 typedef Profile<RotationalPoint> RotationalProfile;
 typedef Profile<LinearRotationalPoint> LinearRotationalProfile;
 
+template <typename UnitType>
+ProfilePoint<UnitType> ProfilePoint<UnitType>::zero()
+{
+  return { UnitType::zero(), UnitType::zero(), UnitType::zero() };
+}
+
 }
 
 #endif
