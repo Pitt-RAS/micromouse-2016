@@ -29,6 +29,18 @@ struct Transition
   LengthUnit linear_velocity;
 };
 
+class ManeuverLock
+{
+  public:
+    ManeuverLock(ManeuverConstraints &constraints);
+    ~ManeuverLock();
+
+    void unlock();
+
+  private:
+    void lock();
+};
+
 class Maneuver
 {
   public:
@@ -45,6 +57,9 @@ class Maneuver
   private:
     static ManeuverConstraints constraints_;
     static Transition transition_;
+
+    friend ManeuverLock;
+    static bool locked_;
 };
 
 }

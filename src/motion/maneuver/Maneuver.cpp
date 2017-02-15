@@ -1,16 +1,42 @@
+#include "../../user_interaction/FreakOut.h"
 #include "Maneuver.h"
 
 namespace Motion {
 
 const AngleUnit Transition::rotational_velocity = AngleUnit::zero();
 
-ManeuverConstraints Maneuver::constraints()
+ManeuverLock::ManeuverLock(ManeuverConstraints &constraints)
 {
-  return constraints_;
+  lock();
+  Maneuver::constraints(constraints);
+}
+
+ManeuverLock::~ManeuverLock()
+{
+  unlock();
+}
+
+void ManeuverLock::unlock()
+{
+  if (!Maneuver::locked_) freakOut("MUNL"); // consider more verbose logging
+  Maneuver::locked_ = false;
+}
+
+void ManeuverLock::lock()
+{
+  if (Maneuver::locked_) freakOut("MLCK"); // consider more verbose logging
+  Maneuver::locked_ = true;
 }
 
 ManeuverConstraints Maneuver::constraints_ = ManeuverConstraints();
 Transition Maneuver::transition_ = { LengthUnit::zero() };
+bool Maneuver::locked_ = false;
+
+ManeuverConstraints Maneuver::constraints()
+{
+  if (!locked_) freakOut("MACC"); // consider more verbose logging
+  return constraints_;
+}
 
 void Maneuver::constraints(ManeuverConstraints constraints)
 {
