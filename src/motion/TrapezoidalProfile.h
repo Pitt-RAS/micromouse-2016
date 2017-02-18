@@ -55,6 +55,8 @@ ProfilePoint<UnitType> TrapezoidalProfile<UnitType>::pointAtTime(TimeUnit time)
   double     velocity = legacy_implementation_.idealVelocity(microseconds);
   double acceleration = legacy_implementation_.idealAccel(microseconds);
 
+  displacement /= 1000.0;
+
   return {
     UnitType::fromAbstract(displacement),
     UnitType::fromAbstract(velocity),
