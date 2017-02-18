@@ -73,6 +73,8 @@ void micromouse_main()
 
   LOG_INIT();
 
+  Orientation::getInstance()->resetHeading();
+
   MenuItem items[] = {
     { "RUN", run },
     { "KAOS", kaos },
