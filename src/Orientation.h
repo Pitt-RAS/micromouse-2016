@@ -28,7 +28,7 @@ class Orientation {
     int16_t last_gyro_reading_ = 0;
     unsigned long last_update_time_ = 0;
     volatile unsigned long next_update_time_ = 0;
-    
+
     float max_forward_accel_ = 0;
     float max_radial_accel_ = 0;
 
@@ -44,7 +44,7 @@ class Orientation {
     float mag_heading_offset_;
     float last_mag_heading_;
   public:
-    bool handler_update_ = false;
+    bool handler_update_ = true;
     static Orientation* getInstance();
 
     // determine the right offset for the gyro
@@ -65,7 +65,7 @@ class Orientation {
     // This does not wrap around, so it will continue increasing past 360
     //   or decreasing past -360
     float getHeading();
-    
+
     void resetMaxForwardAccel();
     void resetMaxRadialAccel();
     float getMaxForwardAccel();
