@@ -97,12 +97,14 @@ void speedRunMelody(); // time warning sound
 void crashMelody(); // either death sounds or game over sound
 
 void speedFinishMelody(); // flagpole fanfare
-  
+
 void searchFinishMelody(); //
 
 void stopMelody(); // pause sound
 
 void startMelody(); // main theme
+
+void handSeenMelody(); // seen hand sound
 
 void playNote(int note_frequency, int note_duration); //
 

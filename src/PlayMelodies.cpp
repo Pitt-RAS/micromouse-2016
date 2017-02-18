@@ -28,7 +28,7 @@ void speedRunMelody() { // time warning sound
 
 
 void crashMelody() { // either death sounds or game over sound
-  
+
   int tempo = 400; // tempo in beats per minute
 
   // set duration of a whole note
@@ -51,7 +51,7 @@ void crashMelody() { // either death sounds or game over sound
 
 
 void speedFinishMelody() { // flagpole fanfare
-  
+
   int tempo = 300; // tempo in beats per minute
 
   // set duration of a whole note
@@ -111,8 +111,8 @@ void stopMelody() { // pause sound
     NOTE_E6, NOTE_C6, NOTE_E6, NOTE_C6
   };
 
-  float note_duration[] = { 
-    0.16666, 0.16666, 0.16666, 0.5 
+  float note_duration[] = {
+    0.16666, 0.16666, 0.16666, 0.5
   };
 
   // send notes to playing function
@@ -133,7 +133,7 @@ void startMelody() {
     NOTE_E5, NOTE_E5, 0, NOTE_E5, 0, NOTE_C5, NOTE_E5, 0, NOTE_G5, 0, NOTE_G4
   };
 
-  float note_duration[] = { 
+  float note_duration[] = {
     0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.75, 1
   };
 
@@ -144,6 +144,12 @@ void startMelody() {
 }
 
 
+void handSeenMelody() {
+  playNote(NOTE_C6, 100);
+  delay(100);
+  playNote(NOTE_C6, 100);
+}
+
 void playNote(int note_frequency, int note_duration) {
 
   if (note_frequency > 0) {
@@ -153,13 +159,13 @@ void playNote(int note_frequency, int note_duration) {
     noTone(BUZZER_PIN);
     delay(pause_between_notes);
 
-    
+
 //    analogWriteFrequency(BUZZER_PIN, note_frequency);
 //    analogWrite(BUZZER_PIN, 512);
 //    delay(note_duration - pause_between_notes); // duration in millis
 //    analogWrite(BUZZER_PIN, 0);
 //    delay(pause_between_notes);
-    
+
   }
   else {
     delay(note_duration);
@@ -170,4 +176,3 @@ void playNote(int note_frequency, int note_duration) {
   analogWriteFrequency(MOTOR_LB_PWM_PIN, 46875);
   analogWriteFrequency(MOTOR_RB_PWM_PIN, 46875);
 }
-
