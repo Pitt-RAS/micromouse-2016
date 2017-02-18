@@ -681,7 +681,7 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
         enc_right_back_write(0);
         enc_left_front_write(0);
         enc_right_front_write(0);
-        Orientation::getInstance()->resetHeading();
+        Orientation::getInstance().resetHeading();
       }
 
       if (is_right_wall) {
@@ -692,7 +692,7 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
         enc_right_back_write(0);
         enc_left_front_write(0);
         enc_right_front_write(0);
-        Orientation::getInstance()->resetHeading();
+        Orientation::getInstance().resetHeading();
 
         motion_rotate(90);
       } else if (is_left_wall) {
@@ -703,7 +703,7 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
         enc_right_back_write(0);
         enc_left_front_write(0);
         enc_right_front_write(0);
-        Orientation::getInstance()->resetHeading();
+        Orientation::getInstance().resetHeading();
 
         motion_rotate(-90);
       } else {
@@ -730,7 +730,7 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
           enc_right_back_write(0);
           enc_left_front_write(0);
           enc_right_front_write(0);
-          Orientation::getInstance()->resetHeading();
+          Orientation::getInstance().resetHeading();
 
           motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, search_velocity_);
         } else {
@@ -765,7 +765,7 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
           enc_right_back_write(0);
           enc_left_front_write(0);
           enc_right_front_write(0);
-          Orientation::getInstance()->resetHeading();
+          Orientation::getInstance().resetHeading();
 
           motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, search_velocity_);
         } else {
@@ -1060,7 +1060,7 @@ void KaosDriver::execute(Queue<int, 256> move_list)
   enc_left_back_write(0);
   enc_right_front_write(0);
   enc_right_back_write(0);
-  Orientation::getInstance()->resetHeading();
+  Orientation::getInstance().resetHeading();
 
   bool should_continue = true;
   while (!move_list.isEmpty() || should_continue) {

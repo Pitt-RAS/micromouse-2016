@@ -244,8 +244,8 @@ void UserInterface::checkBattery()
 
 void UserInterface::waitForHand()
 {
-  Orientation* orientation = Orientation::getInstance();
-  float heading = orientation->getHeading();
+  Orientation& orientation = Orientation::getInstance();
+  float heading = orientation.getHeading();
   bool readyToStart = false;
   int state = 0;
 
@@ -255,7 +255,7 @@ void UserInterface::waitForHand()
     RangeSensors.frontRightSensor.updateRange();
     RangeSensors.diagRightSensor.updateRange();
 
-    float delta_heading = abs(heading - orientation->getHeading());
+    float delta_heading = abs(heading - orientation.getHeading());
 
     if ( state == 0 ) { // Waiting for hand
       // Robot has moved significantly
@@ -281,7 +281,7 @@ void UserInterface::waitForHand()
       delay(100);
       state = 0; // Back to waiting for hand
     }
-    heading = orientation->getHeading();
+    heading = orientation.getHeading();
 
     delay(100);
   }
