@@ -23,7 +23,7 @@ class Wheel
 
     void update(TimeUnit time);
 
-    void reset();
+    void transition();
 
   private:
     Motor &motor_;

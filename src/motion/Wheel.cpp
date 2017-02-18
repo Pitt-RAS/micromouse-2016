@@ -29,11 +29,14 @@ void Wheel::update(TimeUnit time)
   motor_.Set(target_acceleration + correction, at_velocity);
 }
 
-void Wheel::reset()
+void Wheel::transition()
 {
-  reference_ = { LengthUnit::zero(), LengthUnit::zero(), LengthUnit::zero() };
+  encoder_.displacement(LengthUnit::zero());
 
-  // reset control
+  double acceleration = reference_.acceleration.meters();
+  double velocity = reference_.velocity.meters();
+
+  motor_.Set(acceleration, velocity);
 }
 
 }

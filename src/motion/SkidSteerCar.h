@@ -24,7 +24,7 @@ class SkidSteerCar
 
     void update(TimeUnit time);
 
-    void reset();
+    void transition();
 
   private:
     WheelOnBody *wheels_on_body_;
@@ -62,10 +62,10 @@ void SkidSteerCar<length>::update(TimeUnit time)
 }
 
 template <size_t length>
-void SkidSteerCar<length>::reset()
+void SkidSteerCar<length>::transition()
 {
   for (size_t i = 0; i < length; i++)
-    wheels_on_body_[i].wheel.reset();
+    wheels_on_body_[i].wheel.transition();
 }
 
 }
