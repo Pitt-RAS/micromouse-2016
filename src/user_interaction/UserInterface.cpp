@@ -261,27 +261,28 @@ void UserInterface::waitForHand()
     RangeSensors.frontRightSensor.updateRange();
     RangeSensors.diagRightSensor.updateRange();
 
-    sensorRight = (sensorRight*0.3) + (RangeSensors.frontRightSensor.getRange()*0.7);
-    sensorLeft = (sensorLeft*0.3) + (RangeSensors.diagRightSensor.getRange()*0.7);
-
     float delta_heading = abs(heading - orientation->getHeading());
 
     if ( state == 0 ) { // Waiting for hand
       // Robot has moved significantly
-      if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
+      if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE)
         state = 2;
+      else if ( RangeSensors.frontRightSensor.getRange() < HAND_SWIPE_FORWARD_RANGE // We see a hand
+                && RangeSensors.diagRightSensor.getRange() < HAND_SWIPE_DIAG_RANGE ) {
+                  state = 1;
+                  playNote(NOTE_C6, 100);
+                  delay(100);
+                  playNote(NOTE_C6, 100);
       }
-      else if ( sensorRight < HAND_SWIPE_FORWARD_RANGE // We see a hand
-                || sensorLeft < HAND_SWIPE_DIAG_RANGE )
-                state = 1;
+
     }
     else if ( state == 1 ) { // We saw a hand, now wait for it to go away
-      // Robot has moved significantly, bail out
+      // Robot has moved significantly
       if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
         state = 2;
       }
-      else if ( sensorRight > HAND_SWIPE_FORWARD_RANGE
-                || sensorLeft > HAND_SWIPE_DIAG_RANGE )
+      else if ( RangeSensors.frontRightSensor.getRange() > HAND_SWIPE_FORWARD_RANGE
+                && RangeSensors.diagRightSensor.getRange() > HAND_SWIPE_DIAG_RANGE )
               readyToStart = true;
     }
     else if ( state == 2 ) { // Robot moved
