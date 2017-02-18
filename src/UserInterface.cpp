@@ -11,7 +11,6 @@
 #include "motors.h"
 #include "sensors_encoders.h"
 #include "UserInterface.h"
-#include "../Log.h"
 
 UserInterface gUserInterface;
 
@@ -271,7 +270,7 @@ void UserInterface::waitForHand()
 
     if ( state == 0 ) { // Waiting for hand
       // Robot has moved significantly
-      if (delta_heading > 1) {
+      if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
         state = 2;
       }
       else if ( sensorRight < HAND_SWIPE_FORWARD_RANGE // We see a hand
@@ -280,7 +279,7 @@ void UserInterface::waitForHand()
     }
     else if ( state == 1 ) { // We saw a hand, now wait for it to go away
       // Robot has moved significantly, bail out
-      if (delta_heading > 1) {
+      if (delta_heading > HAND_SWIPE_HEADING_TOLERANCE) {
         state = 2;
       }
       else if ( sensorRight > HAND_SWIPE_FORWARD_RANGE
