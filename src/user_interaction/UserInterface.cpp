@@ -249,12 +249,6 @@ void UserInterface::waitForHand()
   bool readyToStart = false;
   int state = 0;
 
-  RangeSensors.frontRightSensor.updateRange();
-  RangeSensors.diagRightSensor.updateRange();
-
-  float sensorRight = RangeSensors.frontRightSensor.getRange();
-  float sensorLeft = RangeSensors.diagRightSensor.getRange();
-
   while (!readyToStart) {
 
     checkBattery();
@@ -270,9 +264,7 @@ void UserInterface::waitForHand()
       else if ( RangeSensors.frontRightSensor.getRange() < HAND_SWIPE_FORWARD_RANGE // We see a hand
                 && RangeSensors.diagRightSensor.getRange() < HAND_SWIPE_DIAG_RANGE ) {
                   state = 1;
-                  playNote(NOTE_C6, 100);
-                  delay(100);
-                  playNote(NOTE_C6, 100);
+                  handSeenMelody();
       }
 
     }
