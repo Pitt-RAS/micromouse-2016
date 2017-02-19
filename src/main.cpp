@@ -13,6 +13,7 @@
 #include "device/sensors_encoders.h"
 #include "device/RangeSensorContainer.h"
 #include "legacy_motion/motion.h"
+#include "motion/motion.h"
 #include "user_interaction/PlayMelodies.h"
 #include "user_interaction/Log.h"
 #include "user_interaction/Logger.h"
@@ -32,6 +33,7 @@ static_assert(PITT_MICROMOUSE_ENCODER_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
 
 static_assert(F_CPU == 144000000, "Clock speed is not set to 144 MHz");
 
+static void test();
 static void run();
 static void kaos();
 static void turn();
@@ -76,6 +78,7 @@ void micromouse_main()
   Orientation::getInstance()->resetHeading();
 
   MenuItem items[] = {
+    { "TEST", test},
     { "RUN", run },
     { "KAOS", kaos },
     { "TURN", turn },
@@ -87,6 +90,51 @@ void micromouse_main()
   Menu menu(items, false);
 
   for (;;) menu.run();
+}
+
+void test()
+{
+  delay(1000);
+
+  // to allow for moving the robot between tests
+  Orientation *orientation = Orientation::getInstance();
+  orientation->handler_update_ = false;
+  orientation->incrementHeading(-orientation->getHeading());
+  orientation->handler_update_ = true;
+
+  Motion::ManeuverConstraints constraints;
+
+  constraints.max_forward_velocity = Motion::LengthUnit::fromMeters(0.5);
+  constraints.sweep_velocity       = Motion::LengthUnit::fromMeters(0.5);
+  constraints.linear_acceleration  = Motion::LengthUnit::fromMeters(3.0);
+  constraints.linear_deceleration  = Motion::LengthUnit::fromMeters(3.0);
+
+  constraints.max_rotational_velocity = Motion::AngleUnit::fromRotations(2.0);
+  constraints.rotational_acceleration = Motion::AngleUnit::fromRotations(4.0);
+  constraints.rotational_deceleration = Motion::AngleUnit::fromRotations(4.0);
+
+  Motion::ManeuverLock lock(constraints);
+
+  Motion::Stop  long_straight(Motion::LengthUnit::fromCells(4.0));
+  Motion::Stop short_straight(Motion::LengthUnit::fromCells(1.0));
+
+  Motion::Pivot  left(Motion::AngleUnit::fromRotations(0.25));
+  Motion::Pivot right(Motion::AngleUnit::fromRotations(-0.25));
+
+  for (int i = 0; i < 2; i++) {
+    long_straight.run();
+    right.run();
+    short_straight.run();
+    right.run();
+    long_straight.run();
+    left.run();
+    short_straight.run();
+    left.run();
+  }
+
+  long_straight.run();
+  left.run();
+  left.run();
 }
 
 void run()
