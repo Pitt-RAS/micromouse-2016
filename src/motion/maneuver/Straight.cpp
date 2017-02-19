@@ -44,7 +44,7 @@ void Straight::run()
 {
   TrackerOptions options;
 
-  options.wheel_pid_parameters = { 0.0, 0.0, 0.0 };
+  options.wheel_pid_parameters = { 1000.0, 0.0, 0.0 };
   options.range_pid_parameters = { 0.0, 0.0, 0.0 };
   options.gyro_pid_parameters  = { 0.0, 0.0, 0.0 };
 

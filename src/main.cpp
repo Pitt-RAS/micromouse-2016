@@ -13,6 +13,8 @@
 #include "device/sensors_encoders.h"
 #include "device/RangeSensorContainer.h"
 #include "legacy_motion/motion.h"
+#include "motion/maneuver/Maneuver.h"
+#include "motion/motion.h"
 #include "user_interaction/PlayMelodies.h"
 #include "user_interaction/Log.h"
 #include "user_interaction/Logger.h"
@@ -32,6 +34,7 @@ static_assert(PITT_MICROMOUSE_ENCODER_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
 
 static_assert(F_CPU == 144000000, "Clock speed is not set to 144 MHz");
 
+static void test();
 static void run();
 static void kaos();
 static void turn();
@@ -76,6 +79,7 @@ void micromouse_main()
   Orientation::getInstance()->resetHeading();
 
   MenuItem items[] = {
+    { "TEST", test},
     { "RUN", run },
     { "KAOS", kaos },
     { "TURN", turn },
@@ -87,6 +91,21 @@ void micromouse_main()
   Menu menu(items, false);
 
   for (;;) menu.run();
+}
+
+void test()
+{
+  Motion::ManeuverConstraints constraints;
+
+  constraints.max_forward_velocity = Motion::LengthUnit::fromMeters(0.3);
+  constraints.sweep_velocity       = Motion::LengthUnit::fromMeters(0.3);
+  constraints.linear_acceleration  = Motion::LengthUnit::fromMeters(0.5);
+  constraints.linear_deceleration  = Motion::LengthUnit::fromMeters(0.5);
+
+  Motion::ManeuverLock lock(constraints);
+
+  Motion::LengthUnit distance = Motion::LengthUnit::fromCells(1.0);
+  Motion::Straight(distance).run();
 }
 
 void run()
