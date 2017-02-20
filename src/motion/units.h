@@ -57,7 +57,7 @@ class AngleUnit
     double radians();
 
   private:
-    static constexpr double kDegreesPerRadian = M_PI / 180;
+    static constexpr double kDegreesPerRadian = 180 / M_PI;
 
     AngleUnit(double degrees);
 
