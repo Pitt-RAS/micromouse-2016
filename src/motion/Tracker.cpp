@@ -54,6 +54,7 @@ void Tracker::run()
   Orientation::getInstance()->handler_update_ = true;
 
   car_.transition();
+  Orientation::getInstance()->resetHeading();
 }
 
 WheelOptions Tracker::wheelOptions(TrackerOptions options)
