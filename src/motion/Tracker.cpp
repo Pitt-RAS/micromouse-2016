@@ -70,7 +70,7 @@ void Tracker::addRange(PIDFunction &pid, LinearRotationalPoint &point)
   RangeSensors.updateReadings();
 
   double error = RangeSensors.errorFromCenter();
-  double response = pid.response(error, 0);
+  double response = - pid.response(error, 0);
 
   double radians = point.rotational_point.displacement.radians();
   radians += response;
@@ -86,7 +86,7 @@ void Tracker::addGyro(PIDFunction &pid, LinearRotationalPoint &point)
   if (std::fabs(error) > 60)
     freakOut("GYRO"); //consider more verbose logging
 
-  double response = pid.response(error, 0);
+  double response = - pid.response(error, 0);
 
   double radians = point.rotational_point.displacement.radians();
   radians += response;
