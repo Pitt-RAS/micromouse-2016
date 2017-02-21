@@ -26,24 +26,26 @@ Tracker::Tracker(TrackerOptions options, LinearRotationalProfile &profile) :
       PointOnBody(kRightWheelX, LengthUnit::zero())
     }
   },
-  car_(wheels_on_body_)
+  car_(wheels_on_body_),
+  range_pid_(options_.range_pid_parameters)
 {}
 
 void Tracker::run()
 {
-  PIDFunction range_pid(options_.range_pid_parameters);
-  PIDFunction gyro_pid(options_.gyro_pid_parameters);
-
   elapsedMicros timer;
   TimeUnit time = TimeUnit::fromSeconds(timer / 1e6);
 
-  Orientation::getInstance()->handler_update_ = false;
+  Orientation *orientation = Orientation::getInstance();
+
+  orientation->handler_update_ = false;
 
   while (time.abstract() < profile_.finalTime().abstract()) {
     LinearRotationalPoint point = profile_.pointAtTime(time);
 
-    addRange(range_pid, point);
-    addGyro(gyro_pid, point);
+    safetyCheck(point);
+
+    addGyroHeading(point);
+    addRangeCorrection(point);
 
     car_.reference(point);
     car_.update(time);
@@ -51,10 +53,10 @@ void Tracker::run()
     time = TimeUnit::fromSeconds(timer / 1e6);
   }
 
-  Orientation::getInstance()->handler_update_ = true;
-
+  orientation->incrementHeading(-orientation->getHeading());
   car_.transition();
-  Orientation::getInstance()->resetHeading();
+
+  orientation->handler_update_ = true;
 }
 
 WheelOptions Tracker::wheelOptions(TrackerOptions options)
@@ -65,28 +67,38 @@ WheelOptions Tracker::wheelOptions(TrackerOptions options)
   return result;
 }
 
-void Tracker::addRange(PIDFunction &pid, LinearRotationalPoint &point)
+void Tracker::safetyCheck(LinearRotationalPoint &point)
+{
+  Orientation *orientation = Orientation::getInstance();
+
+  AngleUnit heading = AngleUnit::fromDegrees(- orientation->getHeading());
+  AngleUnit target = point.rotational_point.displacement;
+  AngleUnit limit = AngleUnit::fromDegrees(60.0);
+
+  if (std::fabs(heading.abstract() - target.abstract()) > limit.abstract())
+    freakOut("GYRO");
+}
+
+void Tracker::addGyroHeading(LinearRotationalPoint &point)
+{
+  Orientation *orientation = Orientation::getInstance();
+
+  orientation->update();
+
+  double heading_degrees = - orientation->getHeading();
+  AngleUnit heading = AngleUnit::fromDegrees(heading_degrees);
+
+  double abstract = point.rotational_point.displacement.abstract();
+  abstract -= heading.abstract();
+  point.rotational_point.displacement = AngleUnit::fromAbstract(abstract);
+}
+
+void Tracker::addRangeCorrection(LinearRotationalPoint &point)
 {
   RangeSensors.updateReadings();
 
-  double error = RangeSensors.errorFromCenter();
-  double response = - pid.response(error, 0);
-
-  double radians = point.rotational_point.displacement.radians();
-  radians += response;
-  point.rotational_point.displacement = AngleUnit::fromRadians(radians);
-}
-
-void Tracker::addGyro(PIDFunction &pid, LinearRotationalPoint &point)
-{
-  Orientation::getInstance()->update();
-
-  double error = Orientation::getInstance()->getHeading();
-
-  if (std::fabs(error) > 60)
-    freakOut("GYRO"); //consider more verbose logging
-
-  double response = - pid.response(error, 0);
+  double error = - RangeSensors.errorFromCenter();
+  double response = range_pid_.response(error, 0);
 
   double radians = point.rotational_point.displacement.radians();
   radians += response;

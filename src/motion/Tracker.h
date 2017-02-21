@@ -24,8 +24,10 @@ class Tracker
   private:
     WheelOptions wheelOptions(TrackerOptions options);
 
-    void addRange(PIDFunction &pid, LinearRotationalPoint &point);
-    void addGyro(PIDFunction &pid, LinearRotationalPoint &point);
+    void safetyCheck(LinearRotationalPoint &point);
+
+    void addGyroHeading(LinearRotationalPoint &point);
+    void addRangeCorrection(LinearRotationalPoint &point);
 
     LengthUnit kRightWheelX = LengthUnit::fromMeters(0.03725);
     LengthUnit kLeftWheelX = LengthUnit::fromAbstract(-kRightWheelX.abstract());
@@ -34,7 +36,9 @@ class Tracker
     LinearRotationalProfile &profile_;
 
     WheelOnBody wheels_on_body_[4];
-    SkidSteerCar<4> car_;
+    StraightenedSkidSteerCar<4> car_;
+
+    PIDFunction range_pid_;
 };
 
 }
