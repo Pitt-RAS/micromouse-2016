@@ -53,6 +53,8 @@ SkidSteerCar<length>::SkidSteerCar(WheelOnBody wheels_on_body[]) :
 template <size_t length>
 void SkidSteerCar<length>::reference(LinearRotationalPoint point)
 {
+  reference_ = point;
+
   for (size_t i = 0; i < length; i++) {
     Wheel &wheel = wheels_on_body_[i].wheel;
     PointOnBody &point_on_body = wheels_on_body_[i].point_on_body;
