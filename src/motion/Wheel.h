@@ -18,6 +18,8 @@ class Wheel
   public:
     Wheel(WheelOptions options, Motor &motor, Encoder &encoder);
 
+    LengthUnit displacement();
+
     void reference(LinearPoint point);
     LinearPoint reference() const;
 

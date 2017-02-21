@@ -26,4 +26,11 @@ LinearPoint PointOnBody::point(LinearRotationalPoint body_point)
   };
 }
 
+AngleUnit PointOnBody::angle(LengthUnit displacement)
+{
+  double radians = displacement.meters() / kMetersPerRadian;
+
+  return AngleUnit::fromRadians(radians);
+}
+
 }

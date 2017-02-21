@@ -14,6 +14,8 @@ class PointOnBody
 
     LinearPoint point(LinearRotationalPoint body_point);
 
+    AngleUnit angle(LengthUnit linear_displacement);
+
   private:
     const double kMetersPerRadian;
 };

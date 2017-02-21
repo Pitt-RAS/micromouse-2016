@@ -6,6 +6,11 @@ Wheel::Wheel(WheelOptions options, Motor &motor, Encoder &encoder) :
   motor_(motor), encoder_(encoder), pid_(options.pid_parameters)
 {}
 
+LengthUnit Wheel::displacement()
+{
+  return encoder_.displacement();
+}
+
 void Wheel::reference(LinearPoint point)
 {
   reference_ = point;
