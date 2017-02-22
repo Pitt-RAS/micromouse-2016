@@ -7,7 +7,7 @@
 #include <EncoderPittMicromouse.h>
 
 // Dependencies within Micromouse
-#include "device/Motor.h"
+#include "device/MotorModel.h"
 #include "device/Orientation.h"
 #include "device/PersistantStorage.h"
 #include "device/sensors_encoders.h"

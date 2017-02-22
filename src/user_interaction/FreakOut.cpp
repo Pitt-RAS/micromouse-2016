@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "../device/Motor.h"
+#include "../device/MotorModel.h"
 #include "PlayMelodies.h"
 #include "UserInterface.h"
 #include "Logger.h"

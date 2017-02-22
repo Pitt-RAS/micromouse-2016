@@ -2,7 +2,7 @@
 
 namespace Motion {
 
-Wheel::Wheel(WheelOptions options, Motor &motor, Encoder &encoder) :
+Wheel::Wheel(WheelOptions options, MotorModel &motor, Encoder &encoder) :
   motor_(motor), encoder_(encoder), pid_(options.pid_parameters)
 {}
 

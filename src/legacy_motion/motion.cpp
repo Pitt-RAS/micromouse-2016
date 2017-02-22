@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "../device/Motor.h"
+#include "../device/MotorModel.h"
 #include "../device/Orientation.h"
 #include "../device/RangeSensor.h"
 #include "../device/RangeSensorContainer.h"

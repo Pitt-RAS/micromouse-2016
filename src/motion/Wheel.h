@@ -1,7 +1,7 @@
 #ifndef WHEEL_H
 #define WHEEL_H
 
-#include "../device/Motor.h"
+#include "../device/MotorModel.h"
 #include "../device/Encoder.h"
 #include "PIDFunction.h"
 #include "Profile.h"
@@ -16,7 +16,7 @@ struct WheelOptions
 class Wheel
 {
   public:
-    Wheel(WheelOptions options, Motor &motor, Encoder &encoder);
+    Wheel(WheelOptions options, MotorModel &motor, Encoder &encoder);
 
     LengthUnit displacement();
 
@@ -28,7 +28,7 @@ class Wheel
     void transition();
 
   private:
-    Motor &motor_;
+    MotorModel &motor_;
     Encoder &encoder_;
 
     PIDFunction pid_;

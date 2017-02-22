@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "../conf.h"
 #include "../device/RangeSensorContainer.h"
-#include "../device/Motor.h"
+#include "../device/MotorModel.h"
 #include "../device/Orientation.h"
 #include "../device/sensors_encoders.h"
 #include "../legacy_motion/PIDController.h"
