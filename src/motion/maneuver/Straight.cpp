@@ -72,10 +72,7 @@ Straight::Straight(LengthUnit length, bool zero_final_velocity) :
   length_(length), zero_final_velocity_(zero_final_velocity)
 {}
 
-Start::Start() : Straight(LengthUnit::fromCells(0.5))
-{}
-
-Stop::Stop() : Straight(LengthUnit::fromCells(0.5), true)
+Stop::Stop(LengthUnit length) : Straight(length, true)
 {}
 
 }
