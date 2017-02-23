@@ -1,17 +1,23 @@
 #ifndef TRACKER_H
 #define TRACKER_H
 
+#include "../device/Encoder.h"
+#include "../device/Motor.h"
+#include "FFWFunction.h"
+#include "Matrix.h"
 #include "PIDFunction.h"
 #include "Profile.h"
-#include "SkidSteerCar.h"
 
 namespace Motion {
 
 struct TrackerOptions
 {
-  PIDParameters wheel_pid_parameters = { 0.0, 0.0, 0.0 };
-  PIDParameters range_pid_parameters = { 0.0, 0.0, 0.0 };
-  PIDParameters  gyro_pid_parameters = { 0.0, 0.0, 0.0 };
+  FFWParameters     linear_ffw_parameters = { 0.0, 0.0 };
+  FFWParameters rotational_ffw_parameters = { 0.0, 0.0 };
+
+  PIDParameters encoder_pid_parameters = { 0.0, 0.0, 0.0 };
+  PIDParameters    gyro_pid_parameters = { 0.0, 0.0, 0.0 };
+  PIDParameters   range_pid_parameters = { 0.0, 0.0, 0.0 };
 };
 
 class Tracker
@@ -22,23 +28,31 @@ class Tracker
     void run();
 
   private:
-    WheelOptions wheelOptions(TrackerOptions options);
-
-    void safetyCheck(LinearRotationalPoint &point);
-
-    void addGyroHeading(LinearRotationalPoint &point);
-    void addRangeCorrection(LinearRotationalPoint &point);
-
-    LengthUnit kRightWheelX = LengthUnit::fromMeters(0.03725);
-    LengthUnit kLeftWheelX = LengthUnit::fromAbstract(-kRightWheelX.abstract());
-
     TrackerOptions options_;
     LinearRotationalProfile &profile_;
 
-    WheelOnBody wheels_on_body_[4];
-    StraightenedSkidSteerCar<4> car_;
+    Matrix<Encoder&> encoders_;
+    Matrix<Motor&> motors_;
 
+    Matrix<PIDFunction> encoder_pid_;
+    PIDFunction gyro_pid_;
     PIDFunction range_pid_;
+
+    FFWFunction linear_ffw_;
+    FFWFunction rotational_ffw_;
+
+    LinearRotationalPoint point_;
+
+    void safetyCheck();
+
+    void setOutput();
+    void transition();
+
+    Matrix<double> linearFFW();
+    Matrix<double> rotationalFFW();
+
+    Matrix<double> linearCorrection();
+    Matrix<double> rotationalCorrection();
 };
 
 }

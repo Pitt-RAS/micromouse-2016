@@ -8,26 +8,29 @@ namespace Motion {
 Tracker::Tracker(TrackerOptions options, LinearRotationalProfile &profile) :
   options_(options),
   profile_(profile),
-  wheels_on_body_{
-    {
-      Wheel(wheelOptions(options), motor_lf, gEncoderLF),
-      PointOnBody(kLeftWheelX, LengthUnit::zero())
-    },
-    {
-      Wheel(wheelOptions(options), motor_lb, gEncoderLB),
-      PointOnBody(kLeftWheelX, LengthUnit::zero())
-    },
-    {
-      Wheel(wheelOptions(options), motor_rf, gEncoderRF),
-      PointOnBody(kRightWheelX, LengthUnit::zero())
-    },
-    {
-      Wheel(wheelOptions(options), motor_rb, gEncoderRB),
-      PointOnBody(kRightWheelX, LengthUnit::zero())
-    }
-  },
-  car_(wheels_on_body_),
-  range_pid_(options_.range_pid_parameters)
+  encoders_(
+    gEncoderLF,
+    gEncoderRF,
+    gEncoderLB,
+    gEncoderRB
+  ),
+  motors_(
+    gMotorLF,
+    gMotorRF,
+    gMotorLB,
+    gMotorRB
+  ),
+  encoder_pid_(
+    PIDFunction(options_.encoder_pid_parameters),
+    PIDFunction(options_.encoder_pid_parameters),
+    PIDFunction(options_.encoder_pid_parameters),
+    PIDFunction(options_.encoder_pid_parameters)
+  ),
+  gyro_pid_(options_.gyro_pid_parameters),
+  range_pid_(options_.range_pid_parameters),
+  linear_ffw_(options.linear_ffw_parameters),
+  rotational_ffw_(options.rotational_ffw_parameters),
+  point_(profile_.pointAtTime(TimeUnit::zero()))
 {}
 
 void Tracker::run()
@@ -40,69 +43,133 @@ void Tracker::run()
   orientation->handler_update_ = false;
 
   while (time.abstract() < profile_.finalTime().abstract()) {
-    LinearRotationalPoint point = profile_.pointAtTime(time);
+    point_ = profile_.pointAtTime(time);
 
-    safetyCheck(point);
+    safetyCheck();
 
-    addGyroHeading(point);
-    addRangeCorrection(point);
-
-    car_.reference(point);
-    car_.update(time);
+    setOutput();
 
     time = TimeUnit::fromSeconds(timer / 1e6);
   }
 
-  orientation->incrementHeading(-orientation->getHeading());
-  car_.transition();
+  transition();
 
   orientation->handler_update_ = true;
 }
 
-WheelOptions Tracker::wheelOptions(TrackerOptions options)
-{
-  WheelOptions result;
-  result.pid_parameters = options.wheel_pid_parameters;
-
-  return result;
-}
-
-void Tracker::safetyCheck(LinearRotationalPoint &point)
+void Tracker::safetyCheck()
 {
   Orientation *orientation = Orientation::getInstance();
 
   AngleUnit heading = AngleUnit::fromDegrees(- orientation->getHeading());
-  AngleUnit target = point.rotational_point.displacement;
+  AngleUnit target = point_.rotational_point.displacement;
   AngleUnit limit = AngleUnit::fromDegrees(60.0);
 
   if (std::fabs(heading.abstract() - target.abstract()) > limit.abstract())
     freakOut("GYRO");
 }
 
-void Tracker::addGyroHeading(LinearRotationalPoint &point)
+void Tracker::setOutput()
+{
+  Matrix<double> voltage = Matrix<double>::zeros()
+                                .add(linearFFW())
+                                .add(rotationalFFW())
+                                .add(linearCorrection())
+                                .add(rotationalCorrection());
+
+  motors_.forEachWith<double>(
+    voltage,
+    [] (Motor &motor, double &voltage) -> void {
+      motor.voltage(voltage);
+    }
+  );
+}
+
+void Tracker::transition()
+{
+  Orientation *orientation = Orientation::getInstance();
+
+  TimeUnit final_time = profile_.finalTime();
+  LinearRotationalPoint final_point = profile_.pointAtTime(final_time);
+  AngleUnit final_heading = final_point.rotational_point.displacement;
+
+  orientation->incrementHeading(final_heading.degrees());
+
+  Matrix<double> voltage = Matrix<double>::zeros()
+                                .add(linearFFW())
+                                .add(rotationalFFW());
+
+  motors_.forEachWith<double>(
+    voltage,
+    [] (Motor &motor, double &voltage) -> void {
+      motor.voltage(voltage);
+    }
+  );
+
+  encoders_.forEach(
+    [] (Encoder &encoder) -> void {
+      encoder.displacement(LengthUnit::zero());
+    }
+  );
+}
+
+Matrix<double> Tracker::linearFFW()
+{
+  LinearPoint point = point_.linear_point;
+
+  double acceleration = point.acceleration.meters();
+  double velocity = point.velocity.meters();
+
+  double output = linear_ffw_.output(acceleration, velocity);
+
+  return Matrix<double>::ones().multiply(output);
+}
+
+Matrix<double> Tracker::rotationalFFW()
+{
+  RotationalPoint point = point_.rotational_point;
+
+  double acceleration = point.acceleration.radians();
+  double velocity = point.velocity.radians();
+
+  double output = rotational_ffw_.output(acceleration, velocity);
+
+  return Matrix<double>::ones().multiply(output).oppose();
+}
+
+Matrix<double> Tracker::linearCorrection()
+{
+  Matrix<double> current = encoders_.map<double>(
+    [] (Encoder &encoder) -> double {
+      return encoder.displacement().meters();
+    }
+  ).straighten();
+
+  Matrix<double> setpoint = Matrix<double>::ones().multiply(
+    point_.linear_point.displacement.meters()
+  );
+
+  return encoder_pid_.mapWith<double, double, double>(
+    current,
+    setpoint,
+    [] (PIDFunction &pid, double &current, double &setpoint) -> double {
+      return pid.response(current, setpoint);
+    }
+  );
+}
+
+Matrix<double> Tracker::rotationalCorrection()
 {
   Orientation *orientation = Orientation::getInstance();
 
   orientation->update();
 
-  double heading_degrees = - orientation->getHeading();
-  AngleUnit heading = AngleUnit::fromDegrees(heading_degrees);
+  double current = - orientation->getHeading();
+  double setpoint = point_.rotational_point.displacement.degrees();
 
-  double abstract = point.rotational_point.displacement.abstract();
-  abstract -= heading.abstract();
-  point.rotational_point.displacement = AngleUnit::fromAbstract(abstract);
-}
+  double response = gyro_pid_.response(current, setpoint);
 
-void Tracker::addRangeCorrection(LinearRotationalPoint &point)
-{
-  RangeSensors.updateReadings();
-
-  double error = - RangeSensors.errorFromCenter();
-  double response = range_pid_.response(error, 0);
-
-  double radians = point.rotational_point.displacement.radians();
-  radians += response;
-  point.rotational_point.displacement = AngleUnit::fromRadians(radians);
+  return Matrix<double>::ones().multiply(response).oppose();
 }
 
 }
