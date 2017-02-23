@@ -44,9 +44,12 @@ void Straight::run()
 {
   TrackerOptions options;
 
-  options.wheel_pid_parameters = { 0.0, 0.0, 0.0 };
-  options.range_pid_parameters = { 0.0, 0.0, 0.0 };
-  options.gyro_pid_parameters  = { 0.0, 0.0, 0.0 };
+  options.linear_ffw_parameters     = { 0.0, 0.0 };
+  options.rotational_ffw_parameters = { 0.0, 0.0 };
+
+  options.encoder_pid_parameters = { 0.0, 0.0, 0.0 };
+  options.gyro_pid_parameters    = { 0.0, 0.0, 0.0 };
+  options.range_pid_parameters   = { 0.0, 0.0, 0.0 };
 
   TrapezoidalConstraints<LengthUnit> trapezoidal_constraints;
 
