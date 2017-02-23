@@ -21,11 +21,11 @@ void Orientation::init() {
   // Initialize the MPU9150
   mpu_.initialize();
   LOG(mpu_.testConnection() ?
-      F("MPU9150 connection successful\n") :
-      F("MPU9150 connection failed\n"));
+      "MPU9150 connection successful\n" :
+      "MPU9150 connection failed\n");
 
   // Attach the interrupt vector
-  LOG(F("Enabling MPU9150 interrupt detection...\n"));
+  LOG("Enabling MPU9150 interrupt detection...\n");
   pinMode(IMU_INTERRUPT_PIN, INPUT);
 
 #ifdef CORE_TEENSY
@@ -111,7 +111,7 @@ Orientation& Orientation::getInstance() {
 }
 
 void Orientation::calibrate() {
-  LOG(F("Calibrating gyro...\n"));
+  LOG("Calibrating gyro...\n");
 
   mpu_.setZGyroOffset(0);
   secondary_gyro_offset_ = 0;
@@ -140,7 +140,7 @@ void Orientation::calibrate() {
       if (samples > 10
           && abs(((float)total) / samples - last_gyro_reading_)
                 > 2 * sqrt(M2 / samples)) {
-        LOG(F("Calibration failed, restarting calibration...\n"));
+        LOG("Calibration failed, restarting calibration...\n");
         calibrate();
         return;
       }
@@ -156,11 +156,11 @@ void Orientation::calibrate() {
     offset += total / samples;
     mpu_.setZGyroOffset(-offset);
 
-    LOG(F("Primary offset: %i\n"), offset);
-    LOG(F("Samples: %lu\n"), samples);
+    LOG("Primary offset: %i\n", offset);
+    LOG("Samples: %lu\n", samples);
   }
 
-  LOG(F("Rounds: %li\n"), rounds);
+  LOG("Rounds: %li\n", rounds);
 
   // Calculate extra floating-point offset to add to integer offset stored
   // on the IMU itself.  This should be less than 1 if things are done
@@ -183,10 +183,10 @@ void Orientation::calibrate() {
   }
 
   secondary_gyro_offset_ = ((float)total) / samples;
-  LOG(F("Secondary offset: %.10f\n"), secondary_gyro_offset_);
+  LOG("Secondary offset: %.10f\n", secondary_gyro_offset_);
 
   raw_heading_ = 0;
-  LOG(F("Gyro calibration successful\n"));
+  LOG("Gyro calibration successful\n");
 }
 
 bool Orientation::update() {
@@ -210,7 +210,7 @@ bool Orientation::update() {
   if ((mpu_int_status & 0x10) || fifo_count_ == 1024) {
     // reset so we can continue cleanly
     mpu_.resetFIFO();
-    LOG(F("FIFO overflow!\n"));
+    LOG("FIFO overflow!\n");
     return false;
 
   // check for data ready interrupt
