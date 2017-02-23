@@ -21,5 +21,5 @@ void Encoder::displacement(Motion::LengthUnit value)
 
 Motion::LengthUnit Encoder::velocity()
 {
-  return Motion::LengthUnit::fromCounts(encoder_.stepRate());
+  return Motion::LengthUnit::fromCounts(1e6 * encoder_.stepRate());
 }

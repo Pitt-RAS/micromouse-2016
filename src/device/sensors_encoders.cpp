@@ -32,7 +32,7 @@ static void write(Encoder &encoder, float value)
 
 static float velocity(Encoder &encoder)
 {
-  return 1000.0 * encoder.velocity().meters();
+  return encoder.velocity().meters() / 1000.0;
 }
 
 static float extrapolate(Encoder &encoder)
