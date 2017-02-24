@@ -70,6 +70,11 @@ AngleUnit AngleUnit::fromRadians(double value)
   return AngleUnit(kDegreesPerRadian * value);
 }
 
+AngleUnit AngleUnit::fromRotations(double value)
+{
+  return AngleUnit(kDegreesPerRotation * value);
+}
+
 double AngleUnit::abstract()
 {
   return degrees();
@@ -83,6 +88,11 @@ double AngleUnit::degrees()
 double AngleUnit::radians()
 {
   return degrees_ / kDegreesPerRadian;
+}
+
+double AngleUnit::rotations()
+{
+  return degrees_ / kDegreesPerRotation;
 }
 
 AngleUnit::AngleUnit(double degrees) : degrees_(degrees)

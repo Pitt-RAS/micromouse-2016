@@ -50,14 +50,17 @@ class AngleUnit
 
     static AngleUnit fromDegrees(double value);
     static AngleUnit fromRadians(double value);
+    static AngleUnit fromRotations(double value);
 
     double abstract();
 
     double degrees();
     double radians();
+    double rotations();
 
   private:
-    static constexpr double kDegreesPerRadian = 180 / M_PI;
+    static constexpr double kDegreesPerRadian = 180.0 / M_PI;
+    static constexpr double kDegreesPerRotation = 360.0;
 
     AngleUnit(double degrees);
 
