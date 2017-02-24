@@ -44,12 +44,12 @@ void Straight::run()
 {
   TrackerOptions options;
 
-  options.linear_ffw_parameters     = { 0.0, 0.0 };
+  options.linear_ffw_parameters     = { 0.005, 0.26 };
   options.rotational_ffw_parameters = { 0.0, 0.0 };
 
-  options.encoder_pid_parameters = { 0.0, 0.0, 0.0 };
-  options.gyro_pid_parameters    = { 0.0, 0.0, 0.0 };
-  options.range_pid_parameters   = { 0.0, 0.0, 0.0 };
+  options.encoder_pid_parameters = { 100.0, 0.0, 0.0 };
+  options.gyro_pid_parameters    = { 0.006, 0.0, 0.0 };
+  options.range_pid_parameters   = { 0.001, 0.0, 0.0 };
 
   options.diagonal_correction = diagonal_correction_;
 

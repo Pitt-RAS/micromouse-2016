@@ -4,7 +4,7 @@
 
 namespace Motion {
 
-const LengthUnit GyroResetter::kTotalDistance = LengthUnit::fromCells(0.0);
+const LengthUnit GyroResetter::kTotalDistance = LengthUnit::fromCells(0.5);
 
 const LengthUnit GyroResetter::kDistancePerPoint = LengthUnit::fromAbstract(
                                           kTotalDistance.abstract() / kPoints);

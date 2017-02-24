@@ -15,7 +15,7 @@ class GyroResetter
     void point(LinearRotationalPoint point);
 
   private:
-    static constexpr unsigned kPoints = 0;
+    static constexpr unsigned kPoints = 20;
     static const LengthUnit kTotalDistance;
 
     static const LengthUnit kDistancePerPoint;

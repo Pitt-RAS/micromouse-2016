@@ -50,9 +50,9 @@ namespace {
 
 }
 
-const AngleUnit Pivot::kMaxVelocity = AngleUnit::fromRotations(0.0);
-const AngleUnit Pivot::kAcceleration = AngleUnit::fromRotations(0.0);
-const AngleUnit Pivot::kDeceleration = AngleUnit::fromRotations(0.0);
+const AngleUnit Pivot::kMaxVelocity = AngleUnit::fromRotations(0.35);
+const AngleUnit Pivot::kAcceleration = AngleUnit::fromRotations(4.0);
+const AngleUnit Pivot::kDeceleration = AngleUnit::fromRotations(4.0);
 
 AngleUnit Pivot::Angle::toContinuous()
 {
@@ -86,9 +86,9 @@ void Pivot::run()
   TrackerOptions options;
 
   options.linear_ffw_parameters     = { 0.0, 0.0 };
-  options.rotational_ffw_parameters = { 0.0, 0.0 };
+  options.rotational_ffw_parameters = { 0.002, 0.052 };
 
-  options.encoder_pid_parameters = { 0.0, 0.0, 0.0 };
+  options.encoder_pid_parameters = { 50.0, 0.0, 0.0 };
 
   options.end_condition = TrackerOptions::kGyroAngle;
   options.end_condition_data.angle = shortAngle();

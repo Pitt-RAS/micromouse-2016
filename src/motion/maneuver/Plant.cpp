@@ -18,7 +18,7 @@ namespace {
       static const TimeUnit kFinalTime;
   };
 
-  const TimeUnit LocalProfile::kFinalTime = TimeUnit::fromSeconds(0.0);
+  const TimeUnit LocalProfile::kFinalTime = TimeUnit::fromSeconds(1.0);
 
   LinearRotationalPoint LocalProfile::pointAtTime(TimeUnit time)
   {
@@ -43,8 +43,8 @@ void Plant::run()
 
   TrackerOptions options;
 
-  options.encoder_pid_parameters = { 0.0, 0.0, 0.0 };
-  options.gyro_pid_parameters = { 0.0, 0.0, 0.0 };
+  options.encoder_pid_parameters = { 100.0, 0.0, 0.0 };
+  options.gyro_pid_parameters = { 0.015, 0.00000005, 0.0 };
 
   options.end_plant = false;
 
