@@ -71,10 +71,10 @@ void Pivot::run()
   TrackerOptions options;
 
   options.linear_ffw_parameters     = { 0.0, 0.0 };
-  options.rotational_ffw_parameters = { 0.0, 0.0 };
+  options.rotational_ffw_parameters = { 0.001805, 0.0200 };
 
-  options.encoder_pid_parameters = { 0.0, 0.0, 0.0 };
-  options.gyro_pid_parameters    = { 0.0, 0.0, 0.0 };
+  options.encoder_pid_parameters = { 200.0, 0.0, 0.0 };
+  options.gyro_pid_parameters    = { 0.0060, 0.000000012, 0.250 };
 
   TrapezoidalConstraints<AngleUnit> trapezoidal_constraints;
 
