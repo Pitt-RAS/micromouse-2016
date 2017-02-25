@@ -107,7 +107,6 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
     RangeSensors.updateReadings();
     rangeOffset = range_PID.Calculate(RangeSensors.errorFromCenter(), 0);
     gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
-
     if (abs(orientation->getHeading()) > 60) {
       freakOut("BAD1");
     }
