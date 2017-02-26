@@ -913,19 +913,23 @@ void ContinuousRobotDriver::proceed(Compass8 dir, int distance)
   setDir(dir);
 }
 
-ContinuousRobotDriver::ContinuousRobotDriver(
-    int x, int y, Compass8 direction, bool begin_from_back)
+ContinuousRobotDriver::ContinuousRobotDriver()
     : moving_(false), left_back_wall_(false), pivot_turns_in_a_row_(0)
 {
-  setX(x);
-  setY(y);
-  setDir(direction);
-
   search_velocity_ = PersistantStorage::getSearchVelocity();
   motion_set_maxVel_straight(search_velocity_);
 
   motion_set_maxAccel_straight(PersistantStorage::getSearchAccel());
   motion_set_maxDecel_straight(-PersistantStorage::getSearchDecel());
+}
+
+ContinuousRobotDriver::ContinuousRobotDriver(
+    int x, int y, Compass8 direction, bool begin_from_back)
+    : ContinuousRobotDriver()
+{
+  setX(x);
+  setY(y);
+  setDir(direction);
 
   if (!begin_from_back)
     left_back_wall_ = true;
