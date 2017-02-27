@@ -37,7 +37,7 @@ namespace {
 
 }
 
-Straight::Straight(LengthUnit length) : Straight(length, false)
+Straight::Straight(LengthUnit length) : Straight(length, false, false)
 {}
 
 void Straight::run()
@@ -50,6 +50,8 @@ void Straight::run()
   options.encoder_pid_parameters = { 0.0, 0.0, 0.0 };
   options.gyro_pid_parameters    = { 0.0, 0.0, 0.0 };
   options.range_pid_parameters   = { 0.0, 0.0, 0.0 };
+
+  options.diagonal_correction = diagonal_correction_;
 
   TrapezoidalConstraints<LengthUnit> trapezoidal_constraints;
 
@@ -71,11 +73,17 @@ void Straight::run()
   transition({ trapezoidal_constraints.final_velocity });
 }
 
-Straight::Straight(LengthUnit length, bool zero_final_velocity) :
-  length_(length), zero_final_velocity_(zero_final_velocity)
+Straight::Straight(LengthUnit length,
+                          bool zero_final_velocity, bool diagonal_correction) :
+  length_(length),
+  zero_final_velocity_(zero_final_velocity),
+  diagonal_correction_(diagonal_correction)
 {}
 
-Stop::Stop(LengthUnit length) : Straight(length, true)
+Stop::Stop(LengthUnit length) : Straight(length, true, false)
+{}
+
+Diagonal::Diagonal(LengthUnit length) : Straight(length, false, true)
 {}
 
 }

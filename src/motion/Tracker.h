@@ -18,6 +18,8 @@ struct TrackerOptions
   PIDParameters encoder_pid_parameters = { 0.0, 0.0, 0.0 };
   PIDParameters    gyro_pid_parameters = { 0.0, 0.0, 0.0 };
   PIDParameters   range_pid_parameters = { 0.0, 0.0, 0.0 };
+
+  bool diagonal_correction = false;
 };
 
 class Tracker
