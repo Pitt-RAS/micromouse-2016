@@ -27,22 +27,22 @@ LengthUnit LengthUnit::fromCounts(double value)
   return LengthUnit(kMetersPerCount * value);
 }
 
-double LengthUnit::abstract()
+double LengthUnit::abstract() const
 {
   return meters();
 }
 
-double LengthUnit::meters()
+double LengthUnit::meters() const
 {
   return meters_;
 }
 
-double LengthUnit::cells()
+double LengthUnit::cells() const
 {
   return meters_ / kMetersPerCell;
 }
 
-double LengthUnit::counts()
+double LengthUnit::counts() const
 {
   return meters_ / kMetersPerCount;
 }
@@ -75,22 +75,22 @@ AngleUnit AngleUnit::fromRotations(double value)
   return AngleUnit(kDegreesPerRotation * value);
 }
 
-double AngleUnit::abstract()
+double AngleUnit::abstract() const
 {
   return degrees();
 }
 
-double AngleUnit::degrees()
+double AngleUnit::degrees() const
 {
   return degrees_;
 }
 
-double AngleUnit::radians()
+double AngleUnit::radians() const
 {
   return degrees_ / kDegreesPerRadian;
 }
 
-double AngleUnit::rotations()
+double AngleUnit::rotations() const
 {
   return degrees_ / kDegreesPerRotation;
 }
@@ -113,12 +113,12 @@ TimeUnit TimeUnit::fromSeconds(double value)
   return TimeUnit(value);
 }
 
-double TimeUnit::abstract()
+double TimeUnit::abstract() const
 {
   return seconds();
 }
 
-double TimeUnit::seconds()
+double TimeUnit::seconds() const
 {
   return seconds_;
 }

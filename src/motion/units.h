@@ -24,11 +24,11 @@ class LengthUnit
     static LengthUnit fromCells(double value);
     static LengthUnit fromCounts(double value);
 
-    double abstract();
+    double abstract() const;
 
-    double meters();
-    double cells();
-    double counts();
+    double meters() const;
+    double cells() const;
+    double counts() const;
 
   private:
     static constexpr double kMetersPerCell = 0.18;
@@ -52,11 +52,11 @@ class AngleUnit
     static AngleUnit fromRadians(double value);
     static AngleUnit fromRotations(double value);
 
-    double abstract();
+    double abstract() const;
 
-    double degrees();
-    double radians();
-    double rotations();
+    double degrees() const;
+    double radians() const;
+    double rotations() const;
 
   private:
     static constexpr double kDegreesPerRadian = 180.0 / M_PI;
@@ -74,8 +74,8 @@ class TimeUnit
     static TimeUnit fromAbstract(double value);
     static TimeUnit fromSeconds(double value);
 
-    double abstract();
-    double seconds();
+    double abstract() const;
+    double seconds() const;
 
   private:
     TimeUnit(double seconds);
