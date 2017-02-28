@@ -76,6 +76,9 @@ int Driver::getY()
 
 void Driver::move(Path<16, 16>& path)
 {
+  if (path.isEmpty())
+    return;
+
   Compass8 current_direction = path.nextDirection();
   Compass8 last_direction;
 
