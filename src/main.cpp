@@ -118,8 +118,6 @@ void kaos()
   Orientation& orientation = Orientation::getInstance();
 
   if (knowsBestPath(target_x, target_y)) {
-    Compass8 absolute_end_direction;
-
     ContinuousRobotDriver maze_load_driver;
     Maze<16, 16> maze;
     maze_load_driver.loadState(maze);
@@ -137,7 +135,9 @@ void kaos()
     enc_right_back_write(0);
     orientation.resetHeading();
 
-    absolute_end_direction = parser.getEndDirection();
+    Compass8 start_dir = maze_load_driver.getDirIMadeThisPublic();
+    Compass8 delta_dir = parser.getTotalRotation();
+    Compass8 end_dir = (Compass8)(((int)start_dir + (int)delta_dir) % 8);
 
     driver.execute(parser.getMoveList());
     char buf[5];
@@ -146,7 +146,7 @@ void kaos()
     gUserInterface.showString(buf, 4);
     searchFinishMelody();
 
-    ContinuousRobotDriver other_driver(parser.end_x, parser.end_y, absolute_end_direction, false);
+    ContinuousRobotDriver other_driver(parser.end_x, parser.end_y, end_dir, false);
 
     {
       FloodFillPath<16, 16>

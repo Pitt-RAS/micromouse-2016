@@ -105,7 +105,7 @@ void PathParser::buildRelativePath(Path<16, 16> *abspath){
 //  return cleanedPath;
 //}
 
-Compass8 PathParser::getEndDirection(){
+Compass8 PathParser::getTotalRotation() {
   int size = move_list.getSize();
   int i;
   int angle = 0;

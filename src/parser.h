@@ -118,7 +118,7 @@ class PathParser {
     return move_list.getSize();
    }
 
-   Compass8 getEndDirection();
+   Compass8 getTotalRotation();
 //   std::queue<int> cleanPath();
     size_t start_x, start_y;
     size_t end_x, end_y;
