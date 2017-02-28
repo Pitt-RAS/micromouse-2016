@@ -80,7 +80,7 @@ void Driver::move(Path<16, 16>& path)
     return;
 
   Compass8 current_direction = path.nextDirection();
-  Compass8 last_direction;
+  Compass8 last_direction = current_direction;
 
   int move_distance = 0;
 
