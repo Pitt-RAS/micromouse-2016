@@ -76,32 +76,29 @@ int Driver::getY()
 
 void Driver::move(Path<16, 16>& path)
 {
-  Compass8 movement_direction, next_direction;
-  int movement_distance;
-
-  if (path.isEmpty()) return;
-
-  next_direction = path.nextDirection();
-
   if (path.isEmpty())
-    move(next_direction, 1);
+    return;
 
-  while (!path.isEmpty())
-  {
-    movement_direction = next_direction;
-    movement_distance = 0;
+  Compass8 current_direction = path.nextDirection();
+  Compass8 last_direction = current_direction;
 
-    while (next_direction == movement_direction) {
-      movement_distance++;
+  int move_distance = 0;
 
-      if (path.isEmpty())
-        break;
+  while (!path.isEmpty()) {
+    last_direction = current_direction;
+    current_direction = path.nextDirection();
+    move_distance++;
 
-      next_direction = path.nextDirection();
+    if (last_direction != current_direction) {
+      move(last_direction, move_distance);
+      move_distance = 0;
     }
-
-    move(movement_direction, movement_distance);
   }
+
+  if (last_direction == current_direction)
+    move(last_direction, move_distance + 1);
+  else
+    move(current_direction, 1);
 }
 
 void Driver::saveState(Maze<16, 16>& maze) {
