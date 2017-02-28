@@ -165,7 +165,8 @@ void kaos()
 
     }
 
-    other_driver.move(kNorth, 0);
+    FloodFillPath<16, 16> path(maze, 0, 0, 0, 0);
+    other_driver.move(path);
   }
 }
 
