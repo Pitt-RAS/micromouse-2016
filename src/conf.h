@@ -83,10 +83,12 @@
 
 // Gyro parameters
 #define GYRO_LSB_PER_DEG_PER_S 16.295
-#define GYRO_CALIBRATION_SAMPLES 2000
-#define GYRO_CALIBRATION_ROUNDS 3
-#define GYRO_OFFSET_SETTING -43
-#define GYRO_SECONDARY_OFFSET 11.0050
+
+// target 1 sigma confidence interval on calibrated gyro offset, calibration
+// time goes like square of inverse of this
+#define GYRO_CALIBRATION_TARGET_UNCERTAINTY 0.01
+#define GYRO_OFFSET_SETTING -62
+#define GYRO_SECONDARY_OFFSET 0.3563
 
 // Range sensor delays in us
 #define RANGE_SENSOR_ON_TIME 50 // length of LED pulse

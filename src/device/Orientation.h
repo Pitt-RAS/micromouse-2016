@@ -7,12 +7,13 @@
 
 class Orientation {
   private:
-    Orientation();
-    static void interruptHandler();
+    Orientation() = default;
+    void init();
+    void interruptHandler();
 
-    static volatile bool mpu_interrupt_;
+    static volatile bool initialized_;
 
-    static Orientation* instance_;
+    volatile bool mpu_interrupt_ = false;
 
     MPU9150PittMicromouse mpu_;
     uint16_t packet_size_ = 8;
@@ -41,7 +42,10 @@ class Orientation {
     float last_mag_heading_;
   public:
     bool handler_update_ = true;
-    static Orientation* getInstance();
+
+    // NEVER call this from an interrupt
+    // (unless you're Orientation::interruptHandler, then it's kinda maybe ok)
+    static Orientation& getInstance();
 
     // determine the right offset for the gyro
     void calibrate();

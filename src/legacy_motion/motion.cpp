@@ -29,9 +29,7 @@ static float max_vel_straight = MAX_VEL_STRAIGHT;
 static float max_vel_diag = MAX_VEL_DIAG;
 static float max_vel_rotate = MAX_VEL_ROTATE;
 
-static Orientation* orientation = NULL;
-
-// instantiate the turn profiles
+// instantiate the turn lookup tables
 const SweptTurnProfile turn_45_table(SWEPT_TURN_45_FORWARD_SPEED,
                                      SWEPT_TURN_45_ANGLE);
 const SweptTurnProfile turn_90_table(SWEPT_TURN_90_FORWARD_SPEED,
@@ -67,9 +65,7 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
   MotionCalc motionCalc (distance-drift, max_vel_straight, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
 
-  if (orientation == NULL) {
-    orientation = Orientation::getInstance();
-  }
+  Orientation& orientation = Orientation::getInstance();
 
   PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
@@ -86,11 +82,11 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
 
   //float lastRangeError = 0;
   bool passedMiddle = false;
-  orientation->handler_update_ = false;
+  orientation.handler_update_ = false;
 
   // execute motion
   while (moveTime < motionCalc.getTotalTime()) {
-    orientation->update();
+    orientation.update();
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
@@ -103,9 +99,9 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
     // to the left wall, requiring a positive angle to fix it.
     RangeSensors.updateReadings();
     rangeOffset = range_PID.Calculate(RangeSensors.errorFromCenter(), 0);
-    gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
+    gyroOffset += gyro_PID.Calculate(orientation.getHeading()*distancePerDegree, rangeOffset);
 
-    if (abs(orientation->getHeading()) > 60) {
+    if (abs(orientation.getHeading()) > 60) {
       freakOut("BAD1");
     }
 
@@ -161,8 +157,8 @@ void motion_forward(float distance, float current_speed, float exit_speed) {
 
   uint8_t old_SREG = SREG;
   noInterrupts();
-  orientation->update();
-  orientation->handler_update_ = true;
+  orientation.update();
+  orientation.handler_update_ = true;
   SREG = old_SREG;
 
   enc_left_front_write(0);
@@ -199,9 +195,7 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
   MotionCalc motionCalc (distance-drift, max_vel_diag, current_speed, exit_speed, max_accel_straight,
                          max_decel_straight);
 
-  if (orientation == NULL) {
-    orientation = Orientation::getInstance();
-  }
+  Orientation& orientation = Orientation::getInstance();
 
   PIDController left_back_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
@@ -216,11 +210,11 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
 
   RangeSensors.updateReadings();
 
-  orientation->handler_update_ = false;
+  orientation.handler_update_ = false;
 
   // execute motion
   while (moveTime < motionCalc.getTotalTime()) {
-    orientation->update();
+    orientation.update();
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
@@ -241,14 +235,14 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
       rangeOffset = 0;
     }
     rangeOffset *= KP_DIAG_RANGE;
-    gyroOffset += gyro_PID.Calculate(orientation->getHeading()*distancePerDegree, rangeOffset);
+    gyroOffset += gyro_PID.Calculate(orientation.getHeading()*distancePerDegree, rangeOffset);
 
-    if (abs(orientation->getHeading()) > 60) {
+    if (abs(orientation.getHeading()) > 60) {
       freakOut("BAD2");
       //menu.showString("FACK", 4);
       //delay(3000);
       //char buf[5];
-      //sprintf(buf, "%04f", orientation->getHeading());
+      //sprintf(buf, "%04f", orientation.getHeading());
       //freakOut(buf);
     }
 
@@ -289,8 +283,8 @@ void motion_forward_diag(float distance, float current_speed, float exit_speed) 
 
   uint8_t old_SREG = SREG;
   noInterrupts();
-  orientation->update();
-  orientation->handler_update_ = true;
+  orientation.update();
+  orientation.handler_update_ = true;
   SREG = old_SREG;
 
   enc_left_front_write(0);
@@ -327,9 +321,7 @@ void motion_collect(float distance, float current_speed, float exit_speed){
 
   PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
 
-  if (orientation == NULL) {
-    orientation = Orientation::getInstance();
-  }
+  Orientation& orientation = Orientation::getInstance();
   rotationOffset = 0;
 
   int num_range_value = distance/MOTION_COLLECT_MM_PER_READING;
@@ -355,7 +347,7 @@ void motion_collect(float distance, float current_speed, float exit_speed){
   // execute motion
   while (idealDistance != distance) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
-    orientation->update();
+    orientation.update();
     idealDistance = motionCalc.idealDistance(moveTime);
     idealVelocity = motionCalc.idealVelocity(moveTime);
 
@@ -395,7 +387,7 @@ void motion_collect(float distance, float current_speed, float exit_speed){
       logger.nextCycle();
     }
 
-    rotationOffset += rotation_PID.Calculate(orientation->getHeading() * distancePerDegree, 0);
+    rotationOffset += rotation_PID.Calculate(orientation.getHeading() * distancePerDegree, 0);
 
     currentFrontLeft = enc_left_front_extrapolate();
     currentBackLeft = enc_left_back_extrapolate();
@@ -488,9 +480,7 @@ void motion_rotate(float angle) {
   MotionCalc motionCalc (linearDistance - drift, max_vel_rotate, current_speed, 0, max_accel_rotate,
                          max_decel_rotate);
 
-  if (orientation == NULL) {
-    orientation = Orientation::getInstance();
-  }
+  Orientation& orientation = Orientation::getInstance();
 
   PIDController left_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
   PIDController right_front_PID (KP_POSITION, KI_POSITION, KD_POSITION);
@@ -502,10 +492,10 @@ void motion_rotate(float angle) {
   moveTime = 0;
 
   // the right will always be the negative of the left in order to rotate on a point.
-  orientation->handler_update_ = false;
+  orientation.handler_update_ = false;
   while (idealLinearDistance != linearDistance - drift) {
-    orientation->update();
-    if (orientation->getHeading() > 180)
+    orientation.update();
+    if (orientation.getHeading() > 180)
       break;
 
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
@@ -513,10 +503,10 @@ void motion_rotate(float angle) {
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
     gyro_correction = gyro_PID.Calculate(
-        orientation->getHeading() * distancePerDegree,
+        orientation.getHeading() * distancePerDegree,
         idealLinearDistance);
 
-    if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
+    if (abs(orientation.getHeading() - idealLinearDistance / distancePerDegree) > 60) {
       freakOut("BAD3");
     }
 
@@ -552,12 +542,12 @@ void motion_rotate(float angle) {
     logger.logMotionType('p');
     logger.nextCycle();
   }
-  //menu.showInt(orientation->getHeading(),4);
+  //menu.showInt(orientation.getHeading(),4);
   uint8_t old_SREG = SREG;
   noInterrupts();
-  orientation->update();
-  orientation->incrementHeading(-angle);
-  orientation->handler_update_ = true;
+  orientation.update();
+  orientation.incrementHeading(-angle);
+  orientation.handler_update_ = true;
   SREG = old_SREG;
 
   enc_left_front_write(0);
@@ -587,9 +577,7 @@ void motion_gyro_rotate(float angle) {
   MotionCalc motionCalc (linearDistance, max_vel_rotate, current_speed, 0, max_accel_rotate,
                          max_decel_rotate);
 
-  if (orientation == NULL) {
-    orientation = Orientation::getInstance();
-  }
+  Orientation& orientation = Orientation::getInstance();
 
   PIDController rotation_PID (KP_ROTATION, KI_ROTATION, KD_ROTATION);
 
@@ -599,18 +587,18 @@ void motion_gyro_rotate(float angle) {
   // the right will always be the negative of the left in order to rotate on a point.
   idealLinearDistance = 0;
   while (idealLinearDistance != linearDistance) {
-    orientation->update();
+    orientation.update();
 
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
     idealLinearDistance = motionCalc.idealDistance(moveTime);
     idealLinearVelocity = motionCalc.idealVelocity(moveTime);
 
     rotation_correction = rotation_PID.Calculate(
-        orientation->getHeading() * distancePerDegree,
+        orientation.getHeading() * distancePerDegree,
         idealLinearDistance);
     Serial.println(rotation_correction);
 
-    if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
+    if (abs(orientation.getHeading() - idealLinearDistance / distancePerDegree) > 60) {
       freakOut("BAD4");
     }
 
@@ -633,7 +621,7 @@ void motion_gyro_rotate(float angle) {
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
-  orientation->incrementHeading(-angle);
+  orientation.incrementHeading(-angle);
 
   float current_left_velocity = (enc_left_front_velocity()
                                   + enc_left_back_velocity()) / 2;
@@ -658,9 +646,7 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
   float total_time;
   const SweptTurnProfile* turn_table = NULL;
 
-  if (orientation == NULL) {
-    orientation = Orientation::getInstance();
-  }
+  Orientation& orientation = Orientation::getInstance();
 
   //float drift = (enc_left_front_extrapolate() + enc_right_front_extrapolate()
   //               + enc_left_back_extrapolate() + enc_right_back_extrapolate())/4;
@@ -724,12 +710,12 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
   // zero clock before move
   move_time = 0;
 
-  orientation->handler_update_ = false;
+  orientation.handler_update_ = false;
 
   // execute motion
   while (move_time_scaled < total_time * 1000000) {
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
-    orientation->update();
+    orientation.update();
 
     move_time_scaled = move_time * time_scaling / size_scaling;
     
@@ -739,10 +725,10 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
         * sign * turn_table->getAngle(move_time_scaled / 1000000.0);
 
     gyro_correction = gyro_PID.Calculate(
-        orientation->getHeading() * distancePerDegree,
+        orientation.getHeading() * distancePerDegree,
         rotation_offset);
 
-    if (abs(orientation->getHeading() - rotation_offset / distancePerDegree) > 60) {
+    if (abs(orientation.getHeading() - rotation_offset / distancePerDegree) > 60) {
       freakOut("BAD5");
     }
 
@@ -782,9 +768,9 @@ void motion_corner(SweptTurnType turn_type, float speed, float size_scaling) {
 
   uint8_t old_SREG = SREG;
   noInterrupts();
-  orientation->update();
-  orientation->incrementHeading(-sign * turn_table->getTotalAngle());
-  orientation->handler_update_ = true;
+  orientation.update();
+  orientation.incrementHeading(-sign * turn_table->getTotalAngle());
+  orientation.handler_update_ = true;
   SREG = old_SREG;
 
   enc_left_front_write(0);
@@ -814,14 +800,12 @@ void motion_hold(unsigned int time) {
 
   currentTime = 0;
 
-  if (orientation == NULL) {
-    orientation = Orientation::getInstance();
-  }
+  Orientation& orientation = Orientation::getInstance();
 
-  orientation->handler_update_ = false;
+  orientation.handler_update_ = false;
 
   while (currentTime / 1000 < time) {
-    orientation->update();
+    orientation.update();
     errorFrontLeft = enc_left_front_extrapolate();
     errorFrontRight = enc_right_front_extrapolate();
     errorBackLeft = enc_left_back_extrapolate();
@@ -843,8 +827,8 @@ void motion_hold(unsigned int time) {
 
   uint8_t old_SREG = SREG;
   noInterrupts();
-  orientation->update();
-  orientation->handler_update_ = true;
+  orientation.update();
+  orientation.handler_update_ = true;
   SREG = old_SREG;
 
   motor_lf.Set(0, 0);
@@ -864,14 +848,12 @@ void motion_hold_range(int setpoint, unsigned int time) {
 
   currentTime = 0;
 
-  if (orientation == NULL) {
-    orientation = Orientation::getInstance();
-  }
+  Orientation& orientation = Orientation::getInstance();
 
-  orientation->handler_update_ = false;
+  orientation.handler_update_ = false;
 
   while (currentTime / 1000 < time) {
-    orientation->update();
+    orientation.update();
 
     RangeSensors.frontLeftSensor.updateRange();
     RangeSensors.frontRightSensor.updateRange();
@@ -914,8 +896,8 @@ void motion_hold_range(int setpoint, unsigned int time) {
 
   uint8_t old_SREG = SREG;
   noInterrupts();
-  orientation->update();
-  orientation->handler_update_ = true;
+  orientation.update();
+  orientation.handler_update_ = true;
   SREG = old_SREG;
 
   motor_lf.Set(0, 0);

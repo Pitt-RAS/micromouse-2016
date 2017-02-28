@@ -73,7 +73,7 @@ void micromouse_main()
 
   LOG_INIT();
 
-  Orientation::getInstance()->resetHeading();
+  Orientation::getInstance().resetHeading();
 
   MenuItem items[] = {
     { "RUN", run },
@@ -92,7 +92,7 @@ void micromouse_main()
 void run()
 {
   Navigator<ContinuousRobotDriver> navigator;
-  Orientation* orientation = Orientation::getInstance();
+  Orientation& orientation = Orientation::getInstance();
 
   gUserInterface.waitForHand();
   startMelody();
@@ -101,7 +101,7 @@ void run()
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
-  orientation->resetHeading();
+  orientation.resetHeading();
 
   navigator.findBox(PersistantStorage::getTargetXLocation(),
                     PersistantStorage::getTargetYLocation());
@@ -115,7 +115,7 @@ void kaos()
   uint8_t target_x = PersistantStorage::getTargetXLocation();
   uint8_t target_y = PersistantStorage::getTargetYLocation();
 
-  Orientation* orientation = Orientation::getInstance();
+  Orientation& orientation = Orientation::getInstance();
 
   if (knowsBestPath(target_x, target_y)) {
     Compass8 absolute_end_direction;
@@ -135,7 +135,7 @@ void kaos()
     enc_right_front_write(0);
     enc_left_back_write(0);
     enc_right_back_write(0);
-    orientation->resetHeading();
+    orientation.resetHeading();
 
     absolute_end_direction = parser.getEndDirection();
 
@@ -179,7 +179,7 @@ void turn()
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
-  Orientation::getInstance()->resetHeading();
+  Orientation::getInstance().resetHeading();
 
   motion_forward(180, 0, 0);
   motion_rotate(180);
