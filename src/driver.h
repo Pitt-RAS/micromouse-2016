@@ -290,8 +290,9 @@ class ContinuousRobotDriver : public Driver, public Turnable
     int pivot_turns_in_a_row_;
 
   public:
-    ContinuousRobotDriver(int x=0, int y=0, Compass8 direction=kNorth,
-                                                  bool begin_from_back=true);
+    ContinuousRobotDriver();
+    ContinuousRobotDriver(int x, int y, Compass8 direction,
+                          bool begin_from_back=true);
 
     void turn(Compass8 dir);
 
