@@ -225,10 +225,10 @@ template <typename ReturnType>
 Matrix<ReturnType> Matrix<Type>::map(ReturnType (*function)(Type&))
 {
   return Matrix<ReturnType>(
-    function(this->element(MatrixIndex::a)),
-    function(this->element(MatrixIndex::b)),
-    function(this->element(MatrixIndex::c)),
-    function(this->element(MatrixIndex::d))
+    function(this->elementReference(MatrixIndex::a)),
+    function(this->elementReference(MatrixIndex::b)),
+    function(this->elementReference(MatrixIndex::c)),
+    function(this->elementReference(MatrixIndex::d))
   );
 }
 
