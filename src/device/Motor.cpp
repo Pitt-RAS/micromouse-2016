@@ -7,6 +7,11 @@ Motor gMotorLB(17, 21, true);
 Motor gMotorRF(18, 22, true);
 Motor gMotorRB(19, 23, false);
 
+Motion::Matrix<Motor&> gMotor(
+  gMotorLF, gMotorRF,
+  gMotorLB, gMotorRB
+);
+
 Motor::Motor(int direction_pin, int pwm_pin, bool reversed) :
   direction_pin_(direction_pin), pwm_pin_(pwm_pin), reversed_(reversed)
 {}

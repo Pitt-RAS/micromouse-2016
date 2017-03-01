@@ -1,6 +1,8 @@
 #ifndef MOTOR_H
 #define MOTOR_H
 
+#include "../motion/Matrix.h"
+
 class Motor
 {
   public:
@@ -18,5 +20,6 @@ class Motor
 };
 
 extern Motor gMotorLF, gMotorLB, gMotorRF, gMotorRB;
+extern Motion::Matrix<Motor&> gMotor;
 
 #endif

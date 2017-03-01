@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <EncoderPittMicromouse.h>
+#include "../motion/Matrix.h"
 #include "../motion/units.h"
 
 class Encoder
@@ -20,5 +21,6 @@ class Encoder
 };
 
 extern Encoder gEncoderLF, gEncoderRF, gEncoderLB, gEncoderRB;
+extern Motion::Matrix<Encoder&> gEncoder;
 
 #endif
