@@ -399,9 +399,7 @@ void PathParser::diagonalDecisions(bool approachRight){
         } else {
           move_list.enqueue(exit_right_45);
         }
-        if(path.isEmpty())
-            //move_list.enqueue(forward);
-        return;
+        move_list.enqueue(forward);
         break;
       case kEast:
         if(approachRight){
