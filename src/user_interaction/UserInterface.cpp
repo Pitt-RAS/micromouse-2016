@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "../conf.h"
+#include "../device/Battery.h"
 #include "../device/RangeSensorContainer.h"
 #include "../device/MotorModel.h"
 #include "../device/Orientation.h"
@@ -219,9 +220,9 @@ void UserInterface::checkBattery()
   int whole;
   int decimal;
 
-  float voltage = (8.225 / 6.330) * (26 / 10) * (3.3 / 1023) * analogRead(BATTERY_PIN);
+  double voltage = gBattery.voltage();
 
-  if (voltage < BATTERY_VOLTAGE_WARNING) {
+  if (gBattery.isLow()) {
     tone(BUZZER_PIN, 2000);
     delay(1000);
     analogWriteFrequency(MOTOR_LF_PWM_PIN, 46875);
