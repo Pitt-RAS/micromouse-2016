@@ -1,5 +1,6 @@
 #include <cmath>
 #include <Arduino.h>
+#include "Battery.h"
 #include "Motor.h"
 
 Motor gMotorLF(16, 20, false);
@@ -18,6 +19,8 @@ Motor::Motor(int direction_pin, int pwm_pin, bool reversed) :
 
 void Motor::voltage(double value)
 {
+  value = gBattery.adjustVoltage(value);
+
   if (value < -1.0) value = -1.0;
   if (value >  1.0) value =  1.0;
 
