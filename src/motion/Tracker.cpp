@@ -8,18 +8,6 @@ namespace Motion {
 Tracker::Tracker(TrackerOptions options, LinearRotationalProfile &profile) :
   options_(options),
   profile_(profile),
-  encoders_(
-    gEncoderLF,
-    gEncoderRF,
-    gEncoderLB,
-    gEncoderRB
-  ),
-  motors_(
-    gMotorLF,
-    gMotorRF,
-    gMotorLB,
-    gMotorRB
-  ),
   encoder_pid_(
     PIDFunction(options_.encoder_pid_parameters),
     PIDFunction(options_.encoder_pid_parameters),
@@ -77,7 +65,7 @@ void Tracker::setOutput()
                                 .add(linearCorrection())
                                 .add(rotationalCorrection());
 
-  motors_.forEachWith<double>(
+  gMotor.forEachWith<double>(
     voltage,
     [] (Motor &motor, double &voltage) -> void {
       motor.voltage(voltage);
@@ -99,14 +87,14 @@ void Tracker::transition()
                                 .add(linearFFW())
                                 .add(rotationalFFW());
 
-  motors_.forEachWith<double>(
+  gMotor.forEachWith<double>(
     voltage,
     [] (Motor &motor, double &voltage) -> void {
       motor.voltage(voltage);
     }
   );
 
-  encoders_.forEach(
+  gEncoder.forEach(
     [] (Encoder &encoder) -> void {
       encoder.displacement(LengthUnit::zero());
     }
@@ -139,7 +127,7 @@ Matrix<double> Tracker::rotationalFFW()
 
 Matrix<double> Tracker::linearCorrection()
 {
-  Matrix<double> current = encoders_.map<double>(
+  Matrix<double> current = gEncoder.map<double>(
     [] (Encoder &encoder) -> double {
       return encoder.displacement().meters();
     }

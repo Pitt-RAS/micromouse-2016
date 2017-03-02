@@ -33,9 +33,6 @@ class Tracker
     TrackerOptions options_;
     LinearRotationalProfile &profile_;
 
-    Matrix<Encoder&> encoders_;
-    Matrix<Motor&> motors_;
-
     Matrix<PIDFunction> encoder_pid_;
     PIDFunction gyro_pid_;
     PIDFunction range_pid_;
