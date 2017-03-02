@@ -2,6 +2,7 @@
 #define PID_FUNCTION_H
 
 #include "../legacy_motion/PIDController.h"
+#include "Matrix.h"
 
 namespace Motion {
 
@@ -22,6 +23,8 @@ class PIDFunction
   private:
     PIDController legacy_implementation_;
 };
+
+Matrix<PIDFunction> PIDMatrix(PIDParameters parameters);
 
 }
 
