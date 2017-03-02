@@ -8,12 +8,7 @@ namespace Motion {
 Tracker::Tracker(TrackerOptions options, LinearRotationalProfile &profile) :
   options_(options),
   profile_(profile),
-  encoder_pid_(
-    PIDFunction(options_.encoder_pid_parameters),
-    PIDFunction(options_.encoder_pid_parameters),
-    PIDFunction(options_.encoder_pid_parameters),
-    PIDFunction(options_.encoder_pid_parameters)
-  ),
+  encoder_pid_(PIDMatrix(options_.encoder_pid_parameters)),
   gyro_pid_(options_.gyro_pid_parameters),
   range_pid_(options_.range_pid_parameters),
   linear_ffw_(options.linear_ffw_parameters),
