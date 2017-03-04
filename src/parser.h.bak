@@ -105,7 +105,6 @@ class PathParser {
     void rightDecisions();
     void diagonalDecisions(bool approachRight);
     void buildRelativePath(Path<16, 16> *abspath);
-    bool detectStraightaway();
   public:
    Queue<int, 256> move_list;
    PathParser(Path<16, 16> *abspath);
@@ -119,7 +118,7 @@ class PathParser {
     return move_list.getSize();
    }
 
-   Compass8 getEndDirection();
+   Compass8 getTotalRotation();
 //   std::queue<int> cleanPath();
     size_t start_x, start_y;
     size_t end_x, end_y;
