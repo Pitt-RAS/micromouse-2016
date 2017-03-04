@@ -220,10 +220,10 @@ void PathParser::rightDecisions(){
       move_list.enqueue(right_90);
       move_list.enqueue(half);
 
-	  if (detectStraightaway())
-	  {
-		  move_list.enqueue(forward);
-	  }
+      if (detectStraightaway())
+      {
+        move_list.enqueue(forward);
+      }
       break;
     //right move
     case kEast:
@@ -311,10 +311,10 @@ void PathParser::leftDecisions(){
       move_list.enqueue(half);
       dir = path.peek();
 
-	  if (detectStraightaway())
-	  {
-		  move_list.enqueue(forward);
-	  }
+      if (detectStraightaway())
+      {
+        move_list.enqueue(forward);
+      }
       break;
     //right move
     case kEast:
@@ -400,10 +400,10 @@ void PathParser::diagonalDecisions(bool approachRight){
           move_list.enqueue(exit_right_45);
         }
 
-		if (detectStraightaway())
-		{
-			move_list.enqueue(forward);
-		}
+        if (detectStraightaway())
+        {
+          move_list.enqueue(forward);
+        }
         break;
       case kEast:
         if(approachRight){
