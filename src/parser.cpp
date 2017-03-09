@@ -460,23 +460,23 @@ void PathParser::diagonalDecisions(bool approachRight){
 // determines if the next sequence of moves is a straight away
 bool PathParser::detectStraightaway()
 {
-	bool isStraightawayNext = false;
+  bool isStraightawayNext = false;
 
-	Compass8 decision_dir = path.peek();
-	while (decision_dir == kNorth && !path.isEmpty())
-	{
-		path.nextDirection();
-		move_list.enqueue(forward);
+  Compass8 decision_dir = path.peek();
+  while (decision_dir == kNorth && !path.isEmpty())
+  {
+    path.nextDirection();
+    move_list.enqueue(forward);
 
-		decision_dir = path.peek();
-	}
+    decision_dir = path.peek();
+  }
 
-	if (path.isEmpty())
-	{
-		isStraightawayNext = true;
-	}
+  if (path.isEmpty())
+  {
+    isStraightawayNext = true;
+  }
 
-	return isStraightawayNext;
+  return isStraightawayNext;
 }
 
 Compass8 PathParser::relativeDir(Compass8 next_dir, Compass8 current_dir)
