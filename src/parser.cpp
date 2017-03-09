@@ -400,7 +400,7 @@ void PathParser::diagonalDecisions(bool approachRight){
           move_list.enqueue(exit_right_45);
         }
 
-        if (detectStraightaway())
+        if (detectStraightaway() && !lastMoveFlag)
         {
           move_list.enqueue(forward);
         }
