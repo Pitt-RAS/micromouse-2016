@@ -29,6 +29,8 @@ struct TrackerOptions
   union {
     AngleUnit angle;
   } end_condition_data = { .angle = AngleUnit::zero() };
+
+  bool end_plant = true;
 };
 
 class Tracker

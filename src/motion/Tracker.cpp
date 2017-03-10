@@ -1,9 +1,18 @@
 #include "../device/Orientation.h"
 #include "../device/RangeSensorContainer.h"
 #include "../user_interaction/FreakOut.h"
+#include "maneuver/Plant.h"
 #include "Tracker.h"
 
 namespace Motion {
+
+namespace {
+  bool isMoving(LinearRotationalPoint point)
+  {
+    return point.linear_point.velocity.meters() > 0.001
+            || point.rotational_point.velocity.degrees() > 0.1;
+  }
+}
 
 Tracker::Tracker(TrackerOptions options, LinearRotationalProfile &profile) :
   options_(options),
@@ -111,6 +120,21 @@ void Tracker::transition()
       motor.voltage(voltage);
     }
   );
+
+  if (options_.end_plant && !isMoving(final_point)) {
+    Matrix<double> final_displacement = Matrix<double>::ones().multiply(
+      final_point.linear_point.displacement.abstract()
+    );
+
+    gEncoder.forEachWith<double>(
+      final_displacement,
+      [] (Encoder &encoder, double &final_displacement) -> void {
+        encoder.zeroDisplacement(LengthUnit::fromAbstract(final_displacement));
+      }
+    );
+
+    Plant().run();
+  }
 
   gEncoder.forEach(
     [] (Encoder &encoder) -> void {
