@@ -20,6 +20,15 @@ struct TrackerOptions
   PIDParameters   range_pid_parameters = { 0.0, 0.0, 0.0 };
 
   bool diagonal_correction = false;
+
+  enum {
+    kFinalTime, // when time reaches profile finalTime()
+    kGyroAngle  // when gyro passes provided angle
+  } end_condition = kFinalTime;
+
+  union {
+    AngleUnit angle;
+  } end_condition_data = { .angle = AngleUnit::zero() };
 };
 
 class Tracker
@@ -40,7 +49,11 @@ class Tracker
     FFWFunction linear_ffw_;
     FFWFunction rotational_ffw_;
 
+    TimeUnit time_;
+
     LinearRotationalPoint point_;
+
+    bool endConditionMet();
 
     void safetyCheck();
 

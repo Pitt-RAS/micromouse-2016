@@ -13,31 +13,54 @@ Tracker::Tracker(TrackerOptions options, LinearRotationalProfile &profile) :
   range_pid_(options_.range_pid_parameters),
   linear_ffw_(options.linear_ffw_parameters),
   rotational_ffw_(options.rotational_ffw_parameters),
+  time_(TimeUnit::zero()),
   point_(profile_.pointAtTime(TimeUnit::zero()))
 {}
 
 void Tracker::run()
 {
   elapsedMicros timer;
-  TimeUnit time = TimeUnit::fromSeconds(timer / 1e6);
+  time_ = TimeUnit::fromSeconds(timer / 1e6);
 
   Orientation *orientation = Orientation::getInstance();
 
   orientation->handler_update_ = false;
 
-  while (time.abstract() < profile_.finalTime().abstract()) {
-    point_ = profile_.pointAtTime(time);
+  while (!endConditionMet()) {
+    point_ = profile_.pointAtTime(time_);
 
     safetyCheck();
 
     setOutput();
 
-    time = TimeUnit::fromSeconds(timer / 1e6);
+    time_ = TimeUnit::fromSeconds(timer / 1e6);
   }
 
   transition();
 
   orientation->handler_update_ = true;
+}
+
+bool Tracker::endConditionMet()
+{
+  Orientation *orientation = Orientation::getInstance();
+
+  switch (options_.end_condition) {
+    case TrackerOptions::kFinalTime:
+      if (time_.abstract() > profile_.finalTime().abstract())
+        return true;
+      break;
+
+    case TrackerOptions::kGyroAngle:
+      AngleUnit current = AngleUnit::fromDegrees(-orientation->getHeading());
+      AngleUnit limit = options_.end_condition_data.angle;
+
+      if (std::fabs(current.abstract()) > std::fabs(limit.abstract()))
+        return true;
+      break;
+  }
+
+  return false;
 }
 
 void Tracker::safetyCheck()
