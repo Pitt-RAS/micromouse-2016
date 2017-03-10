@@ -79,8 +79,8 @@ void Tracker::transition()
   orientation->incrementHeading(final_heading.degrees());
 
   Matrix<double> voltage = Matrix<double>::zeros()
-                                .add(linearFFW())
-                                .add(rotationalFFW());
+                                .add(linearFFW(final_point))
+                                .add(rotationalFFW(final_point));
 
   gMotor.forEachWith<double>(
     voltage,
@@ -98,7 +98,17 @@ void Tracker::transition()
 
 Matrix<double> Tracker::linearFFW()
 {
-  LinearPoint point = point_.linear_point;
+  return linearFFW(point_);
+}
+
+Matrix<double> Tracker::rotationalFFW()
+{
+  return rotationalFFW(point_);
+}
+
+Matrix<double> Tracker::linearFFW(LinearRotationalPoint linrot_point)
+{
+  LinearPoint point = linrot_point.linear_point;
 
   double acceleration = point.acceleration.meters();
   double velocity = point.velocity.meters();
@@ -108,9 +118,9 @@ Matrix<double> Tracker::linearFFW()
   return Matrix<double>::ones().multiply(output);
 }
 
-Matrix<double> Tracker::rotationalFFW()
+Matrix<double> Tracker::rotationalFFW(LinearRotationalPoint linrot_point)
 {
-  RotationalPoint point = point_.rotational_point;
+  RotationalPoint point = linrot_point.rotational_point;
 
   double acceleration = point.acceleration.radians();
   double velocity = point.velocity.radians();

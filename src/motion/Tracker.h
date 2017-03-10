@@ -50,6 +50,9 @@ class Tracker
     Matrix<double> linearFFW();
     Matrix<double> rotationalFFW();
 
+    Matrix<double> linearFFW(LinearRotationalPoint point);
+    Matrix<double> rotationalFFW(LinearRotationalPoint point);
+
     Matrix<double> linearCorrection();
     Matrix<double> rotationalCorrection();
 };
