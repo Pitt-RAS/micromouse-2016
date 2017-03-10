@@ -4,6 +4,7 @@
 #include "maneuver/Maneuver.h"
 
 #include "maneuver/Pivot.h"
+#include "maneuver/Plant.h"
 #include "maneuver/Straight.h"
 #include "maneuver/Sweep.h"
 
