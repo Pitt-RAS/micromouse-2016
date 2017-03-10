@@ -88,9 +88,7 @@ void Pivot::run()
   TrapezoidalProfile<AngleUnit> trapezoidal_profile(trapezoidal_constraints);
   LocalProfile profile(trapezoidal_profile);
 
-  delay(100);
   Tracker(options, profile).run();
-  delay(100);
 
   transition({ LengthUnit::zero() });
 }
