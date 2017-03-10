@@ -19,6 +19,8 @@ class Pivot : public Maneuver
     virtual void run();
 
   private:
+    AngleUnit shortAngle() const;
+
     const AngleUnit angle_;
 };
 

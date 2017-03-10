@@ -26,6 +26,17 @@ namespace {
 
   LinearRotationalPoint LocalProfile::pointAtTime(TimeUnit time)
   {
+    // hack
+    if (time.abstract() == finalTime().abstract()) {
+      AngleUnit angle = rotational_component_.pointAtTime(time).displacement;
+      angle = AngleUnit::fromAbstract(angle.abstract() / 10.0);
+
+      return {
+        LinearPoint::zero(),
+        { angle, AngleUnit::zero(), AngleUnit::zero() }
+      };
+    }
+
     return {
       LinearPoint::zero(),
       rotational_component_.pointAtTime(time)
@@ -74,7 +85,9 @@ void Pivot::run()
   options.rotational_ffw_parameters = { 0.0, 0.0 };
 
   options.encoder_pid_parameters = { 0.0, 0.0, 0.0 };
-  options.gyro_pid_parameters    = { 0.0, 0.0, 0.0 };
+
+  options.end_condition = TrackerOptions::kGyroAngle;
+  options.end_condition_data.angle = shortAngle();
 
   TrapezoidalConstraints<AngleUnit> trapezoidal_constraints;
 
@@ -85,12 +98,27 @@ void Pivot::run()
   trapezoidal_constraints.acceleration = constraints().rotational_acceleration;
   trapezoidal_constraints.deceleration = constraints().rotational_deceleration;
 
+  // hack
+  AngleUnit distance = trapezoidal_constraints.distance;
+  distance = AngleUnit::fromAbstract(10.0 * distance.abstract());
+  trapezoidal_constraints.distance = distance;
+
   TrapezoidalProfile<AngleUnit> trapezoidal_profile(trapezoidal_constraints);
   LocalProfile profile(trapezoidal_profile);
 
   Tracker(options, profile).run();
 
   transition({ LengthUnit::zero() });
+}
+
+AngleUnit Pivot::shortAngle() const
+{
+  AngleUnit offset = AngleUnit::fromDegrees(5.0);
+
+  if (angle_.abstract() < 0.0)
+    offset = AngleUnit::fromAbstract(-offset.abstract());
+
+  return AngleUnit::fromAbstract(angle_.abstract() - offset.abstract());
 }
 
 }
