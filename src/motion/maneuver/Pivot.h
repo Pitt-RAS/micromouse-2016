@@ -19,6 +19,10 @@ class Pivot : public Maneuver
     virtual void run();
 
   private:
+    static const AngleUnit kMaxVelocity;
+    static const AngleUnit kAcceleration;
+    static const AngleUnit kDeceleration;
+
     AngleUnit shortAngle() const;
 
     const AngleUnit angle_;

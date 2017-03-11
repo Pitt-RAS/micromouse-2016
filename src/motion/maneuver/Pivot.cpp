@@ -50,6 +50,10 @@ namespace {
 
 }
 
+const AngleUnit Pivot::kMaxVelocity = AngleUnit::fromRotations(0.0);
+const AngleUnit Pivot::kAcceleration = AngleUnit::fromRotations(0.0);
+const AngleUnit Pivot::kDeceleration = AngleUnit::fromRotations(0.0);
+
 AngleUnit Pivot::Angle::toContinuous()
 {
   double result = 0.0;
@@ -94,9 +98,9 @@ void Pivot::run()
   trapezoidal_constraints.distance = angle_;
   trapezoidal_constraints.initial_velocity = Transition::rotational_velocity;
   trapezoidal_constraints.final_velocity = Transition::rotational_velocity;
-  trapezoidal_constraints.max_velocity = constraints().max_rotational_velocity;
-  trapezoidal_constraints.acceleration = constraints().rotational_acceleration;
-  trapezoidal_constraints.deceleration = constraints().rotational_deceleration;
+  trapezoidal_constraints.max_velocity = kMaxVelocity;
+  trapezoidal_constraints.acceleration = kAcceleration;
+  trapezoidal_constraints.deceleration = kDeceleration;
 
   // hack
   AngleUnit distance = trapezoidal_constraints.distance;

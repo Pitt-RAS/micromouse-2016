@@ -16,10 +16,6 @@ struct ManeuverConstraints
 
   LengthUnit linear_acceleration = LengthUnit::zero();
   LengthUnit linear_deceleration = LengthUnit::zero();
-
-  AngleUnit max_rotational_velocity = AngleUnit::zero();
-  AngleUnit rotational_acceleration = AngleUnit::zero();
-  AngleUnit rotational_deceleration = AngleUnit::zero();
 };
 
 struct Transition
