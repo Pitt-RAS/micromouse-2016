@@ -28,3 +28,12 @@ Motion::LengthUnit Encoder::velocity()
 {
   return Motion::LengthUnit::fromCounts(1e6 * encoder_.stepRate());
 }
+
+void Encoder::zeroDisplacement(Motion::LengthUnit value)
+{
+  Motion::LengthUnit original = displacement();
+  Motion::LengthUnit subtracted = Motion::LengthUnit::fromAbstract(
+                                      original.abstract() - value.abstract());
+
+  displacement(subtracted);
+}
