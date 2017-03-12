@@ -20,4 +20,10 @@ Matrix<double> RotationalCorrector::output(LinearRotationalPoint target)
   return Matrix<double>::splat(response).oppose();
 }
 
+void RotationalCorrector::reset()
+{
+  gyro_pid_.reset();
+  range_pid_.reset();
+}
+
 }

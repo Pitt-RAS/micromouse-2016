@@ -10,6 +10,11 @@ class PIDMatrix : public Matrix<PIDFunction>
 {
   public:
     PIDMatrix(PIDParameters parameters);
+
+    void reset();
+
+  private:
+    PIDParameters parameters_;
 };
 
 }

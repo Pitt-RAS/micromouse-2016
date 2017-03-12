@@ -62,9 +62,8 @@ void Tracker::run()
 
 void Tracker::reset()
 {
-  linear_corrector_ = LinearCorrector(options_.encoder_pid_parameters);
-  rotational_corrector_ = RotationalCorrector(options_.gyro_pid_parameters,
-                                                options_.range_pid_parameters);
+  linear_corrector_.reset();
+  rotational_corrector_.reset();
 }
 
 bool Tracker::endConditionMet(TimeUnit time)

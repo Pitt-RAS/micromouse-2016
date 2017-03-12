@@ -19,7 +19,10 @@ class PIDFunction
 
     double response(double current, double setpoint);
 
+    void reset();
+
   private:
+    PIDParameters parameters_;
     PIDController legacy_implementation_;
 };
 

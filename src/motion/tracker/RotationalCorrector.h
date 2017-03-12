@@ -2,7 +2,7 @@
 #define ROTATIONAL_CORRECTOR_H
 
 #include "../PIDFunction.h"
-#include "Output.h"
+#include "StatefulOutput.h"
 
 namespace Motion {
 
@@ -13,6 +13,8 @@ class RotationalCorrector : public StatefulOutput
                                           PIDParameters range_pid_parameters);
 
     virtual Matrix<double> output(LinearRotationalPoint target);
+
+    virtual void reset();
 
   private:
     PIDFunction gyro_pid_;

@@ -1,20 +1,22 @@
 #ifndef LINEAR_CORRECTOR_H
 #define LINEAR_CORRECTOR_H
 
-#include "../PIDFunction.h"
-#include "Output.h"
+#include "../matrix/PIDMatrix.h"
+#include "StatefulOutput.h"
 
 namespace Motion {
 
-class LinearCorrector : public Output
+class LinearCorrector : public StatefulOutput
 {
   public:
     LinearCorrector(PIDParameters encoder_pid_parameters);
 
     virtual Matrix<double> output(LinearRotationalPoint target);
 
+    virtual void reset();
+
   private:
-    Matrix<PIDFunction> encoder_pid_;
+    PIDMatrix encoder_pid_;
 };
 
 }

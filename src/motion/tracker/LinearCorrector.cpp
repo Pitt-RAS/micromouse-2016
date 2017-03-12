@@ -5,7 +5,7 @@
 namespace Motion {
 
 LinearCorrector::LinearCorrector(PIDParameters encoder_pid_parameters) :
-  encoder_pid_(PIDMatrix(encoder_pid_parameters))
+  encoder_pid_(encoder_pid_parameters)
 {}
 
 Matrix<double> LinearCorrector::output(LinearRotationalPoint target)
@@ -22,6 +22,11 @@ Matrix<double> LinearCorrector::output(LinearRotationalPoint target)
       return pid.response(current.meters(), setpoint.meters());
     }
   );
+}
+
+void LinearCorrector::reset()
+{
+  encoder_pid_.reset();
 }
 
 }
