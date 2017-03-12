@@ -1,8 +1,8 @@
 #include <Arduino.h>
-#include "../../device/Encoder.h"
-#include "../../device/Motor.h"
 #include "../../device/RangeSensorContainer.h"
+#include "../EncoderMatrix.h"
 #include "../Matrix.h"
+#include "../MotorMatrix.h"
 #include "../PIDFunction.h"
 #include "Face.h"
 
@@ -14,12 +14,7 @@ const double Face::kVoltageLimit = 0.2;
 
 void Face::run()
 {
-  PIDParameters parameters = { 0.0, 0.0, 0.0 };
-
-  Matrix<PIDFunction> pid = Matrix<PIDFunction>(
-    PIDFunction(parameters), PIDFunction(parameters),
-    PIDFunction(parameters), PIDFunction(parameters)
-  );
+  Matrix<PIDFunction> pid = PIDMatrix({ 0.0, 0.0, 0.0 });
 
   elapsedMicros timer;
 
@@ -54,27 +49,13 @@ void Face::run()
       }
     );
 
-    gMotor.forEachWith<double>(
-      voltage,
-      [] (Motor &motor, double &voltage) -> void {
-        motor.voltage(voltage);
-      }
-    );
+    gMotor.voltage(voltage);
 
     time = TimeUnit::fromSeconds(timer / 1e6);
   }
 
-  gMotor.forEach(
-    [] (Motor &motor) -> void {
-      motor.voltage(0.0);
-    }
-  );
-
-  gEncoder.forEach(
-    [] (Encoder &encoder) -> void {
-      encoder.displacement(LengthUnit::zero());
-    }
-  );
+  gMotor.zero();
+  gEncoder.zero();
 }
 
 }
