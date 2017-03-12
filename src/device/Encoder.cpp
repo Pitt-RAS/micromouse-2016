@@ -6,11 +6,6 @@ Encoder gEncoderRF(8, 7);
 Encoder gEncoderLB(5, 6);
 Encoder gEncoderRB(9, 10);
 
-Motion::Matrix<Encoder&> gEncoder(
-  gEncoderLF, gEncoderRF,
-  gEncoderLB, gEncoderRB
-);
-
 Encoder::Encoder(uint8_t pin1, uint8_t pin2) : encoder_(pin1, pin2)
 {}
 
