@@ -27,6 +27,9 @@ class Matrix
     // all ones
     static Matrix<Type> ones();
 
+    // all elements equal to value
+    static Matrix<Type> splat(Type value);
+
     Matrix(Type a, Type b, Type c, Type d);
 
     // element at index
@@ -97,6 +100,12 @@ namespace Motion {
 
 CONSTANT(zeros, 0)
 CONSTANT(ones, 1)
+
+template <typename Type>
+Matrix<Type> Matrix<Type>::splat(Type value)
+{
+  return Matrix<Type>(value, value, value, value);
+}
 
 template <typename Type>
 Matrix<Type>::Matrix(Type a, Type b, Type c, Type d) :
