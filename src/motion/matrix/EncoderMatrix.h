@@ -1,7 +1,7 @@
 #ifndef ENCODER_MATRIX_H
 #define ENCODER_MATRIX_H
 
-#include "../device/Encoder.h"
+#include "../../device/Encoder.h"
 #include "Matrix.h"
 
 namespace Motion {

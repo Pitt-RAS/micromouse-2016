@@ -11,12 +11,4 @@ double PIDFunction::response(double current, double setpoint)
   return legacy_implementation_.Calculate(current, setpoint);
 }
 
-Matrix<PIDFunction> PIDMatrix(PIDParameters parameters)
-{
-  return Matrix<PIDFunction>(
-    PIDFunction(parameters), PIDFunction(parameters),
-    PIDFunction(parameters), PIDFunction(parameters)
-  );
-}
-
 }

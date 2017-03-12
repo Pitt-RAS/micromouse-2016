@@ -1,5 +1,5 @@
+#include "../units.h"
 #include "EncoderMatrix.h"
-#include "units.h"
 
 namespace Motion {
 

@@ -1,7 +1,8 @@
 #ifndef MOTOR_MATRIX_H
 #define MOTOR_MATRIX_H
 
-#include "../device/Motor.h"
+#include "../../device/Motor.h"
+#include "Matrix.h"
 
 namespace Motion {
 

@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include "../../device/RangeSensorContainer.h"
-#include "../EncoderMatrix.h"
-#include "../Matrix.h"
-#include "../MotorMatrix.h"
-#include "../PIDFunction.h"
+#include "../matrix/EncoderMatrix.h"
+#include "../matrix/Matrix.h"
+#include "../matrix/MotorMatrix.h"
+#include "../matrix/PIDMatrix.h"
 #include "Face.h"
 
 namespace Motion {
@@ -14,7 +14,7 @@ const double Face::kVoltageLimit = 0.2;
 
 void Face::run()
 {
-  Matrix<PIDFunction> pid = PIDMatrix({ 0.0, 0.0, 0.0 });
+  PIDMatrix pid({ 0.0, 0.0, 0.0 });
 
   elapsedMicros timer;
 

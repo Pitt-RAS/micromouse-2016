@@ -1,9 +1,9 @@
 #include "../../device/Orientation.h"
 #include "../../device/RangeSensorContainer.h"
 #include "../../user_interaction/FreakOut.h"
-#include "../EncoderMatrix.h"
-#include "../MotorMatrix.h"
 #include "../maneuver/Plant.h"
+#include "../matrix/EncoderMatrix.h"
+#include "../matrix/MotorMatrix.h"
 #include "Tracker.h"
 
 namespace Motion {

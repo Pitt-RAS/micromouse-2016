@@ -1,8 +1,8 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#include "../Matrix.h"
 #include "../Profile.h"
+#include "../matrix/Matrix.h"
 
 namespace Motion {
 

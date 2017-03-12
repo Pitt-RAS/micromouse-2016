@@ -1,4 +1,5 @@
-#include "../EncoderMatrix.h"
+#include "../matrix/EncoderMatrix.h"
+#include "../matrix/PIDMatrix.h"
 #include "LinearCorrector.h"
 
 namespace Motion {
