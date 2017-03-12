@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "../../user_interaction/FreakOut.h"
 #include "../Profile.h"
-#include "../Tracker.h"
+#include "../tracker/Tracker.h"
 #include "Plant.h"
 
 namespace Motion {

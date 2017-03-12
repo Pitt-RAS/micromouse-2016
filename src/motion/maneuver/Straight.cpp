@@ -1,5 +1,5 @@
-#include "../Tracker.h"
 #include "../TrapezoidalProfile.h"
+#include "../tracker/Tracker.h"
 #include "Straight.h"
 
 namespace Motion {

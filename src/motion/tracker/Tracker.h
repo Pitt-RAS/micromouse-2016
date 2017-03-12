@@ -1,12 +1,12 @@
 #ifndef TRACKER_H
 #define TRACKER_H
 
-#include "../device/Encoder.h"
-#include "../device/Motor.h"
-#include "FFWFunction.h"
-#include "Matrix.h"
-#include "PIDFunction.h"
-#include "Profile.h"
+#include "../../device/Encoder.h"
+#include "../../device/Motor.h"
+#include "../FFWFunction.h"
+#include "../Matrix.h"
+#include "../PIDFunction.h"
+#include "../Profile.h"
 
 namespace Motion {
 

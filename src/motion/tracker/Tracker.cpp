@@ -1,7 +1,7 @@
-#include "../device/Orientation.h"
-#include "../device/RangeSensorContainer.h"
-#include "../user_interaction/FreakOut.h"
-#include "maneuver/Plant.h"
+#include "../../device/Orientation.h"
+#include "../../device/RangeSensorContainer.h"
+#include "../../user_interaction/FreakOut.h"
+#include "../maneuver/Plant.h"
 #include "Tracker.h"
 
 namespace Motion {

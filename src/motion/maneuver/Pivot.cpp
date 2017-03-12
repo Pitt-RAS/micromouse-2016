@@ -1,6 +1,6 @@
 #include "../../user_interaction/FreakOut.h"
-#include "../Tracker.h"
 #include "../TrapezoidalProfile.h"
+#include "../tracker/Tracker.h"
 #include "Pivot.h"
 
 namespace Motion {

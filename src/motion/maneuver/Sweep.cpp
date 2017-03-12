@@ -1,6 +1,6 @@
 #include "../../legacy_motion/SweptTurnProfile.h"
 #include "../../user_interaction/FreakOut.h"
-#include "../Tracker.h"
+#include "../tracker/Tracker.h"
 #include "Sweep.h"
 
 namespace Motion {
