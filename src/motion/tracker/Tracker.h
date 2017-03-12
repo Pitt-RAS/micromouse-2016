@@ -1,12 +1,12 @@
 #ifndef TRACKER_H
 #define TRACKER_H
 
-#include "../../device/Encoder.h"
-#include "../../device/Motor.h"
 #include "../FFWFunction.h"
-#include "../Matrix.h"
-#include "../PIDFunction.h"
 #include "../Profile.h"
+#include "LinearFFW.h"
+#include "RotationalFFW.h"
+#include "LinearCorrector.h"
+#include "RotationalCorrector.h"
 
 namespace Motion {
 
@@ -44,32 +44,15 @@ class Tracker
     TrackerOptions options_;
     LinearRotationalProfile &profile_;
 
-    Matrix<PIDFunction> encoder_pid_;
-    PIDFunction gyro_pid_;
-    PIDFunction range_pid_;
+    LinearFFW linear_ffw_;
+    RotationalFFW rotational_ffw_;
+    LinearCorrector linear_corrector_;
+    RotationalCorrector rotational_corrector_;
 
-    FFWFunction linear_ffw_;
-    FFWFunction rotational_ffw_;
-
-    TimeUnit time_;
-
-    LinearRotationalPoint point_;
-
-    bool endConditionMet();
-
-    void safetyCheck();
-
-    void setOutput();
+    void reset();
+    bool endConditionMet(TimeUnit time);
+    void safetyCheck(LinearRotationalPoint point);
     void transition();
-
-    Matrix<double> linearFFW();
-    Matrix<double> rotationalFFW();
-
-    Matrix<double> linearFFW(LinearRotationalPoint point);
-    Matrix<double> rotationalFFW(LinearRotationalPoint point);
-
-    Matrix<double> linearCorrection();
-    Matrix<double> rotationalCorrection();
 };
 
 }

@@ -1,12 +1,16 @@
 #include "../../device/Orientation.h"
 #include "../../device/RangeSensorContainer.h"
 #include "../../user_interaction/FreakOut.h"
+#include "../EncoderMatrix.h"
+#include "../MotorMatrix.h"
 #include "../maneuver/Plant.h"
 #include "Tracker.h"
 
 namespace Motion {
 
 namespace {
+  // stand-in for point.equals(LinearRotationalPoint::zero())
+  //   because TrapezoidalProfile doesn't produce exactly zero when it should
   bool isMoving(LinearRotationalPoint point)
   {
     return point.linear_point.velocity.meters() > 0.001
@@ -17,51 +21,62 @@ namespace {
 Tracker::Tracker(TrackerOptions options, LinearRotationalProfile &profile) :
   options_(options),
   profile_(profile),
-  encoder_pid_(PIDMatrix(options_.encoder_pid_parameters)),
-  gyro_pid_(options_.gyro_pid_parameters),
-  range_pid_(options_.range_pid_parameters),
   linear_ffw_(options.linear_ffw_parameters),
   rotational_ffw_(options.rotational_ffw_parameters),
-  time_(TimeUnit::zero()),
-  point_(profile_.pointAtTime(TimeUnit::zero()))
+  linear_corrector_(options.encoder_pid_parameters),
+  rotational_corrector_(options.gyro_pid_parameters,
+                                              options.range_pid_parameters)
 {}
 
 void Tracker::run()
 {
+  reset();
+
   elapsedMicros timer;
-  time_ = TimeUnit::fromSeconds(timer / 1e6);
+  TimeUnit time = TimeUnit::fromSeconds(timer / 1e6);
 
-  Orientation *orientation = Orientation::getInstance();
+  LinearRotationalPoint point = profile_.pointAtTime(time);
 
-  orientation->handler_update_ = false;
+  gOrientation->handler_update_ = false;
 
-  while (!endConditionMet()) {
-    point_ = profile_.pointAtTime(time_);
+  while (!endConditionMet(time)) {
+    point = profile_.pointAtTime(time);
 
-    safetyCheck();
+    safetyCheck(point);
 
-    setOutput();
+    gMotor.voltage(
+      Matrix<double>::zeros()
+        .add(linear_ffw_.output(point))
+        .add(rotational_ffw_.output(point))
+        .add(linear_corrector_.output(point))
+        .add(rotational_corrector_.output(point))
+    );
 
-    time_ = TimeUnit::fromSeconds(timer / 1e6);
+    time = TimeUnit::fromSeconds(timer / 1e6);
   }
 
   transition();
 
-  orientation->handler_update_ = true;
+  gOrientation->handler_update_ = true;
 }
 
-bool Tracker::endConditionMet()
+void Tracker::reset()
 {
-  Orientation *orientation = Orientation::getInstance();
+  linear_corrector_ = LinearCorrector(options_.encoder_pid_parameters);
+  rotational_corrector_ = RotationalCorrector(options_.gyro_pid_parameters,
+                                                options_.range_pid_parameters);
+}
 
+bool Tracker::endConditionMet(TimeUnit time)
+{
   switch (options_.end_condition) {
     case TrackerOptions::kFinalTime:
-      if (time_.abstract() > profile_.finalTime().abstract())
+      if (time.abstract() > profile_.finalTime().abstract())
         return true;
       break;
 
     case TrackerOptions::kGyroAngle:
-      AngleUnit current = AngleUnit::fromDegrees(-orientation->getHeading());
+      AngleUnit current = AngleUnit::fromDegrees(-gOrientation->getHeading());
       AngleUnit limit = options_.end_condition_data.angle;
 
       if (std::fabs(current.abstract()) > std::fabs(limit.abstract()))
@@ -72,144 +87,47 @@ bool Tracker::endConditionMet()
   return false;
 }
 
-void Tracker::safetyCheck()
+void Tracker::safetyCheck(LinearRotationalPoint point)
 {
-  Orientation *orientation = Orientation::getInstance();
+  {
+    AngleUnit current = AngleUnit::fromDegrees(-gOrientation->getHeading());
+    AngleUnit  target = point.rotational_point.displacement;
+    AngleUnit   limit = AngleUnit::fromDegrees(60.0);
 
-  AngleUnit heading = AngleUnit::fromDegrees(- orientation->getHeading());
-  AngleUnit target = point_.rotational_point.displacement;
-  AngleUnit limit = AngleUnit::fromDegrees(60.0);
+    if (std::fabs(current.abstract() - target.abstract()) > limit.abstract())
+      freakOut("GYRO");
+  }
+  {
+    LengthUnit current = gEncoder.averageDisplacement();
+    LengthUnit  target = point.linear_point.displacement;
+    LengthUnit   limit = LengthUnit::fromMeters(0.05);
 
-  if (std::fabs(heading.abstract() - target.abstract()) > limit.abstract())
-    freakOut("GYRO");
-}
-
-void Tracker::setOutput()
-{
-  Matrix<double> voltage = Matrix<double>::zeros()
-                                .add(linearFFW())
-                                .add(rotationalFFW())
-                                .add(linearCorrection())
-                                .add(rotationalCorrection());
-
-  gMotor.forEachWith<double>(
-    voltage,
-    [] (Motor &motor, double &voltage) -> void {
-      motor.voltage(voltage);
-    }
-  );
+    if (std::fabs(current.abstract() - target.abstract()) > limit.abstract())
+      freakOut("ENCR");
+  }
 }
 
 void Tracker::transition()
 {
-  Orientation *orientation = Orientation::getInstance();
-
   TimeUnit final_time = profile_.finalTime();
   LinearRotationalPoint final_point = profile_.pointAtTime(final_time);
-  AngleUnit final_heading = final_point.rotational_point.displacement;
 
-  orientation->incrementHeading(final_heading.degrees());
-
-  Matrix<double> voltage = Matrix<double>::zeros()
-                                .add(linearFFW(final_point))
-                                .add(rotationalFFW(final_point));
-
-  gMotor.forEachWith<double>(
-    voltage,
-    [] (Motor &motor, double &voltage) -> void {
-      motor.voltage(voltage);
-    }
+  gMotor.voltage(
+    Matrix<double>::zeros()
+      .add(linear_ffw_.output(final_point))
+      .add(rotational_ffw_.output(final_point))
   );
+
+  AngleUnit final_heading = final_point.rotational_point.displacement;
+  gOrientation->incrementHeading(final_heading.degrees());
 
   if (options_.end_plant && !isMoving(final_point)) {
-    Matrix<double> final_displacement = Matrix<double>::ones().multiply(
-      final_point.linear_point.displacement.abstract()
-    );
-
-    gEncoder.forEachWith<double>(
-      final_displacement,
-      [] (Encoder &encoder, double &final_displacement) -> void {
-        encoder.zeroDisplacement(LengthUnit::fromAbstract(final_displacement));
-      }
-    );
-
+    gEncoder.zeroLinearDisplacement(final_point.linear_point.displacement);
     Plant().run();
   }
-
-  gEncoder.forEach(
-    [] (Encoder &encoder) -> void {
-      encoder.displacement(LengthUnit::zero());
-    }
-  );
-}
-
-Matrix<double> Tracker::linearFFW()
-{
-  return linearFFW(point_);
-}
-
-Matrix<double> Tracker::rotationalFFW()
-{
-  return rotationalFFW(point_);
-}
-
-Matrix<double> Tracker::linearFFW(LinearRotationalPoint linrot_point)
-{
-  LinearPoint point = linrot_point.linear_point;
-
-  double acceleration = point.acceleration.meters();
-  double velocity = point.velocity.meters();
-
-  double output = linear_ffw_.output(acceleration, velocity);
-
-  return Matrix<double>::ones().multiply(output);
-}
-
-Matrix<double> Tracker::rotationalFFW(LinearRotationalPoint linrot_point)
-{
-  RotationalPoint point = linrot_point.rotational_point;
-
-  double acceleration = point.acceleration.radians();
-  double velocity = point.velocity.radians();
-
-  double output = rotational_ffw_.output(acceleration, velocity);
-
-  return Matrix<double>::ones().multiply(output).oppose();
-}
-
-Matrix<double> Tracker::linearCorrection()
-{
-  Matrix<double> current = gEncoder.map<double>(
-    [] (Encoder &encoder) -> double {
-      return encoder.displacement().meters();
-    }
-  ).straighten();
-
-  Matrix<double> setpoint = Matrix<double>::ones().multiply(
-    point_.linear_point.displacement.meters()
-  );
-
-  return encoder_pid_.mapWith<double, double, double>(
-    current,
-    setpoint,
-    [] (PIDFunction &pid, double &current, double &setpoint) -> double {
-      return pid.response(current, setpoint);
-    }
-  );
-}
-
-Matrix<double> Tracker::rotationalCorrection()
-{
-  Orientation *orientation = Orientation::getInstance();
-
-  orientation->update();
-
-  double current = - orientation->getHeading();
-  double setpoint = point_.rotational_point.displacement.degrees();
-
-  double response = gyro_pid_.response(current, setpoint);
-
-  return Matrix<double>::ones().multiply(response).oppose();
+  else {
+    gEncoder.zero();
+  }
 }
 
 }
