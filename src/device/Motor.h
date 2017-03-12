@@ -8,7 +8,7 @@ class Motor
   public:
     Motor(int direction_pin, int pwm_pin, bool reversed);
 
-    // from minium -1.0 to maxiumum 1.0
+    // from minimum -1.0 to maximum 1.0
     void voltage(double value);
 
   private:
