@@ -29,11 +29,11 @@ Motion::LengthUnit Encoder::velocity()
   return Motion::LengthUnit::fromCounts(1e6 * encoder_.stepRate());
 }
 
-void Encoder::zeroDisplacement(Motion::LengthUnit value)
+void Encoder::zeroDisplacement(Motion::LengthUnit new_zero)
 {
   Motion::LengthUnit original = displacement();
-  Motion::LengthUnit subtracted = Motion::LengthUnit::fromAbstract(
-                                      original.abstract() - value.abstract());
+  Motion::LengthUnit translated = Motion::LengthUnit::fromAbstract(
+                                    original.abstract() - new_zero.abstract());
 
-  displacement(subtracted);
+  displacement(translated);
 }

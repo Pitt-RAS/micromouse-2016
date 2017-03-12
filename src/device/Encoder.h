@@ -16,8 +16,8 @@ class Encoder
 
     Motion::LengthUnit velocity();
 
-    // subtracts displacement by value
-    void zeroDisplacement(Motion::LengthUnit value);
+    // subtract displacement by value
+    void zeroDisplacement(Motion::LengthUnit new_zero);
 
   private:
     EncoderPittMicromouse encoder_;
