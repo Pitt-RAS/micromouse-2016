@@ -37,7 +37,7 @@ void Tracker::run()
 
   LinearRotationalPoint point = profile_.pointAtTime(time);
 
-  gOrientation->handler_update_ = false;
+  Orientation::getInstance()->handler_update_ = false;
 
   while (!endConditionMet(time)) {
     point = profile_.pointAtTime(time);
@@ -57,7 +57,7 @@ void Tracker::run()
 
   transition();
 
-  gOrientation->handler_update_ = true;
+  Orientation::getInstance()->handler_update_ = true;
 }
 
 void Tracker::reset()
@@ -75,7 +75,8 @@ bool Tracker::endConditionMet(TimeUnit time)
       break;
 
     case TrackerOptions::kGyroAngle:
-      AngleUnit current = AngleUnit::fromDegrees(-gOrientation->getHeading());
+      AngleUnit current = AngleUnit::fromDegrees(
+                                    -Orientation::getInstance()->getHeading());
       AngleUnit limit = options_.end_condition_data.angle;
 
       if (std::fabs(current.abstract()) > std::fabs(limit.abstract()))
@@ -89,7 +90,8 @@ bool Tracker::endConditionMet(TimeUnit time)
 void Tracker::safetyCheck(LinearRotationalPoint point)
 {
   {
-    AngleUnit current = AngleUnit::fromDegrees(-gOrientation->getHeading());
+    AngleUnit current = AngleUnit::fromDegrees(
+                                    -Orientation::getInstance()->getHeading());
     AngleUnit  target = point.rotational_point.displacement;
     AngleUnit   limit = AngleUnit::fromDegrees(60.0);
 
@@ -118,7 +120,7 @@ void Tracker::transition()
   );
 
   AngleUnit final_heading = final_point.rotational_point.displacement;
-  gOrientation->incrementHeading(final_heading.degrees());
+  Orientation::getInstance()->incrementHeading(final_heading.degrees());
 
   if (options_.end_plant && !isMoving(final_point)) {
     gEncoder.zeroLinearDisplacement(final_point.linear_point.displacement);
