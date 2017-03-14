@@ -220,10 +220,9 @@ void PathParser::rightDecisions(){
       move_list.enqueue(right_90);
       move_list.enqueue(half);
 
-      dir = path.peek();
-      if(dir == kNorth){
+      if (detectStraightaway())
+      {
         move_list.enqueue(forward);
-        decision_dir = path.nextDirection();
       }
       break;
     //right move
@@ -311,9 +310,10 @@ void PathParser::leftDecisions(){
       move_list.enqueue(left_90);
       move_list.enqueue(half);
       dir = path.peek();
-      if(dir == kNorth){
+
+      if (detectStraightaway())
+      {
         move_list.enqueue(forward);
-        decision_dir = path.nextDirection();
       }
       break;
     //right move
@@ -399,9 +399,11 @@ void PathParser::diagonalDecisions(bool approachRight){
         } else {
           move_list.enqueue(exit_right_45);
         }
-        if(path.isEmpty())
-            //move_list.enqueue(forward);
-        return;
+
+        if (detectStraightaway() && !lastMoveFlag)
+        {
+          move_list.enqueue(forward);
+        }
         break;
       case kEast:
         if(approachRight){
@@ -453,6 +455,28 @@ void PathParser::diagonalDecisions(bool approachRight){
       default:
         break;
     }
+}
+
+// determines if the next sequence of moves is a straight away
+bool PathParser::detectStraightaway()
+{
+  bool isStraightawayNext = false;
+
+  Compass8 decision_dir = path.peek();
+  while (decision_dir == kNorth && !path.isEmpty())
+  {
+    path.nextDirection();
+    move_list.enqueue(forward);
+
+    decision_dir = path.peek();
+  }
+
+  if (path.isEmpty())
+  {
+    isStraightawayNext = true;
+  }
+
+  return isStraightawayNext;
 }
 
 Compass8 PathParser::relativeDir(Compass8 next_dir, Compass8 current_dir)
