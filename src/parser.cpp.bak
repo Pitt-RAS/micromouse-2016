@@ -242,8 +242,9 @@ void PathParser::rightDecisions(){
           move_list.enqueue(right_180);
           move_list.enqueue(half);
           dir = path.peek();
-          if(detectStraightaway()){
+          if(dir == kNorth){
             move_list.enqueue(forward);
+            decision_dir = path.nextDirection();
            }
           break;
         case kEast:
@@ -339,8 +340,9 @@ void PathParser::leftDecisions(){
           move_list.enqueue(left_180);
           move_list.enqueue(half);
           dir = path.peek();
-          if(detectStraightaway()){
+          if(dir == kNorth){
             move_list.enqueue(forward);
+            decision_dir = path.nextDirection();
            }
           break;
         case kEast:
