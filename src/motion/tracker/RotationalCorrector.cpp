@@ -20,12 +20,22 @@ void GyroResetter::point(LinearRotationalPoint point)
 {
   LengthUnit displacement = point.linear_point.displacement;
 
-  if (displacement.abstract() > kDistancePerPoint.abstract() * counter_++)
+  AngleUnit range = AngleUnit::fromDegrees(-RangeSensors.errorFromCenter());
+
+  if (range.abstract() == 0.0)
+    range_.reset();
+
+  if (displacement.abstract() > kDistancePerPoint.abstract() * counter_) {
     iteration(point);
+    counter_++;
+  }
 }
 
 void GyroResetter::iteration(LinearRotationalPoint point)
 {
+  Orientation::getInstance()->update();
+  RangeSensors.updateReadings();
+
   AngleUnit gyro = AngleUnit::fromDegrees(
                                     -Orientation::getInstance()->getHeading());
   AngleUnit range = AngleUnit::fromDegrees(-RangeSensors.errorFromCenter());
@@ -48,9 +58,6 @@ RotationalCorrector::RotationalCorrector(PIDParameters gyro_pid_parameters,
 
 Matrix<double> RotationalCorrector::output(LinearRotationalPoint target)
 {
-  Orientation::getInstance()->update();
-  RangeSensors.updateReadings();
-
   updateResetter(target);
 
   double response = gyroResponse(target) + rangeResponse(target);
@@ -71,6 +78,8 @@ void RotationalCorrector::updateResetter(LinearRotationalPoint point)
 
 double RotationalCorrector::gyroResponse(LinearRotationalPoint target)
 {
+  Orientation::getInstance()->update();
+
   AngleUnit current = AngleUnit::fromDegrees(
                                   -Orientation::getInstance()->getHeading());
   AngleUnit setpoint = target.rotational_point.displacement;
@@ -80,6 +89,8 @@ double RotationalCorrector::gyroResponse(LinearRotationalPoint target)
 
 double RotationalCorrector::rangeResponse(LinearRotationalPoint target)
 {
+  RangeSensors.updateReadings();
+
   AngleUnit current = AngleUnit::fromDegrees(-RangeSensors.errorFromCenter());
   AngleUnit setpoint = target.rotational_point.displacement;
 
