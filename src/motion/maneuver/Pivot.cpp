@@ -93,6 +93,8 @@ void Pivot::run()
   options.end_condition = TrackerOptions::kGyroAngle;
   options.end_condition_data.angle = shortAngle();
 
+  options.gyro_safety_check = false;
+
   TrapezoidalConstraints<AngleUnit> trapezoidal_constraints;
 
   trapezoidal_constraints.distance = angle_;

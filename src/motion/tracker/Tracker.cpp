@@ -42,7 +42,11 @@ void Tracker::run()
   while (!endConditionMet(time)) {
     point = profile_.pointAtTime(time);
 
-    safetyCheck(point);
+    if (options_.encoder_safety_check)
+      encoderSafetyCheck(point);
+
+    if (options_.gyro_safety_check)
+      gyroSafetyCheck(point);
 
     gMotor.voltage(
       Matrix<double>::zeros()
@@ -87,25 +91,25 @@ bool Tracker::endConditionMet(TimeUnit time)
   return false;
 }
 
-void Tracker::safetyCheck(LinearRotationalPoint point)
+void Tracker::encoderSafetyCheck(LinearRotationalPoint point)
 {
-  {
-    AngleUnit current = AngleUnit::fromDegrees(
-                                    -Orientation::getInstance()->getHeading());
-    AngleUnit  target = point.rotational_point.displacement;
-    AngleUnit   limit = AngleUnit::fromDegrees(60.0);
+  LengthUnit current = gEncoder.averageDisplacement();
+  LengthUnit  target = point.linear_point.displacement;
+  LengthUnit   limit = LengthUnit::fromMeters(0.05);
 
-    if (std::fabs(current.abstract() - target.abstract()) > limit.abstract())
-      freakOut("GYRO");
-  }
-  {
-    LengthUnit current = gEncoder.averageDisplacement();
-    LengthUnit  target = point.linear_point.displacement;
-    LengthUnit   limit = LengthUnit::fromMeters(0.05);
+  if (std::fabs(current.abstract() - target.abstract()) > limit.abstract())
+    freakOut("ENCR");
+}
 
-    if (std::fabs(current.abstract() - target.abstract()) > limit.abstract())
-      freakOut("ENCR");
-  }
+void Tracker::gyroSafetyCheck(LinearRotationalPoint point)
+{
+  AngleUnit current = AngleUnit::fromDegrees(
+                                  -Orientation::getInstance()->getHeading());
+  AngleUnit  target = point.rotational_point.displacement;
+  AngleUnit   limit = AngleUnit::fromDegrees(60.0);
+
+  if (std::fabs(current.abstract() - target.abstract()) > limit.abstract())
+    freakOut("GYRO");
 }
 
 void Tracker::transition()

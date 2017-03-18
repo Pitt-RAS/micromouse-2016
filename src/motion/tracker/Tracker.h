@@ -31,6 +31,9 @@ struct TrackerOptions
   } end_condition_data = { .angle = AngleUnit::zero() };
 
   bool end_plant = true;
+
+  bool gyro_safety_check = true;
+  bool encoder_safety_check = true;
 };
 
 class Tracker
@@ -51,7 +54,8 @@ class Tracker
 
     void reset();
     bool endConditionMet(TimeUnit time);
-    void safetyCheck(LinearRotationalPoint point);
+    void encoderSafetyCheck(LinearRotationalPoint point);
+    void gyroSafetyCheck(LinearRotationalPoint point);
     void transition();
 };
 
