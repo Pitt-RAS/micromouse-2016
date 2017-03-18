@@ -72,15 +72,22 @@ PathParser::PathParser(FakePath* fp) : path(NULL, 0){
 
 void PathParser::buildRelativePath(Path<16, 16> *abspath){
   //assume moving into the first cell of path
+  bool onlyNorthMoves = true;
   dir = abspath->nextDirection();
   while (!abspath->isEmpty()) {
     Compass8 next_direction = abspath->nextDirection();
     Compass8 rel_dir = relativeDir(next_direction, dir);
     dir = next_direction;
     path.push(rel_dir);
+	if(rel_dir != kNorth){
+	  onlyNorthMoves = false;
+	}
     if(abspath->isEmpty()){
       end_direction = next_direction;
     }
+  }
+  if(onlyNorthMoves){
+	  path.push(kNorth);
   }
   //final forward into last cell
   //path.push(kNorth);
