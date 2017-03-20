@@ -99,6 +99,31 @@ void PersistantStorage::setDefaultDirection(Compass8 dir) {
   EEPROM.write(EEPROM_INITIAL_DIRECTION_LOCATION, (uint8_t)dir);
 }
 
+
+
+uint8_t PersistantStorage::getNumRuns() {
+  return EEPROM.read(EEPROM_NUM_RUNS_LOCATION);
+}
+
+void PersistantStorage::setNumRuns (uint8_t num_runs) {
+  if (num_runs < 6) {
+    EEPROM.write(EEPROM_NUM_RUNS_LOCATION, num_runs);
+  }
+}
+
+uint8_t PersistantStorage::getState() {
+  return EEPROM.read(EEPROM_STATE_LOCATION);
+}
+
+void PersistantStorage::setState (uint8_t state) {
+  if (state < 4) {
+    EEPROM.write(EEPROM_STATE_LOCATION, state);
+  }
+}
+
+
+
+
 uint8_t PersistantStorage::getTargetXLocation() {
   return EEPROM.read(EEPROM_TARGET_X_LOCATION);
 }

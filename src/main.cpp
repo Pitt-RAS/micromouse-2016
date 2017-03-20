@@ -35,6 +35,7 @@ static_assert(F_CPU == 144000000, "Clock speed is not set to 144 MHz");
 static void autoMode();
 static void autoRun();
 static void autoKaos(uint8_t);
+static void mazeClear();
 
 static void run();
 static void kaos();
@@ -78,26 +79,21 @@ void micromouse_main()
   LOG_INIT();
 
   Orientation::getInstance().resetHeading();
-  
-  //bool APAC = true;
-  
-  	 MenuItem items[] = {
-		{ "AUTO", autoMode },
-		{ "CLR", clear },
-		{}
-	  };
- /* }
-  else 
-  {
-	  MenuItem items[] = {
+    
+  MenuItem items[] = {
+        { "AUTO", autoMode },
+	    { "CLR", clear },
+	    { "MZCLR", mazeClear },
+	    {}
+    };
+	/*MenuItem items[] = {
 		{ "RUN", run },
 		{ "KAOS", kaos },
 		{ "TURN", turn },
 		{ "CHK", check },
 		{ "OPT", options },
 		{}
-	  };
-  }*/
+	  };*/
 
   Menu menu(items, false);
 
@@ -106,29 +102,54 @@ void micromouse_main()
 
 void autoMode()
 {
-	clear();
-	
-	PersistantStorage::setTargetXLocation(4);
-	PersistantStorage::setTargetYLocation(4);
+	//MUST CLEAR MANUALLY AT VERY BEGINNING
+	PersistantStorage::setTargetXLocation(APAC_TARGET_X);
+	PersistantStorage::setTargetYLocation(APAC_TARGET_Y);
 	
 	uint8_t target_x = PersistantStorage::getTargetXLocation();
 	uint8_t target_y = PersistantStorage::getTargetYLocation();
-	uint8_t num_runs = 5;
-	
-	while (num_runs > 0)
+	uint8_t state = PersistantStorage::getState();
+	uint8_t runs = PersistantStorage::getNumRuns();
+
+	while (runs > 0)
 	{
-		if (num_runs == 5 || !knowsBestPath(target_x, target_y))
-		{
-			autoRun();
+		state = PersistantStorage::getState();
+		runs = PersistantStorage::getNumRuns();
+
+		if (state == 0){
+			if (runs == 5 || !knowsBestPath(target_x, target_y)){
+				autoRun();
+			}
+			else if (runs<4)
+			{
+				//increase speed if run!=4
+				autoKaos(state);
+			}
+			else {
+				autoKaos(state);
+			}
 		}
-		else
+		else if (state == 1)
 		{
-			autoKaos(num_runs);
+			if (runs == 4 || !knowsBestPath(target_x, target_y)){
+				autoRun();
+			}
+			else{
+				//reduce speeds back first
+				autoKaos(state);
+			}
+			PersistantStorage::setState(0);
 		}
+		else {}
+
+		runs--;
+		PersistantStorage::setNumRuns(runs);
 		
-		num_runs--;
+		/*if (runs == 1)
+		{
+			PersistantStorage::setState(2);
+		}*/
 	}
-	
 }
 
 void autoRun()
@@ -147,14 +168,14 @@ void autoRun()
 
 	navigator.findBox(PersistantStorage::getTargetXLocation(),
 					PersistantStorage::getTargetYLocation());
-	searchFinishMelody();
+					
 	navigator.findBox(0, 0);
 	
 	motion_rotate(180.0);
 
 }
 
-void autoKaos(uint8_t num_runs)
+void autoKaos(uint8_t state)
 {
 	uint8_t target_x = PersistantStorage::getTargetXLocation();
 	uint8_t target_y = PersistantStorage::getTargetYLocation();
@@ -171,7 +192,7 @@ void autoKaos(uint8_t num_runs)
 		PathParser parser (&known_path);
 		KaosDriver driver;
 		
-		if (num_runs < 4)
+		if (state != 0)
 		{
 			gUserInterface.waitForHand();
 		}
@@ -214,8 +235,14 @@ void autoKaos(uint8_t num_runs)
 		FloodFillPath<16, 16> path(maze, 0, 0, 0, 0);
 		other_driver.move(path);
 	}
-
+	motion_rotate(180.0);
 }
+
+
+
+
+
+
 
 
 void run()
@@ -350,7 +377,18 @@ void clear()
 {
   RobotDriver driver;
   driver.clearState();
+  
+  PersistantStorage::setNumRuns(NUM_RUNS);
+  PersistantStorage::setState(0);
 }
+
+void mazeClear()
+{
+  RobotDriver driver;
+  driver.clearState();
+}
+
+
 
 void startDirection()
 {
