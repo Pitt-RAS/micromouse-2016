@@ -140,13 +140,8 @@
 #define EEPROM_KAOS_DIAG_VEL_LOCATION 514
 #define EEPROM_TARGET_X_LOCATION 516
 #define EEPROM_TARGET_Y_LOCATION 517
-
-/**********NEED LOCATIONS FOR THESE *************/
 #define EEPROM_NUM_RUNS_LOCATION 520
 #define EEPROM_STATE_LOCATION 522
-/****NOTICE *****/
-
-
 
 // Storage settings
 // Number of digits stored after the decimal point
@@ -251,9 +246,6 @@
 
 #define SEARCH_VELOCITY 0.3
 
-//************UPDATE THESE VALUES ****************//
-#define APAC_TARGET_X 4
-#define APAC_TARGET_Y 4
 #define NUM_RUNS 5
 
 

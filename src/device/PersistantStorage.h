@@ -73,12 +73,9 @@ class PersistantStorage {
     static void setRawKaosAccel(uint16_t accel);
     static uint16_t getRawKaosDecel();
     static void setRawKaosDecel(uint16_t decel);
-    
-    
-    /******ADDED THESE*******/
     static void setNumRuns(uint8_t num_runs);
-    static void setState(uint8_t state);
     static uint8_t getNumRuns();
+    static void setState(uint8_t state);
     static uint8_t getState();
 };
 
