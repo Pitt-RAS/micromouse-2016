@@ -36,7 +36,6 @@ static void autoMode();
 static void autoRun();
 static void autoKaos(uint8_t);
 static void mazeClear();
-
 static void run();
 static void kaos();
 static void turn();
@@ -82,168 +81,145 @@ void micromouse_main()
     
   MenuItem items[] = {
         { "AUTO", autoMode },
-	    { "CLR", clear },
-	    { "MZCLR", mazeClear },
-	    {}
+        { "CLR", clear },
+        { "MZCLR", mazeClear },
+        {}
     };
-	/*MenuItem items[] = {
-		{ "RUN", run },
-		{ "KAOS", kaos },
-		{ "TURN", turn },
-		{ "CHK", check },
-		{ "OPT", options },
-		{}
-	  };*/
+    /*MenuItem items[] = {
+        { "RUN", run },
+        { "KAOS", kaos },
+        { "TURN", turn },
+        { "CHK", check },
+        { "OPT", options },
+        {}
+      };*/
 
   Menu menu(items, false);
 
   for (;;) menu.run();
 }
 
-void autoMode()
-{
-	//MUST CLEAR MANUALLY AT VERY BEGINNING
-	PersistantStorage::setTargetXLocation(APAC_TARGET_X);
-	PersistantStorage::setTargetYLocation(APAC_TARGET_Y);
-	
-	uint8_t target_x = PersistantStorage::getTargetXLocation();
-	uint8_t target_y = PersistantStorage::getTargetYLocation();
-	uint8_t state = PersistantStorage::getState();
-	uint8_t runs = PersistantStorage::getNumRuns();
+void autoMode(){
+    uint8_t target_x = PersistantStorage::getTargetXLocation();
+    uint8_t target_y = PersistantStorage::getTargetYLocation();
+    uint8_t state = PersistantStorage::getState();
+    uint8_t runs = PersistantStorage::getNumRuns();
+    
+    while (runs > 0) {
+        state = PersistantStorage::getState();
+        runs = PersistantStorage::getNumRuns();
 
-	while (runs > 0)
-	{
-		state = PersistantStorage::getState();
-		runs = PersistantStorage::getNumRuns();
+        if (state == 0){
+            if (runs == 5 || !knowsBestPath(target_x, target_y)){
+                autoRun();
+            }
+            else if (runs<4){
+                //increase speed if run!=4
+                autoKaos(state);
+            }
+            else{
+                autoKaos(state);
+            }
+        }
+        else if (state == 1)
+        {
+            if (runs == 4 || !knowsBestPath(target_x, target_y)){
+                autoRun();
+            }
+            else{
+                //reduce speeds back first
+                autoKaos(state);
+            }
+            PersistantStorage::setState(0);
+        }
+        else {}
 
-		if (state == 0){
-			if (runs == 5 || !knowsBestPath(target_x, target_y)){
-				autoRun();
-			}
-			else if (runs<4)
-			{
-				//increase speed if run!=4
-				autoKaos(state);
-			}
-			else {
-				autoKaos(state);
-			}
-		}
-		else if (state == 1)
-		{
-			if (runs == 4 || !knowsBestPath(target_x, target_y)){
-				autoRun();
-			}
-			else{
-				//reduce speeds back first
-				autoKaos(state);
-			}
-			PersistantStorage::setState(0);
-		}
-		else {}
-
-		runs--;
-		PersistantStorage::setNumRuns(runs);
-		
-		/*if (runs == 1)
-		{
-			PersistantStorage::setState(2);
-		}*/
-	}
+        runs--;
+        PersistantStorage::setNumRuns(runs);
+        delay(1000);
+    }
 }
 
-void autoRun()
-{
-	Navigator<ContinuousRobotDriver> navigator;
-	Orientation& orientation = Orientation::getInstance();
+void autoRun() {
+    Navigator<ContinuousRobotDriver> navigator;
+    Orientation& orientation = Orientation::getInstance();
 
-	gUserInterface.waitForHand();
-	startMelody();
+    gUserInterface.waitForHand();
+    startMelody();
 
-	enc_left_front_write(0);
-	enc_right_front_write(0);
-	enc_left_back_write(0);
-	enc_right_back_write(0);
-	orientation.resetHeading();
+    enc_left_front_write(0);
+    enc_right_front_write(0);
+    enc_left_back_write(0);
+    enc_right_back_write(0);
+    orientation.resetHeading();
 
-	navigator.findBox(PersistantStorage::getTargetXLocation(),
-					PersistantStorage::getTargetYLocation());
-					
-	navigator.findBox(0, 0);
-	
-	motion_rotate(180.0);
-
+    navigator.findBox(PersistantStorage::getTargetXLocation(),
+                    PersistantStorage::getTargetYLocation());
+                    
+    navigator.findBox(0, 0);
+    
+    motion_rotate(180.0);
 }
 
-void autoKaos(uint8_t state)
-{
-	uint8_t target_x = PersistantStorage::getTargetXLocation();
-	uint8_t target_y = PersistantStorage::getTargetYLocation();
+void autoKaos(uint8_t state) {
+    uint8_t target_x = PersistantStorage::getTargetXLocation();
+    uint8_t target_y = PersistantStorage::getTargetYLocation();
 
-	Orientation& orientation = Orientation::getInstance();
+    Orientation& orientation = Orientation::getInstance();
 
-	if (knowsBestPath(target_x, target_y)) 
-	{
-		ContinuousRobotDriver maze_load_driver;
-		Maze<16, 16> maze;
-		maze_load_driver.loadState(maze);
-		FloodFillPath<16, 16> flood_path (maze, 0, 0, target_x, target_y);
-		KnownPath<16, 16> known_path (maze, 0, 0, target_x, target_y, flood_path);
-		PathParser parser (&known_path);
-		KaosDriver driver;
-		
-		if (state != 0)
-		{
-			gUserInterface.waitForHand();
-		}
-		
-		enc_left_front_write(0);
-		enc_right_front_write(0);
-		enc_left_back_write(0);
-		enc_right_back_write(0);
-		orientation.resetHeading();
+    if (knowsBestPath(target_x, target_y)){
+        ContinuousRobotDriver maze_load_driver;
+        Maze<16, 16> maze;
+        maze_load_driver.loadState(maze);
+        FloodFillPath<16, 16> flood_path (maze, 0, 0, target_x, target_y);
+        KnownPath<16, 16> known_path (maze, 0, 0, target_x, target_y, flood_path);
+        PathParser parser (&known_path);
+        KaosDriver driver;
+        
+        if (state != 0){
+            gUserInterface.waitForHand();
+        }
+        
+        enc_left_front_write(0);
+        enc_right_front_write(0);
+        enc_left_back_write(0);
+        enc_right_back_write(0);
+        orientation.resetHeading();
 
-		Compass8 start_dir = maze_load_driver.getDirIMadeThisPublic();
-		Compass8 delta_dir = parser.getTotalRotation();
-		Compass8 end_dir = (Compass8)(((int)start_dir + (int)delta_dir) % 8);
+        Compass8 start_dir = maze_load_driver.getDirIMadeThisPublic();
+        Compass8 delta_dir = parser.getTotalRotation();
+        Compass8 end_dir = (Compass8)(((int)start_dir + (int)delta_dir) % 8);
 
-		driver.execute(parser.getMoveList());
-		char buf[5];
+        driver.execute(parser.getMoveList());
+        char buf[5];
 
-		snprintf(buf, 5, "%02d%02d", parser.end_x, parser.end_y);
-		gUserInterface.showString(buf, 4);
+        snprintf(buf, 5, "%02d%02d", parser.end_x, parser.end_y);
+        gUserInterface.showString(buf, 4);
 
-		ContinuousRobotDriver other_driver(parser.end_x, parser.end_y, end_dir, false);
+        ContinuousRobotDriver other_driver(parser.end_x, parser.end_y, end_dir, false);
 
-		{
-		  FloodFillPath<16, 16>
-			flood_path(maze, other_driver.getX(), other_driver.getY(), 0, 0);
+        {
+          FloodFillPath<16, 16>
+            flood_path(maze, other_driver.getX(), other_driver.getY(), 0, 0);
 
-		  KnownPath<16, 16>
-			known_path(maze, other_driver.getX(), other_driver.getY(), 0, 0, flood_path);
+          KnownPath<16, 16>
+            known_path(maze, other_driver.getX(), other_driver.getY(), 0, 0, flood_path);
 
-		  if (known_path.isEmpty())
-			return;
+          if (known_path.isEmpty())
+            return;
 
-		  other_driver.move(known_path);
+          other_driver.move(known_path);
 
-		  snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
-		  gUserInterface.showString(buf, 4);
+          snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
+          gUserInterface.showString(buf, 4);
 
-		}
+        }
 
-		FloodFillPath<16, 16> path(maze, 0, 0, 0, 0);
-		other_driver.move(path);
-	}
-	motion_rotate(180.0);
+        FloodFillPath<16, 16> path(maze, 0, 0, 0, 0);
+        other_driver.move(path);
+    }
+    motion_rotate(180.0);
 }
-
-
-
-
-
-
-
 
 void run()
 {
@@ -305,19 +281,19 @@ void kaos()
     ContinuousRobotDriver other_driver(parser.end_x, parser.end_y, end_dir, false);
 
     {
-		FloodFillPath<16, 16>
-		flood_path(maze, other_driver.getX(), other_driver.getY(), 0, 0);
+        FloodFillPath<16, 16>
+        flood_path(maze, other_driver.getX(), other_driver.getY(), 0, 0);
 
-		KnownPath<16, 16>
-		known_path(maze, other_driver.getX(), other_driver.getY(), 0, 0, flood_path);
+        KnownPath<16, 16>
+        known_path(maze, other_driver.getX(), other_driver.getY(), 0, 0, flood_path);
 
-		if (known_path.isEmpty())
-			return;
+        if (known_path.isEmpty())
+            return;
 
-		other_driver.move(known_path);
+        other_driver.move(known_path);
 
-		snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
-		gUserInterface.showString(buf, 4);
+        snprintf(buf, 5, "%02d%02d", other_driver.getX(), other_driver.getY());
+        gUserInterface.showString(buf, 4);
 
     }
 
@@ -373,8 +349,7 @@ void options()
   Menu(items).run();
 }
 
-void clear()
-{
+void clear(){
   RobotDriver driver;
   driver.clearState();
   
@@ -382,13 +357,10 @@ void clear()
   PersistantStorage::setState(0);
 }
 
-void mazeClear()
-{
+void mazeClear(){
   RobotDriver driver;
   driver.clearState();
 }
-
-
 
 void startDirection()
 {
