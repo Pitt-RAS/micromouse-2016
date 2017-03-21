@@ -111,6 +111,10 @@ Orientation& Orientation::getInstance() {
 }
 
 void Orientation::calibrate() {
+  gUserInterface.showString("CAL ");
+  bool lastHandlerState = handler_update_;
+  handler_update_ = false;
+
   LOG("Calibrating gyro...\n");
 
   mpu_.setZGyroOffset(0);
@@ -170,7 +174,7 @@ void Orientation::calibrate() {
   float M2 = 0;
 
   for (samples = 1;
-       samples < 10 || M2 / sq(samples) > sq(GYRO_CALIBRATION_TARGET_UNCERTAINTY);
+       samples < 20 || M2 / sq(samples) > sq(GYRO_CALIBRATION_TARGET_UNCERTAINTY);
        samples++) {
     while (!update()) {
       // wait for actual data
@@ -187,6 +191,8 @@ void Orientation::calibrate() {
 
   raw_heading_ = 0;
   LOG("Gyro calibration successful\n");
+  handler_update_ = lastHandlerState;
+  mpu_.setZGyroOffset(-offset);
 }
 
 bool Orientation::update() {
@@ -359,4 +365,3 @@ float Orientation::getMaxForwardAccel() {
 float Orientation::getMaxRadialAccel() {
   return max_radial_accel_;
 }
-

@@ -72,7 +72,7 @@ void micromouse_main()
   Turnable::setDefaultInitialDirection(PersistantStorage::getDefaultDirection());
 
   LOG_INIT();
-
+  Orientation::getInstance().calibrate();
   Orientation::getInstance().resetHeading();
 
   MenuItem items[] = {
