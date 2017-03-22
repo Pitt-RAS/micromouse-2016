@@ -3,6 +3,9 @@
 #include "../tracker/Tracker.h"
 #include "Sweep.h"
 
+// not sure why this is needed here
+#include "../../undef.h"
+
 namespace Motion {
 
 namespace {
