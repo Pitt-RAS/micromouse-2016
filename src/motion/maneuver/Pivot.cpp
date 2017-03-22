@@ -54,27 +54,6 @@ const AngleUnit Pivot::kMaxVelocity = AngleUnit::fromRotations(0.0);
 const AngleUnit Pivot::kAcceleration = AngleUnit::fromRotations(0.0);
 const AngleUnit Pivot::kDeceleration = AngleUnit::fromRotations(0.0);
 
-AngleUnit Pivot::Angle::toContinuous()
-{
-  double result = 0.0;
-
-  switch (magnitude) {
-    case Angle::k45:  result =  45.0; break;
-    case Angle::k90:  result =  90.0; break;
-    case Angle::k180: result = 180.0; break;
-  }
-
-  switch (direction) {
-    case Angle::left:  result =   magnitude; break;
-    case Angle::right: result = - magnitude; break;
-  }
-
-  return AngleUnit::fromDegrees(result);
-}
-
-Pivot::Pivot(Angle angle) : Pivot(angle.toContinuous())
-{}
-
 Pivot::Pivot(AngleUnit angle) : angle_(angle)
 {}
 
