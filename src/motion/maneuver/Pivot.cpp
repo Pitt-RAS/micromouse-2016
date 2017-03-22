@@ -112,9 +112,9 @@ void Pivot::run()
   TrapezoidalProfile<AngleUnit> trapezoidal_profile(trapezoidal_constraints);
   LocalProfile profile(trapezoidal_profile);
 
-  Tracker(options, profile).run();
-
   transition({ LengthUnit::zero() });
+
+  Tracker(options, profile).run();
 }
 
 AngleUnit Pivot::shortAngle() const

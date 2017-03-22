@@ -50,9 +50,9 @@ void Plant::run()
 
   LocalProfile profile;
 
-  Tracker(options, profile).run();
-
   transition({ LengthUnit::zero() });
+
+  Tracker(options, profile).run();
 }
 
 }

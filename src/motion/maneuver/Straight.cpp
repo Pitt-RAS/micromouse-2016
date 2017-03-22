@@ -68,9 +68,9 @@ void Straight::run()
   TrapezoidalProfile<LengthUnit> trapezoidal_profile(trapezoidal_constraints);
   LocalProfile profile(trapezoidal_profile);
 
-  Tracker(options, profile).run();
-
   transition({ trapezoidal_constraints.final_velocity });
+
+  Tracker(options, profile).run();
 }
 
 Straight::Straight(LengthUnit length,

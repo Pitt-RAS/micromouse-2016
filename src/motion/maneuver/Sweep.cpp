@@ -110,9 +110,10 @@ void Sweep::run()
 
   LocalProfile profile(angle_, constraints().sweep_velocity);
 
-  Tracker(options, profile).run();
 
   transition({ constraints().sweep_velocity });
+
+  Tracker(options, profile).run();
 }
 
 }
