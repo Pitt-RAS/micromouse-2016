@@ -13,25 +13,23 @@ namespace {
   class LocalProfile : public LinearRotationalProfile
   {
     public:
-      LocalProfile(Sweep::Angle angle, LengthUnit velocity);
+      LocalProfile(AngleUnit angle, LengthUnit velocity);
 
       virtual LinearRotationalPoint pointAtTime(TimeUnit time);
       virtual TimeUnit finalTime();
 
     private:
+      LengthUnit referenceVelocity();
+      double referenceScaling();
+
       const SweptTurnProfile legacy_implementation_;
 
-      const Sweep::Angle angle_;
-      LengthUnit radius_ = LengthUnit::fromCells(0.5); // is this right?
+      const AngleUnit angle_;
       LengthUnit velocity_;
-
-      double constructorTangentialVelocity(Sweep::Angle angle);
-      double constructorTurnAngle(Sweep::Angle angle);
   };
 
-  LocalProfile::LocalProfile(Sweep::Angle angle, LengthUnit velocity) :
-    legacy_implementation_(constructorTangentialVelocity(angle),
-                                                constructorTurnAngle(angle)),
+  LocalProfile::LocalProfile(AngleUnit angle, LengthUnit velocity) :
+    legacy_implementation_(velocity.meters(), std::fabs(angle.degrees())),
     angle_(angle), velocity_(velocity)
   {}
 
@@ -43,23 +41,25 @@ namespace {
       LengthUnit::zero()
     };
 
-    double seconds = time.seconds();
+    double seconds = time.seconds() * referenceScaling();
 
     double displacement = legacy_implementation_.getAngle(seconds);
     double     velocity = legacy_implementation_.getAngularVelocity(seconds);
     double acceleration =
-                        legacy_implementation_.getAngularAcceleration(seconds);
+                      legacy_implementation_.getAngularAcceleration(seconds);
 
-    if (angle_.direction == Sweep::Angle::right) { // is this right??
+    if (angle_.abstract() < 0) {
       displacement = -displacement;
       velocity     = -velocity;
       acceleration = -acceleration;
     }
 
+    double pi = 3.14159265359;
+
     RotationalPoint rotational_component = {
-      AngleUnit::fromDegrees(displacement),
-      AngleUnit::fromDegrees(velocity),
-      AngleUnit::fromDegrees(acceleration)
+      AngleUnit::fromRadians(displacement),
+      AngleUnit::fromRadians(velocity / pi), // hacky approximation
+      AngleUnit::fromRadians(acceleration / pi / pi) // hacky approximation
     };
 
     return { linear_component, rotational_component };
@@ -67,34 +67,35 @@ namespace {
 
   TimeUnit LocalProfile::finalTime()
   {
-    return TimeUnit::fromSeconds(legacy_implementation_.getTotalTime() / 1e6);
+    double unscaled = legacy_implementation_.getTotalTime();
+
+    return TimeUnit::fromSeconds(unscaled / referenceScaling());
   }
 
-  double constructorTangentialVelocity(Sweep::Angle angle)
+  LengthUnit LocalProfile::referenceVelocity()
   {
-    switch (angle.magnitude) {
-      case Sweep::Angle::k45:  return 0.8700;
-      case Sweep::Angle::k90:  return 0.8400;
-      case Sweep::Angle::k135: return 0.8975;
-      case Sweep::Angle::k180: return 0.9350;
-      default:                 return 0.0000;
+    int int_angle = (int) std::fabs(angle_.degrees());
+
+    switch (int_angle) {
+      default:  return LengthUnit::fromMeters(0.0000);
+      case  45: return LengthUnit::fromMeters(0.8700);
+      case  90: return LengthUnit::fromMeters(0.8400);
+      case 135: return LengthUnit::fromMeters(0.8975);
+      case 180: return LengthUnit::fromMeters(0.9350);
     }
   }
 
-  double constructorTurnAngle(Sweep::Angle angle)
+  double LocalProfile::referenceScaling()
   {
-    switch (angle.magnitude) {
-      case Sweep::Angle::k45:  return  45.0;
-      case Sweep::Angle::k90:  return  90.0;
-      case Sweep::Angle::k135: return 135.0;
-      case Sweep::Angle::k180: return 180.0;
-      default:                 return   0.0;
-    }
+    double time_scaling = velocity_.abstract() / referenceVelocity().abstract();
+    double size_scaling = 1.0;
+
+    return time_scaling / size_scaling;
   }
 
 }
 
-Sweep::Sweep(Angle angle) : angle_(angle)
+Sweep::Sweep(AngleUnit angle) : angle_(angle)
 {}
 
 void Sweep::run()
@@ -112,7 +113,6 @@ void Sweep::run()
   options.gyro_pid_parameters    = { 0.0, 0.0, 0.0 };
 
   LocalProfile profile(angle_, constraints().sweep_velocity);
-
 
   transition({ constraints().sweep_velocity });
 
