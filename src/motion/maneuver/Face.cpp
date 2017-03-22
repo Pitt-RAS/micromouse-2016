@@ -56,6 +56,8 @@ void Face::run()
 
   gMotor.zero();
   gEncoder.zero();
+
+  transition({ LengthUnit::zero() });
 }
 
 }
