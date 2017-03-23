@@ -53,6 +53,8 @@ void Straight::run()
 
   options.diagonal_correction = diagonal_correction_;
 
+  options.drift = true;
+
   TrapezoidalConstraints<LengthUnit> trapezoidal_constraints;
 
   LengthUnit final_velocity = zero_final_velocity_ ?
