@@ -1,5 +1,5 @@
-#ifndef FACE_H
-#define FACE_H
+#ifndef PLANT_H
+#define PLANT_H
 
 #include "Maneuver.h"
 
