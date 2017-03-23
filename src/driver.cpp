@@ -18,6 +18,7 @@
 #include "device/RangeSensorContainer.h"
 #include "device/sensors_encoders.h"
 #include "legacy_motion/motion.h"
+#include "motion/motion.h"
 #include "user_interaction/FreakOut.h"
 #include "user_interaction/Menu.h"
 #include "conf.h"
@@ -638,7 +639,6 @@ void RobotDriver::move(Compass8 dir, int distance)
                             destination_y - getYFloat());
 
   motion_forward(MM_PER_BLOCK * distance_to_move, 0, 0);
-  motion_hold(10);
 
   setX(destination_x);
   setY(destination_y);
@@ -656,7 +656,7 @@ void ContinuousRobotDriver::turn_in_place(Compass8 dir)
   if (arc > 180.0)
     arc -= 360.0;
 
-  motion_rotate(arc);
+  Motion::Pivot(Motion::AngleUnit::fromDegrees(-arc)).run();
 
   setDir(dir);
 }
@@ -668,14 +668,14 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
   switch(relativeDir(dir)) {
     case kNorth:
       pivot_turns_in_a_row_ = 0;
-      motion_forward(MM_PER_BLOCK, search_velocity_, search_velocity_);
+      Motion::Straight(Motion::LengthUnit::fromCells(1.0)).run();
       break;
     case kSouth:
       pivot_turns_in_a_row_ = 0;
       is_front_wall = isWall(absoluteDir(kNorth));
       is_left_wall = isWall(absoluteDir(kWest));
       is_right_wall = isWall(absoluteDir(kEast));
-      motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0.0);
+      Motion::Stop(Motion::LengthUnit::fromCells(0.5));
 
       if (is_front_wall) {
         motion_hold_range(MOTION_RESET_HOLD_DISTANCE, 500);
@@ -688,7 +688,7 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
       }
 
       if (is_right_wall) {
-        motion_rotate(90);
+        Motion::Pivot(Motion::AngleUnit::fromDegrees(-90.0)).run();
         motion_hold_range(MOTION_RESET_HOLD_DISTANCE, 500);
 
         enc_left_back_write(0);
@@ -697,9 +697,9 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
         enc_right_front_write(0);
         Orientation::getInstance()->resetHeading();
 
-        motion_rotate(90);
+        Motion::Pivot(Motion::AngleUnit::fromDegrees(-90.0)).run();
       } else if (is_left_wall) {
-        motion_rotate(-90);
+        Motion::Pivot(Motion::AngleUnit::fromDegrees(90.0)).run();
         motion_hold_range(MOTION_RESET_HOLD_DISTANCE, 500);
 
         enc_left_back_write(0);
@@ -708,21 +708,21 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
         enc_right_front_write(0);
         Orientation::getInstance()->resetHeading();
 
-        motion_rotate(-90);
+        Motion::Pivot(Motion::AngleUnit::fromDegrees(90.0)).run();
       } else {
-        motion_rotate(180);
+        Motion::Pivot(Motion::AngleUnit::fromDegrees(-180.0)).run();
       }
 
-      motion_forward(MM_PER_BLOCK / 2, 0.0, search_velocity_);
+      Motion::Straight(Motion::LengthUnit::fromCells(0.5)).run();
 
       break;
     case kEast:
       if (pivot_turns_in_a_row_ > 30000) {
         bool hold_front = isWall(absoluteDir(kNorth));
         bool backup = isWall(absoluteDir(kWest));
-        motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0);
+        Motion::Stop(Motion::LengthUnit::fromCells(0.5)).run();
         if (hold_front) motion_hold_range(MM_PER_BLOCK / 2, 500);
-        motion_rotate(90);
+        Motion::Pivot(Motion::AngleUnit::fromDegrees(-90.0)).run();
         if (backup) {
           float old_max_vel = motion_get_maxVel_straight();
           motion_set_maxVel_straight(MOTION_RESET_BACKUP_VEL);
@@ -735,16 +735,17 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
           enc_right_front_write(0);
           Orientation::getInstance()->resetHeading();
 
-          motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, search_velocity_);
+          Motion::Straight(Motion::LengthUnit::fromMeters(
+                  (MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2) / 1000.0)).run();
         } else {
-          motion_forward(MM_PER_BLOCK / 2, 0, search_velocity_);
+          Motion::Straight(Motion::LengthUnit::fromCells(0.5)).run();
         }
         pivot_turns_in_a_row_ = 0;
       }
       else {
-        motion_forward(12, search_velocity_, search_velocity_);
+        Motion::Straight(Motion::LengthUnit::fromMeters(0.012)).run();
         motion_corner(kRightTurn90, search_velocity_, 160./180);
-        motion_forward(12, search_velocity_, search_velocity_);
+        Motion::Straight(Motion::LengthUnit::fromMeters(0.012)).run();
         pivot_turns_in_a_row_++;
       }
       //motion_forward(10, search_velocity_, search_velocity_);
@@ -755,9 +756,9 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
       if (pivot_turns_in_a_row_ > 30000) {
         bool hold_front = isWall(absoluteDir(kNorth));
         bool backup = isWall(absoluteDir(kEast));
-        motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0);
+        Motion::Stop(Motion::LengthUnit::fromCells(0.5)).run();
         if (hold_front) motion_hold_range(MM_PER_BLOCK / 2, 500);
-        motion_rotate(-90);
+        Motion::Pivot(Motion::AngleUnit::fromDegrees(90.0)).run();
         if (backup) {
           float old_max_vel = motion_get_maxVel_straight();
           motion_set_maxVel_straight(MOTION_RESET_BACKUP_VEL);
@@ -770,16 +771,17 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
           enc_right_front_write(0);
           Orientation::getInstance()->resetHeading();
 
-          motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, search_velocity_);
+          Motion::Straight(Motion::LengthUnit::fromMeters(
+                  (MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2) / 1000.0)).run();
         } else {
-          motion_forward(MM_PER_BLOCK / 2, 0, search_velocity_);
+          Motion::Straight(Motion::LengthUnit::fromCells(0.5)).run();
         }
         pivot_turns_in_a_row_ = 0;
       }
       else {
-        motion_forward(12, search_velocity_, search_velocity_);
+        Motion::Straight(Motion::LengthUnit::fromMeters(0.012)).run();
         motion_corner(kLeftTurn90, search_velocity_, 160./180);
-        motion_forward(12, search_velocity_, search_velocity_);
+        Motion::Straight(Motion::LengthUnit::fromMeters(0.012)).run();
         pivot_turns_in_a_row_++;
       }
       //motion_forward(10, search_velocity_, search_velocity_);
@@ -794,7 +796,7 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
 void ContinuousRobotDriver::beginFromCenter(Compass8 dir)
 {
   turn_in_place(dir);
-  motion_forward(MM_PER_BLOCK / 2, 0.0, search_velocity_);
+  Motion::Straight(Motion::LengthUnit::fromCells(0.5)).run();
 
   switch(dir) {
     case kNorth:
@@ -820,12 +822,13 @@ void ContinuousRobotDriver::beginFromCenter(Compass8 dir)
 void ContinuousRobotDriver::beginFromBack(Compass8 dir, int distance)
 {
   if (dir != getDir()) {
-    motion_forward(MM_FROM_BACK_TO_CENTER, 0, 0);
+    Motion::Stop(Motion::LengthUnit::fromMeters(
+                                    MM_FROM_BACK_TO_CENTER / 1000.0)).run();
     turn_in_place(dir);
     setDir(dir);
 
     if (distance > 0) {
-      motion_forward(MM_PER_BLOCK / 2, 0, search_velocity_);
+      Motion::Straight(Motion::LengthUnit::fromCells(0.5)).run();
 
       switch(dir) {
         case kNorth:
@@ -850,7 +853,8 @@ void ContinuousRobotDriver::beginFromBack(Compass8 dir, int distance)
     }
   } else {
     if (distance > 0) {
-      motion_forward(MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2, 0, search_velocity_);
+      Motion::Straight(Motion::LengthUnit::fromMeters(
+                  (MM_FROM_BACK_TO_CENTER + MM_PER_BLOCK / 2) / 1000.0)).run();
 
       switch(dir) {
         case kNorth:
@@ -874,16 +878,16 @@ void ContinuousRobotDriver::beginFromBack(Compass8 dir, int distance)
         proceed(dir, distance - 1);
 
     } else {
-      motion_forward(MM_FROM_BACK_TO_CENTER, 0, 0);
+      Motion::Stop(Motion::LengthUnit::fromMeters(
+                                      MM_FROM_BACK_TO_CENTER / 1000.0)).run();
     }
   }
 }
 
 void ContinuousRobotDriver::stop(Compass8 dir)
 {
-  motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0.0);
+  Motion::Stop(Motion::LengthUnit::fromCells(0.5)).run();
   turn_in_place(dir);
-  motion_hold(10);
 
   setDir(dir);
 }
@@ -893,7 +897,7 @@ void ContinuousRobotDriver::proceed(Compass8 dir, int distance)
   turn_while_moving(dir);
 
   if (distance > 1)
-    motion_forward(MM_PER_BLOCK * (distance - 1), search_velocity_, search_velocity_);
+    Motion::Straight(Motion::LengthUnit::fromCells(distance - 1)).run();
 
   switch(dir) {
     case kNorth:
