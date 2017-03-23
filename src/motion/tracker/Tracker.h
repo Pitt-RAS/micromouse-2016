@@ -21,6 +21,8 @@ struct TrackerOptions
 
   bool diagonal_correction = false;
 
+  bool drift = false;
+
   enum {
     kFinalTime, // when time reaches profile finalTime()
     kGyroAngle  // when gyro passes provided angle

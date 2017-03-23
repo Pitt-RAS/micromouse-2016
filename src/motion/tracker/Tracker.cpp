@@ -39,6 +39,15 @@ void Tracker::run()
 
   Orientation::getInstance()->handler_update_ = false;
 
+  if (options_.drift) {
+    while (point.linear_point.displacement.abstract()
+                                < gEncoder.averageDisplacement().abstract()) {
+      timer += 5000;
+      time = TimeUnit::fromSeconds(timer / 1e6);
+      point = profile_.pointAtTime(time);
+    }
+  }
+
   while (!endConditionMet(time)) {
     point = profile_.pointAtTime(time);
 
