@@ -62,6 +62,9 @@ void Pivot::run()
   if (transition().linear_velocity.abstract() != LengthUnit::zero().abstract())
     freakOut("PIVT"); // consider more verbose logging
 
+  if (angle_.abstract() == 0)
+    return;
+
   TrackerOptions options;
 
   options.linear_ffw_parameters     = { 0.0, 0.0 };
