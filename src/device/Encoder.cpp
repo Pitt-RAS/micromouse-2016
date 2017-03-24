@@ -23,3 +23,8 @@ double Encoder::countsPerSecond()
 {
   return encoder_.stepRate();
 }
+
+EncoderPittMicromouse &Encoder::innerObject()
+{
+  return encoder_;
+}

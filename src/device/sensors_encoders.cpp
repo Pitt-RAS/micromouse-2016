@@ -1,5 +1,6 @@
 #include <cstdint>
 #include <cmath>
+#include "../conf.h"
 #include "Encoder.h"
 #include "sensors_encoders.h"
 
@@ -26,16 +27,15 @@ float  enc_right_back_extrapolate() { return extrapolate(gEncoderRB); }
 
 static void write(Encoder &encoder, float value)
 {
-  int16_t count = nearbyint(value / kMillimetersPerCount);
-  encoder.count(count);
+  encoder.innerObject().write((int32_t) rint(value / MM_PER_STEP));
 }
 
 static float velocity(Encoder &encoder)
 {
-  return kMillimetersPerCount * encoder.countsPerSecond();
+  return (1000 * encoder.innerObject().stepRate() * MM_PER_STEP);
 }
 
 static float extrapolate(Encoder &encoder)
 {
-  return kMillimetersPerCount * encoder.count();
+  return (encoder.innerObject().extrapolate() * MM_PER_STEP);
 }
