@@ -871,14 +871,14 @@ void motion_hold_range(int setpoint, unsigned int time) {
         -RangeSensors.frontRightSensor.getRange(),
         -setpoint);
 
-    if (leftFrontOutput > 10) leftFrontOutput = 10;
-    if (leftFrontOutput < -10) leftFrontOutput = -10;
-    if (rightFrontOutput > 10) rightFrontOutput = 10;
-    if (rightFrontOutput < -10) rightFrontOutput = -10;
-    if (leftBackOutput > 10) leftBackOutput = 10;
-    if (leftBackOutput < -10) leftBackOutput = -10;
-    if (rightBackOutput > 10) rightBackOutput = 10;
-    if (rightBackOutput < -10) rightBackOutput = -10;
+    if (leftFrontOutput > 17) leftFrontOutput = 17;
+    if (leftFrontOutput < -17) leftFrontOutput = -17;
+    if (rightFrontOutput > 17) rightFrontOutput = 17;
+    if (rightFrontOutput < -17) rightFrontOutput = -17;
+    if (leftBackOutput > 17) leftBackOutput = 17;
+    if (leftBackOutput < -17) leftBackOutput = -17;
+    if (rightBackOutput > 17) rightBackOutput = 17;
+    if (rightBackOutput < -17) rightBackOutput = -17;
 
     motor_lf.Set(leftFrontOutput, 0);
     motor_rf.Set(rightFrontOutput, 0);

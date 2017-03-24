@@ -177,7 +177,7 @@
 #define KI_GYRO_FWD 0
 #define KD_GYRO_FWD 0
 
-#define KP_HOLD_RANGE 2
+#define KP_HOLD_RANGE 10
 #define KI_HOLD_RANGE 0
 #define KD_HOLD_RANGE 0
 
