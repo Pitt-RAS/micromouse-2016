@@ -24,7 +24,7 @@ void freakOut(const char* msg) {
   crashMelody();
   
   while (!gUserInterface.buttonOkPressed()) {
-  // wait for button press before dumping logs
+    // wait for button press before dumping logs
   }
   delay(500);
   logger.dump();
