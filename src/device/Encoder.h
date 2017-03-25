@@ -15,6 +15,8 @@ class Encoder
 
     double countsPerSecond();
 
+    EncoderPittMicromouse &innerObject();
+
   private:
     EncoderPittMicromouse encoder_;
 };
