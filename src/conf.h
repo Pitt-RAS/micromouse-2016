@@ -140,6 +140,8 @@
 #define EEPROM_KAOS_DIAG_VEL_LOCATION 514
 #define EEPROM_TARGET_X_LOCATION 516
 #define EEPROM_TARGET_Y_LOCATION 517
+#define EEPROM_NUM_RUNS_LOCATION 520
+#define EEPROM_STATE_LOCATION 522
 
 // Storage settings
 // Number of digits stored after the decimal point
@@ -216,7 +218,7 @@
 #define FRICTION_FORCE (RATED_FREERUN_CURRENT * FORCE_PER_AMP + 0.10) // Newtons (0.08 calculated Newtons from motor/gearbox)  amount of force opposing motion in robot including rolling resistance, sliding, gearing
 
 //  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.
-//    if this max velocity is higher than max straight velocity then use max straight velocity
+//  if this max velocity is higher than max straight velocity then use max straight velocity
 #define MAX_VEL_ROTATE .5 // m/s
 
 #define MOTION_RESET_BACKUP_VEL 0.05
@@ -243,5 +245,9 @@
 #define TURN_135_SCALING 1.1
 
 #define SEARCH_VELOCITY 0.3
+
+#define NUM_RUNS 5
+
+
 
 #endif
