@@ -33,8 +33,8 @@ static_assert(PITT_MICROMOUSE_ENCODER_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
 static_assert(F_CPU == 144000000, "Clock speed is not set to 144 MHz");
 
 static void autoMode();
-static void autoRun();
-static void autoKaos(uint8_t);
+static void autoRun(bool, uint8_t);
+static void autoKaos(bool);
 static void mazeClear();
 static void run();
 static void kaos();
@@ -100,52 +100,68 @@ void micromouse_main()
 }
 
 void autoMode(){
+	
   uint8_t target_x = PersistantStorage::getTargetXLocation();
   uint8_t target_y = PersistantStorage::getTargetYLocation();
   uint8_t state = PersistantStorage::getState();
   uint8_t runs = PersistantStorage::getNumRuns();
   
+  bool waiter = true;
+  
+  
   while (runs > 0) {
     state = PersistantStorage::getState();
     runs = PersistantStorage::getNumRuns();
+    
+    if (state == 1){
+    	waiter = true;
+    }
 
     if (state == 0){
-      if (runs == 5 || !knowsBestPath(target_x, target_y)){
-        autoRun();
+      if (!knowsBestPath(target_x, target_y)){
+        autoRun(waiter, runs);
       }
       else if (runs<4){
         //increase speed if run!=4
-        autoKaos(state);
+        autoKaos(waiter);
       }
       else{
-        autoKaos(state);
+        autoKaos(waiter);
       }
     }
     else if (state == 1)
     {
-      if (runs == 4 || !knowsBestPath(target_x, target_y)){
-        autoRun();
+      if (!knowsBestPath(target_x, target_y)){
+        autoRun(waiter, runs);
       }
       else{
         //reduce speeds back first
-        autoKaos(state);
+        autoKaos(waiter);
       }
       PersistantStorage::setState(0);
     }
     else {}
-
+		
+		waiter = false; 
     runs--;
     PersistantStorage::setNumRuns(runs);
     delay(1000);
   }
 }
 
-void autoRun() {
+void autoRun(bool wait, uint8_t num_runs) {
   Navigator<ContinuousRobotDriver> navigator;
   Orientation& orientation = Orientation::getInstance();
 
-  gUserInterface.waitForHand();
-  startMelody();
+  if (wait || num_runs == 5){
+      gUserInterface.waitForHand();
+    }
+  if (num_runs != 5){
+  	 delay(1000);
+  }
+  else{
+  	startMelody();
+  }
 
   enc_left_front_write(0);
   enc_right_front_write(0);
@@ -155,13 +171,13 @@ void autoRun() {
 
   navigator.findBox(PersistantStorage::getTargetXLocation(),
           PersistantStorage::getTargetYLocation());
-          
+  delay(4000);
   navigator.findBox(0, 0);
   
   motion_rotate(180.0);
 }
 
-void autoKaos(uint8_t state) {
+void autoKaos(bool wait) {
   uint8_t target_x = PersistantStorage::getTargetXLocation();
   uint8_t target_y = PersistantStorage::getTargetYLocation();
 
@@ -176,8 +192,9 @@ void autoKaos(uint8_t state) {
     PathParser parser (&known_path);
     KaosDriver driver;
     
-    if (state != 0){
+    if (wait){
       gUserInterface.waitForHand();
+       delay(1000);
     }
     
     enc_left_front_write(0);
@@ -195,6 +212,8 @@ void autoKaos(uint8_t state) {
 
     snprintf(buf, 5, "%02d%02d", parser.end_x, parser.end_y);
     gUserInterface.showString(buf, 4);
+       delay(4000);
+
 
     ContinuousRobotDriver other_driver(parser.end_x, parser.end_y, end_dir, false);
 
