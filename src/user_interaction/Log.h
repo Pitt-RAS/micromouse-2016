@@ -1,17 +1,17 @@
 #ifndef LOG_H
 #define LOG_H
 
-#define LOG_ENABLED false
+#define LOG_ENABLED true
 
-#define LOG_INIT_DELAY 10000
+#define LOG_INIT_DELAY 0
 
 // Bluetooth
-#define LOG_SERIAL Serial1
-#define LOG_BAUD 115200
+//#define LOG_SERIAL Serial1
+//#define LOG_BAUD 115200
 
 // USB
-//#define LOG_SERIAL Serial
-//#define LOG_BAUD 9600
+#define LOG_SERIAL Serial
+#define LOG_BAUD 9600
 
 #if LOG_ENABLED
   #define LOG_INIT() \

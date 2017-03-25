@@ -86,7 +86,7 @@
 
 // target 1 sigma confidence interval on calibrated gyro offset, calibration
 // time goes like square of inverse of this
-#define GYRO_CALIBRATION_TARGET_UNCERTAINTY 0.05
+#define GYRO_CALIBRATION_TARGET_UNCERTAINTY 0.01
 #define GYRO_OFFSET_SETTING -62
 #define GYRO_SECONDARY_OFFSET 0.3563
 

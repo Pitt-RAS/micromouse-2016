@@ -5,6 +5,7 @@
 #include "../user_interaction/FreakOut.h"
 #include "../user_interaction/Log.h"
 #include "../user_interaction/Logger.h"
+#include "../user_interaction/UserInterface.h"
 #include "Orientation.h"
 
 volatile bool Orientation::initialized_ = false;
@@ -136,7 +137,7 @@ void Orientation::calibrate() {
     float M2 = 0;
 
     // Take samples until the estimated std dev of the offset is below 0.5
-    for (samples = 1; samples < 10 || M2 / sq(samples) > 0.25; samples++) {
+    for (samples = 1; samples < 20 || M2 / sq(samples) > 0.25; samples++) {
       while (!update()) {
         // wait for actual data
       }
