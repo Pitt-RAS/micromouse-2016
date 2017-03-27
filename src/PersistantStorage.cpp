@@ -103,6 +103,17 @@ void PersistantStorage::setDefaultDirection(Compass8 dir) {
   EEPROM.write(EEPROM_INITIAL_DIRECTION_LOCATION, (uint8_t)dir);
 }
 
+uint8_t PersistantStorage::getReadyForKaosFlag () {
+  return EEPROM.read(EEPROM_READY_FOR_KAOS_LOCATION);
+}
+
+void PersistantStorage::setReadyForKaosFlag (bool ready_for_kaos) {
+  if (ready_for_kaos)
+    EEPROM.write(EEPROM_READY_FOR_KAOS_LOCATION, 1);
+  else
+    EEPROM.write(EEPROM_READY_FOR_KAOS_LOCATION, 0);
+}
+
 uint8_t PersistantStorage::getTargetXLocation() {
   return EEPROM.read(EEPROM_TARGET_X_LOCATION);
 }

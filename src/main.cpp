@@ -92,11 +92,20 @@ void autoMode()
 {
   uint8_t target_x = PersistantStorage::getTargetXLocation();
   uint8_t target_y = PersistantStorage::getTargetYLocation();
+  uint8_t ready_for_kaos = PersistantStorage::getReadyForKaosFlag();
 
-  if (knowsBestPath(target_x, target_y))
+  if (knowsBestPath(target_x, target_y) && ready_for_kaos) {
     kaos();
-  else
+  }
+  else if (knowsBestPath(target_x, target_y)) {
+    kaosRun();
+    PersistantStorage::setReadyForKaosFlag(1);
+  }
+  else {
+    PersistantStorage::setReadyForKaosFlag(0);
     run();
+  }
+
 }
 
 void run()

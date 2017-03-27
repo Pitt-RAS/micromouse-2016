@@ -141,6 +141,9 @@
 #define EEPROM_TARGET_X_LOCATION 516
 #define EEPROM_TARGET_Y_LOCATION 517
 
+// TODO: Find a home for this
+#define EEPROM_READY_FOR_KAOS_LOCATION 520
+
 // Storage settings
 // Number of digits stored after the decimal point
 #define PERSISTANT_STORAGE_VELOCITY_DIGITS 2
