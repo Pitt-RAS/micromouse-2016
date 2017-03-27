@@ -105,6 +105,7 @@ class PathParser {
     void rightDecisions();
     void diagonalDecisions(bool approachRight);
     void buildRelativePath(Path<16, 16> *abspath);
+    bool detectStraightaway();
   public:
    Queue<int, 256> move_list;
    PathParser(Path<16, 16> *abspath);
