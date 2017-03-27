@@ -119,7 +119,7 @@
 
 // Hand swipe start
 #define HAND_SWIPE_START_TIME 500 // in millis
-#define HAND_SWIPE_HEADING_TOLERANCE 0.05 // in degrees
+#define HAND_SWIPE_HEADING_TOLERANCE 1 // in degrees/100ms
 #define HAND_SWIPE_FORWARD_RANGE 50
 #define HAND_SWIPE_DIAG_RANGE 85
 
@@ -193,7 +193,7 @@
 #define MAX_DECEL_STRAIGHT -5 // m/s/s
 #define MAX_ACCEL_ROTATE 2 // m/s/s
 #define MAX_DECEL_ROTATE -2 // m/s/s
-#define MAX_ACCEL_CORNER 3 // m/s/s  
+#define MAX_ACCEL_CORNER 3 // m/s/s
 #define MAX_DECEL_CORNER -3 // m/s/s
 
 
@@ -215,7 +215,7 @@
 #define VELOCITY_PER_VBEMF (RATED_RPM_PER_VBEMF * STEPS_PER_MOTOR_REV * GEAR_RATIO * MM_PER_STEP / (60000)) // 60000 is for mm to m and s to min
 #define FRICTION_FORCE (RATED_FREERUN_CURRENT * FORCE_PER_AMP + 0.10) // Newtons (0.08 calculated Newtons from motor/gearbox)  amount of force opposing motion in robot including rolling resistance, sliding, gearing
 
-//  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.  
+//  TODO precompile, calculate max velocity based on turn radius and max accel, which will then limit max velocity through centripital force.
 //    if this max velocity is higher than max straight velocity then use max straight velocity
 #define MAX_VEL_ROTATE .5 // m/s
 
@@ -223,7 +223,7 @@
 #define MOTION_RESET_BACKUP_DISTANCE 50
 #define MOTION_RESET_HOLD_DISTANCE 22
 
-// Zll forward speeds should be the same, and should be the maximum turn speed.  
+// Zll forward speeds should be the same, and should be the maximum turn speed.
 // All max angular accelerations can be the same, but don't have to be
 // highest reliable max angular accel is most accurate turn
 //  max angular accel can be calculated with below equation
