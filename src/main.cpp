@@ -32,6 +32,7 @@ static_assert(PITT_MICROMOUSE_ENCODER_PATCH_VERSION == 1, PATCH_VER_MESSAGE);
 
 static_assert(F_CPU == 144000000, "Clock speed is not set to 144 MHz");
 
+static void autoMode();
 static void run();
 static void kaos();
 static void turn();
@@ -76,17 +77,25 @@ void micromouse_main()
   Orientation::getInstance()->resetHeading();
 
   MenuItem items[] = {
-    { "RUN", run },
-    { "KAOS", kaos },
-    { "TURN", turn },
-    { "CHK", check },
-    { "OPT", options },
+    { "AUTO", autoMode },
+    { "CLR ", clear },
     {}
   };
 
   Menu menu(items, false);
 
   for (;;) menu.run();
+}
+
+void autoMode()
+{
+  uint8_t target_x = PersistantStorage::getTargetXLocation();
+  uint8_t target_y = PersistantStorage::getTargetYLocation();
+
+  if (knowsBestPath(target_x, target_y))
+    kaos();
+  else
+    run();
 }
 
 void run()
