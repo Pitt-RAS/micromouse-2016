@@ -34,6 +34,7 @@ static_assert(F_CPU == 144000000, "Clock speed is not set to 144 MHz");
 
 static void autoMode();
 static void run();
+static void kaosRun();
 static void kaos();
 static void turn();
 static void check();
@@ -117,6 +118,66 @@ void run()
   searchFinishMelody();
   navigator.findBox(0, 0);
   stopMelody();
+}
+
+void kaosRun()
+{
+  Orientation* orientation = Orientation::getInstance();
+
+  ContinuousRobotDriver maze_load_driver;
+  Maze<16, 16> maze;
+  maze_load_driver.loadState(maze);
+
+  uint8_t target_x = PersistantStorage::getTargetXLocation();
+  uint8_t target_y = PersistantStorage::getTargetYLocation();
+
+  Compass8 end_direction;
+
+  {
+    enc_left_front_write(0);
+    enc_right_front_write(0);
+    enc_left_back_write(0);
+    enc_right_back_write(0);
+    orientation->resetHeading();
+
+    gUserInterface.waitForHand();
+    speedRunMelody();
+
+    ContinuousRobotDriver driver;
+
+    FloodFillPath<16, 16>
+      flood_path(maze, 0, 0, target_x, target_y);
+
+    KnownPath<16, 16>
+      known_path(maze, 0, 0, target_x, target_y, flood_path);
+
+    if (known_path.isEmpty())
+      return;
+
+    driver.move(known_path);
+
+    driver.move(kNorth, 0);
+
+    end_direction = driver.getDirIMadeThisPublic();
+
+    searchFinishMelody();
+  }
+  {
+    ContinuousRobotDriver driver(target_x, target_y, end_direction, false);
+
+    FloodFillPath<16, 16>
+      flood_path(maze, driver.getX(), driver.getY(), 0, 0);
+
+    KnownPath<16, 16>
+      known_path(maze, driver.getX(), driver.getY(), 0, 0, flood_path);
+
+    if (known_path.isEmpty())
+      return;
+
+    driver.move(known_path);
+
+    driver.move(kNorth, 0);
+  }
 }
 
 void kaos()
