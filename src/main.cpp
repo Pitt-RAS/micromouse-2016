@@ -79,14 +79,14 @@ void micromouse_main()
 
   Orientation::getInstance().resetHeading();
 
-  MenuItem items[] = {
+ /* MenuItem items[] = {
     { "AUTO", autoMode },
     { "CLR", clear },
     { "MZCLR", mazeClear },
     {}
-  };
+  };*/
 
-  /*
+  
    MenuItem items[] = {
     { "RUN", run },
     { "KAOS", kaos },
@@ -95,7 +95,7 @@ void micromouse_main()
     { "OPT", options },
     {}
   };
-  */
+  
 
   Menu menu(items, false);
 
