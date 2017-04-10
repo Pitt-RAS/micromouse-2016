@@ -94,18 +94,33 @@ void autoMode()
   uint8_t target_y = PersistantStorage::getTargetYLocation();
   uint8_t ready_for_kaos = PersistantStorage::getReadyForKaosFlag();
 
-  if (knowsBestPath(target_x, target_y) && ready_for_kaos) {
-    kaos();
-  }
-  else if (knowsBestPath(target_x, target_y)) {
+  if (knowsBestPath(target_x, target_y)) {
+    uint16_t velocity;
+
+    switch (ready_for_kaos) {
+      default:
+      case 0:
+        velocity = 40;
+      case 1:
+        velocity = 50;
+      case 2:
+        velocity = 60;
+      case 3:
+        velocity = 80;
+      case 4:
+        velocity = 95;
+    }
+
+    PersistantStorage::setRawSearchVelocity(velocity);
+    PersistantStorage::setReadyForKaosFlag(ready_for_kaos + 1);
+
     kaosRun();
-    PersistantStorage::setReadyForKaosFlag(1);
   }
   else {
+    PersistantStorage::setRawSearchVelocity(40);
     PersistantStorage::setReadyForKaosFlag(0);
     run();
   }
-
 }
 
 void run()

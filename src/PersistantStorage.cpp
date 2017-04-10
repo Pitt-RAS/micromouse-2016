@@ -107,11 +107,8 @@ uint8_t PersistantStorage::getReadyForKaosFlag () {
   return EEPROM.read(EEPROM_READY_FOR_KAOS_LOCATION);
 }
 
-void PersistantStorage::setReadyForKaosFlag (bool ready_for_kaos) {
-  if (ready_for_kaos)
-    EEPROM.write(EEPROM_READY_FOR_KAOS_LOCATION, 1);
-  else
-    EEPROM.write(EEPROM_READY_FOR_KAOS_LOCATION, 0);
+void PersistantStorage::setReadyForKaosFlag (uint8_t ready_for_kaos) {
+    EEPROM.write(EEPROM_READY_FOR_KAOS_LOCATION, ready_for_kaos);
 }
 
 uint8_t PersistantStorage::getTargetXLocation() {
