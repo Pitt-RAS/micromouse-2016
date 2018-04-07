@@ -80,6 +80,11 @@ void micromouse_main()
   MenuItem items[] = {
     { "AUTO", autoMode },
     { "CLR ", clear },
+    { "OPT", options },
+    { "RUN", run },
+    { "KAOS", kaos },
+    { "TURN", turn },
+    { "CHK", check },
     {}
   };
 
