@@ -5,8 +5,8 @@
 
 #include <Arduino.h>
 
-#include <I2Cdev.h>
-#include <MPU9150.h>
+#include <I2CdevPittMicromouse.h>
+#include <MPU9150PittMicromouse.h>
 
 volatile bool Orientation::mpu_interrupt_ = false;
 Orientation* Orientation::instance_ = NULL;
@@ -20,7 +20,7 @@ Orientation::Orientation() {
 #endif
 
   mpu_.initialize();
-  Serial.println(mpu_.testConnection() ? F("MPU9150 connection successful") : F("MPU9150 connection failed"));
+  Serial.println(mpu_.testConnection() ? F("MPU9150PittMicromouse connection successful") : F("MPU9150 connection failed"));
 
   mpu_.setFullScaleGyroRange(MPU9150_GYRO_FS_2000);
   mpu_.setFullScaleAccelRange(MPU9150_ACCEL_FS_16);
@@ -28,7 +28,7 @@ Orientation::Orientation() {
   mpu_.setZAccelOffset(1788); // 1688 factory default for my test chip
 
   // enable interrupt detection
-  Serial.println(F("Enabling MPU9150 interrupt detection..."));
+  Serial.println(F("Enabling MPU9150PittMicromouse interrupt detection..."));
   pinMode(IMU_INTERRUPT_PIN, INPUT);
 
 #ifdef CORE_TEENSY
@@ -46,7 +46,7 @@ Orientation::Orientation() {
   mpu_.setIntFIFOBufferOverflowEnabled(true);
   mpu_.setIntDataReadyEnabled(true);
 
-  // there's no good magnetometer interface in the MPU9150 library, so here it is
+  // there's no good magnetometer interface in the MPU9150PittMicromouse library, so here it is
 
   // allow us to access the magnetometer over I2C
   //I2Cdev::writeByte(MPU9150_DEFAULT_ADDRESS, MPU9150_RA_INT_PIN_CFG, 0x02);
@@ -244,10 +244,10 @@ bool Orientation::update() {
     //                   + mag_heading * MAG_COMPLEMENTARY_FILTER;
     //}
 
-    logger.logForwardAccel(accel_y);
-    logger.logRadialAccel(accel_x);
-    logger.logGyro(last_gyro_reading_);
-    logger.logHeading(raw_heading_);
+    //logger.logForwardAccel(accel_y);
+    //logger.logRadialAccel(accel_x);
+    //logger.logGyro(last_gyro_reading_);
+    //logger.logHeading(raw_heading_);
 
     last_update_time_ = next_update_time_;
 

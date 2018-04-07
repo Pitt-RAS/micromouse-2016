@@ -13,10 +13,10 @@
 #include "motors.h"
 #include "sensors_encoders.h"
 #include "sensors_orientation.h"
-#include "EncoderMod.h"
+#include "EncoderPittMicromouse.h"
 #include "IdealSweptTurns.h"
-#include <I2Cdev.h>
-#include <MPU9150.h>
+#include <I2CdevPittMicromouse.h>
+#include <MPU9150PittMicromouse.h>
 
 bool knowsBestPath();
 

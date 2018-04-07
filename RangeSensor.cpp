@@ -33,6 +33,16 @@ RangeSensor::RangeSensor(int temp_pin, int lowT, int highT) {
 }
 
 void RangeSensor::updateRange() {
+  static int x = 0;
+  static bool pin_on = false;
+  x++;
+  if (x == 100) {
+      x = 0;
+      pin_on = !pin_on;
+      if (pin_on) digitalWrite(13, 1);
+      else digitalWrite(13, 0);
+  }
+
   float off_reading, on_reading;
   float sensed_distance;
 

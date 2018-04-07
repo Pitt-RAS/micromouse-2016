@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#include <MPU9150.h>
+#include <MPU9150PittMicromouse.h>
 
 #include "conf.h"
 
@@ -16,7 +16,7 @@ class Orientation {
 
     static Orientation* instance_;
 
-    MPU9150 mpu_;
+    MPU9150PittMicromouse mpu_;
     uint16_t packet_size_ = 8;
     uint16_t fifo_count_ = 0;
 

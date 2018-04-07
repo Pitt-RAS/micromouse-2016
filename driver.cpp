@@ -1552,7 +1552,6 @@ void KaosDriver::execute(std::queue<int> move_list)
     }
   }
 
-  digitalWrite(13, 1);
   motion_forward(MM_PER_BLOCK / 6, turn_velocity_, 0);
   motion_forward(-MM_PER_BLOCK / 6, 0, 0);
 

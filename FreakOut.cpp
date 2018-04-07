@@ -16,6 +16,6 @@ void freakOut(char* msg) {
     // wait for button press before dumping logs
   }
   delay(500);
-  logger.dump();
+//  logger.dump();
   while (1) {}
 }

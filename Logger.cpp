@@ -94,4 +94,4 @@ void Logger::dump() {
   }
 }
 
-Logger logger;
+//Logger logger;
