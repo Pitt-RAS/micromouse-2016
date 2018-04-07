@@ -739,9 +739,9 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
         pivot_turns_in_a_row_ = 0;
       }
       else {
-        motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0);
-        motion_rotate(90.0);
-        motion_forward(MM_PER_BLOCK / 2, 0, search_velocity_);
+        motion_forward(12, search_velocity_, search_velocity_);
+        motion_corner(kRightTurn90, search_velocity_, 160./180);
+        motion_forward(12, search_velocity_, search_velocity_);
         pivot_turns_in_a_row_++;
       }
       //motion_forward(10, search_velocity_, search_velocity_);
@@ -774,9 +774,9 @@ void ContinuousRobotDriver::turn_while_moving(Compass8 dir)
         pivot_turns_in_a_row_ = 0;
       }
       else {
-        motion_forward(MM_PER_BLOCK / 2, search_velocity_, 0);
-        motion_rotate(-90.0);
-        motion_forward(MM_PER_BLOCK / 2, 0, search_velocity_);
+        motion_forward(12, search_velocity_, search_velocity_);
+        motion_corner(kLeftTurn90, search_velocity_, 160./180);
+        motion_forward(12, search_velocity_, search_velocity_);
         pivot_turns_in_a_row_++;
       }
       //motion_forward(10, search_velocity_, search_velocity_);
