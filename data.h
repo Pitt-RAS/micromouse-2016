@@ -343,6 +343,9 @@ class FloodFillPath :
   public:
     FloodFillPath(Maze<x_size, y_size> &maze, size_t start_x, size_t start_y,
                                               size_t finish_x, size_t finish_y);
+    FloodFillPath(Maze<x_size, y_size> &maze, size_t start_x, size_t start_y,
+                                              size_t finish_points_len,
+                                              size_t finish_x[], size_t finish_y[]);
 };
 
 template <size_t x_size, size_t y_size>
@@ -824,14 +827,33 @@ Compass8 Path<x_size, y_size>::nextDirection()
   return *directions_.dequeue();
 }
 
-
-
-
 template <size_t x_size, size_t y_size>
 FloodFillPath<x_size, y_size>::FloodFillPath(
     Maze<x_size, y_size> &maze,
     size_t start_x, size_t start_y,
                 size_t finish_x, size_t finish_y) :
+    FloodFillPath<x_size, y_size>(maze,
+          start_x, start_y, 1, &finish_x, &finish_y)
+{
+}
+
+inline bool arrayContainsPoint(size_t x_array[], size_t y_array[], size_t len,
+                        size_t x, size_t y)
+{
+  for (int i = 0; i < len; i++) {
+    if (x_array[i] == x && y_array[i] == y) {
+      return true;
+    }
+  }
+  return false;
+}
+
+template <size_t x_size, size_t y_size>
+FloodFillPath<x_size, y_size>::FloodFillPath(
+    Maze<x_size, y_size> &maze,
+    size_t start_x, size_t start_y,
+    size_t finish_points_len,
+                size_t finish_x[], size_t finish_y[]) :
     Path<x_size, y_size>(maze,
           start_x, start_y, finish_x, finish_y)
 {
@@ -845,7 +867,8 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
   Compass8 *direction_ptr;
   Compass8 *last_direction_ptr = NULL;
 
-  if (this->start_x_ == this->finish_x_ && this->start_y_ == this->finish_y_)
+  // START_X AND FINISH_X ARE PROCESSED IN THE PATH CONSTRUCTOR
+  if (arrayContainsPoint(finish_x, finish_y, finish_points_len, this->start_x_, this->start_y_)
     return;
 
   for (x = 0; x < x_size; x++) {
@@ -854,15 +877,16 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
     }
   }
 
-  x = this->finish_x_;
-  y = this->finish_y_;
   distance = 0;
 
   // "Paint" the boxes with distances from the finish.
 
+  for (int i = 0; i < finish_points_len; i++) {
+    paint_queue.enqueue(&boxes_[finish_y[i]][finish_x[i]]);
+  }
   paint_queue.enqueue(&boxes_[y][x]);
   next_layer_size = 0;
-  layer_size = 1;
+  layer_size = finish_points_len;
 
   while (!paint_queue.isEmpty()) {
     item = paint_queue.dequeue();
@@ -916,10 +940,9 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
       next_layer_size++;
     }
 
-    if (x == this->finish_x_ && y == this->finish_y_) {
+    if (arrayContainsPoint(finish_x, finish_y, finish_points_len, x, y)) {
       boxes_[y][x] = 0;
-    }
-    else {
+    } else {
       boxes_[y][x] = distance;
     }
 
@@ -940,7 +963,7 @@ FloodFillPath<x_size, y_size>::FloodFillPath(
   // Populate the waypoints queue.
   // We do this by always choosing the box with the smallest painted distance.
 
-  while (x != this->finish_x_ || y != this->finish_y_) {
+  while (!arrayContainsPoint(finish_x, finish_y, finish_points_len, x, y)) {
     distance = boxes_[y][x];
 
     if (y + 1 < y_size && !this->maze_.isWall(x, y, kNorth)
