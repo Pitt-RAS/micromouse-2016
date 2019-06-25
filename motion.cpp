@@ -482,9 +482,8 @@ void motion_rotate(float angle) {
 
   float current_speed = ((enc_left_front_velocity() + enc_left_back_velocity()) - (enc_right_front_velocity() + enc_right_back_velocity()))/4;
   
-  float drift = (enc_left_front_extrapolate() + enc_left_front_extrapolate()
-                 - enc_right_front_extrapolate() - enc_right_back_extrapolate())/2;
-  drift = 0;
+  float drift = (enc_left_front_extrapolate() + enc_left_back_extrapolate()
+                   - enc_right_front_extrapolate() - enc_right_back_extrapolate())/4;
 
   //instantiate with distance - the amount of drift between motion commands 
   MotionCalc motionCalc (linearDistance - drift, max_vel_rotate, current_speed, 0, max_accel_rotate,
@@ -505,7 +504,7 @@ void motion_rotate(float angle) {
 
   // the right will always be the negative of the left in order to rotate on a point.
   orientation->handler_update_ = false;
-  while (idealLinearDistance != linearDistance - drift) {
+  while (abs(orientation->getHeading()) - abs(angle) < 0) {
     orientation->update();
     if (orientation->getHeading() > 180)
       break;
@@ -526,6 +525,19 @@ void motion_rotate(float angle) {
     currentBackLeft = enc_left_back_extrapolate();
     currentFrontRight = enc_right_front_extrapolate();
     currentBackRight = enc_right_back_extrapolate();
+
+    // this is the heading we're at accoring to our encoders (measured in mm)
+    float encoder_heading = (currentFrontLeft + currentBackLeft
+                              - currentFrontRight - currentBackRight) / 4;
+
+    gyro_correction = gyro_PID.Calculate(encoder_heading,
+            orientation->getHeading() * distancePerDegree);
+
+    if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 120) {
+      int heading = (int)orientation->getHeading();
+      menu.showInt(idealLinearDistance / distancePerDegree, 4);
+      //freakOut("");
+    }
 
     setpointFrontLeft = idealLinearDistance + gyro_correction;
     setpointBackLeft = idealLinearDistance + gyro_correction;
