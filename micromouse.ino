@@ -67,5 +67,9 @@ void loop()
   enc_right_back_write(0);
   orientation->resetHeading();
 
-  navigator.runDevelopmentCode();
+  motion_rotate(360*10);
+  motion_hold(5000);
+
+  while (!menu.buttonOkPressed()) {}
+  logger.dump();
 }

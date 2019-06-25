@@ -352,7 +352,7 @@ void motion_collect(float distance, float exit_speed){
 
 // clockwise angle is positive, angle is in degrees
 void motion_rotate(float angle) {
-  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS / 360;
+  float distancePerDegree = 3.14159265359 * MM_BETWEEN_WHEELS_PIVOT / 360;
   float idealLinearDistance, idealLinearVelocity;
   float currentFrontRight, currentBackRight, currentFrontLeft, currentBackLeft;
   float setpointFrontRight, setpointBackRight, setpointFrontLeft, setpointBackLeft;
@@ -361,10 +361,10 @@ void motion_rotate(float angle) {
   float linearDistance = distancePerDegree * angle;
   elapsedMicros moveTime;
 
-  float current_speed = ((enc_left_front_velocity() + enc_left_back_velocity()) - (enc_right_front_velocity() + enc_right_back_velocity()))/4;
+  float current_speed = ((enc_left_front_velocity() + enc_left_back_velocity()) - enc_right_front_velocity() - enc_right_back_velocity())/4;
   
-  float currentExtrapolation = (enc_left_front_extrapolate() + enc_left_front_extrapolate()
-                                  - enc_right_front_extrapolate() - enc_right_back_extrapolate())/2;
+  float currentExtrapolation = (enc_left_front_extrapolate() + enc_left_back_extrapolate()
+                                  - enc_right_front_extrapolate() - enc_right_back_extrapolate())/4;
 
   float drift = currentExtrapolation;
 
@@ -386,7 +386,7 @@ void motion_rotate(float angle) {
   moveTime = 0;
 
   // the right will always be the negative of the left in order to rotate on a point.
-  while (idealLinearDistance != linearDistance - drift) {
+  while (abs(orientation->getHeading()) - abs(angle) < 0) {
     orientation->update();
 
     //Run sensor protocol here.  Sensor protocol should use encoder_left/right_write() to adjust for encoder error
@@ -399,14 +399,16 @@ void motion_rotate(float angle) {
     currentBackRight = enc_right_back_extrapolate();
 
     // this is the heading we're at accoring to our encoders (measured in mm)
-    float encoder_heading = (currentFrontLeft + currentFrontRight
-                              - currentFrontRight - currentBackRight) / 2;
+    float encoder_heading = (currentFrontLeft + currentBackLeft
+                              - currentFrontRight - currentBackRight) / 4;
 
     gyro_correction = gyro_PID.Calculate(encoder_heading,
             orientation->getHeading() * distancePerDegree);
 
-    if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 60) {
-      freakOut("FUCK");
+    if (abs(orientation->getHeading() - idealLinearDistance / distancePerDegree) > 120) {
+      int heading = (int)orientation->getHeading();
+      menu.showInt(idealLinearDistance / distancePerDegree, 4);
+      //freakOut("");
     }
 
     setpointFrontLeft = idealLinearDistance + gyro_correction;
@@ -436,8 +438,12 @@ void motion_rotate(float angle) {
     logger.logMotionType('p');
     logger.nextCycle();
   }
-  digitalWrite(13, 1);
+  menu.showInt((int)orientation->getHeading(), 4);
 
+  enc_left_front_write(0);
+  enc_right_front_write(0);
+  enc_left_back_write(0);
+  enc_right_back_write(0);
   orientation->incrementHeading(-angle);
 
   float current_left_velocity = (enc_left_front_velocity()
@@ -655,12 +661,11 @@ void motion_corner(SweptTurnType turn_type, float speed) {
     logger.nextCycle();
   }
 
-  orientation->incrementHeading(-sign * turn_table->getTotalAngle());
-
   enc_left_front_write(0);
   enc_right_front_write(0);
   enc_left_back_write(0);
   enc_right_back_write(0);
+  orientation->incrementHeading(-sign * turn_table->getTotalAngle());
 
   float current_left_velocity = (enc_left_front_velocity()
                                   + enc_left_back_velocity()) / 2;
